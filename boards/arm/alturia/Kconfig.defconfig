@@ -1,0 +1,13 @@
+if BOARD_ALTURIA
+
+config BOARD
+	default "alturia"
+
+if UART_CONSOLE
+
+config UART_1
+	default y
+
+endif
+
+endif

@@ -1,0 +1,3 @@
+config BOARD_ALTURIA
+	bool "Alturia Altimeter"
+	depends on SOC_STM32F303XC
