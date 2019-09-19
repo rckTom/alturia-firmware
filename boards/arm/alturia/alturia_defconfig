@@ -15,30 +15,20 @@ CONFIG_CPU_HAS_FPU=y
 CONFIG_FLOAT=y
 
 # enable uart driver
-CONFIG_SERIAL=n
-
-# enable console
-CONFIG_CONSOLE=n
-CONFIG_UART_CONSOLE=n
+CONFIG_SERIAL=y
+CONFIG_UART_1=y
 
 #enable PWM
-CONFIG_PWM=n
-
-#enable I2C
-CONFIG_I2C=n
+CONFIG_PWM=y
 
 #enable SPI
-CONFIG_SPI=n
+CONFIG_SPI=y
 
 # enable pinmux
-CONFIG_PINMUX=n
+CONFIG_PINMUX=y
 
 # enable GPIO
 CONFIG_GPIO=y
-
-# enable ADC
-# CONFIG_ADC=y
-# CONFIG_ADC_1=y
 
 # clock configuration
 CONFIG_CLOCK_CONTROL=y
