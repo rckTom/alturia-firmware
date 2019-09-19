@@ -9,4 +9,5 @@ supported:
   - usb_device
   - gpio
   - spi
+  - adc
   - counter

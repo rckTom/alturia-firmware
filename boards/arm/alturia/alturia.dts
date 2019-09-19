@@ -7,6 +7,7 @@
 
 	chosen {
 		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 	};
@@ -18,11 +19,15 @@
 			label = "User LED";
 		};
 	};
+
+	aliases {
+		led0 = &user_led;
+	};
 };
 
 &usart1 {
 	current-speed = <115200>;
-	pinctrl-0 = <&usart1_pins_d>;
+	pinctrl-0 = <&usart1_pins_b>;
 	pinctrl-names = "default";
 	status = "okay";
 };
@@ -31,7 +36,7 @@
 	stauts = "okay";
 };
 
-&spi2 {
+&adc1 {
 	status = "okay";
 };
 
