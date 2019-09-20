@@ -4,10 +4,13 @@ config BOARD
 	default "alturia"
 
 if UART_CONSOLE
-
 config UART_1
 	default y
+endif
 
+if PWM
+config PWM_STM32_2 
+	default y
 endif
 
 endif
