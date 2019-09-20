@@ -11,6 +11,8 @@ endif
 if PWM
 config PWM_STM32_2 
 	default y
+config PWM_STM32_4
+	default y
 endif
 
 endif

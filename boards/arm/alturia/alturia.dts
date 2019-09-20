@@ -40,6 +40,14 @@
 	};
 };
 
+&timers4 {
+	status = "okay";
+	pwm {
+		st,prescaler = <100>;
+		status = "okay";
+	};
+};
+
 &spi1 {
 	stauts = "okay";
 };
