@@ -17,6 +17,10 @@ static const struct pin_config pinconf[] = {
 #ifdef CONFIG_UART_1
 	{STM32_PIN_PA9, STM32F3_PINMUX_FUNC_PA9_USART1_TX},
 	{STM32_PIN_PA10, STM32F3_PINMUX_FUNC_PA10_USART1_RX},
+#endif
+#ifdef CONFIG_PWM
+	{STM32_PIN_PB11, (STM32_PINMUX_ALT_FUNC_1 | STM32_PUSHPULL_NOPULL)},
+
 #endif	/* CONFIG_UART_1 */
 };
 
@@ -28,6 +32,5 @@ static int pinmux_stm32_init(struct device *port)
 
 	return 0;
 }
-
 SYS_INIT(pinmux_stm32_init, PRE_KERNEL_1,
 		CONFIG_PINMUX_STM32_DEVICE_INITIALIZATION_PRIORITY);

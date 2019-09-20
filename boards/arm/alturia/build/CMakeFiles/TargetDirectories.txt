@@ -1,0 +1,2 @@
+/home/thomas/Projects/altimeter/alturia-firmware/boards/arm/alturia/build/CMakeFiles/rebuild_cache.dir
+/home/thomas/Projects/altimeter/alturia-firmware/boards/arm/alturia/build/CMakeFiles/edit_cache.dir
