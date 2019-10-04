@@ -15,7 +15,7 @@
 	leds {
 		compatible = "gpio-leds";
 		user_led: led_0 {
-			gpios = <&gpiof 0 GPIO_INT_ACTIVE_HIGH>;
+			gpios = <&gpioa 15 GPIO_INT_ACTIVE_HIGH>;
 			label = "User LED";
 		};
 	};
@@ -49,7 +49,41 @@
 };
 
 &spi1 {
-	stauts = "okay";
+	status = "okay";
+	cs-gpios = <&gpiob 1 0>;
+	ms5611: ms5607@0 {
+		status = "okay";
+		compatible = "meas,ms5607";
+		reg = <0>;
+		label="ms5607";
+		spi-max-frequency= <20000000>;
+	};
+};
+
+&spi2 {
+	status = "okay";
+	cs-gpios = <&gpiob 12 0>;
+	s25fl512: s25fl512@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		label="s25fl512";
+		spi-max-frequency = <20000000>;
+		jedec-id = [01 02 20];
+		size = <512000000>;
+		hold-gpios = <&gpioc 13 0>;
+	};
+};
+
+&s25fl512 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		storage_partition: partition@0 {
+			label = "storage";
+			reg = <0x00000 0x32000>;
+		};
+	};
 };
 
 &adc1 {
