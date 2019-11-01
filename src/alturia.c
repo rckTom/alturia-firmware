@@ -1,5 +1,8 @@
 #include "alturia.h"
 #include <logging/log_ctrl.h>
+#include <logging/log.h>
+
+LOG_MODULE_DECLARE(alturia);
 
 void __attribute__((noreturn)) panic(const char *str)
 {
@@ -15,12 +18,6 @@ static const struct {
     const int gpio_flags;
     const bool initial_state;
 } gpios[] = {
-    {
-        .gpio_controller = SUMMER_GPIO_CONTROLLER,
-        .gpio_pin = SUMMER_GPIO_PIN,
-        .gpio_flags = GPIO_DIR_OUT,
-        .initial_state = false,
-    },
     {
         .gpio_controller  = BARO_CS_GPIO_CONTROLLER,
         .gpio_pin = BARO_CS_GPIO_PIN,
@@ -44,6 +41,12 @@ static const struct {
         .gpio_pin = ACC_CS_GPIO_PIN,
         .gpio_flags = GPIO_DIR_OUT,
         .initial_state = true,
+    },
+    {
+        .gpio_controller = LED_GPIO_CONTROLLER,
+        .gpio_pin = LED_GPIO_PIN,
+        .gpio_flags = GPIO_DIR_OUT,
+        .initial_state = true,
     }
 };
 
@@ -52,16 +55,18 @@ void init_gpios(void)
     struct device *dev;
     uint8_t n;
     int res;
-    
-    for(n = 0; n <= ARRAY_SIZE(gpios); n++){
+
+    for(n = 0; n < ARRAY_SIZE(gpios); n++){
         dev = device_get_binding(gpios[n].gpio_controller);
+
         if (!dev)
         {
-            panic("could not get device\n");  
+            LOG_ERR("could not get device %s", gpios[n].gpio_controller);
+            panic("could not get device\n");
         }
 
         res = gpio_pin_configure(dev, gpios[n].gpio_pin, gpios[n].gpio_flags);
-        if (!res) {
+        if (res != 0) {
             panic("could not configure pin");
         }
 
@@ -70,7 +75,7 @@ void init_gpios(void)
         }
 
         res =  gpio_pin_write(dev, gpios[n].gpio_pin, gpios[n].initial_state);
-        if (!res) {
+        if (res != 0) {
             panic("could not set initial state\n");
         }
     }
