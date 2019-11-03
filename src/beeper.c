@@ -4,7 +4,9 @@
 #include <drivers/pwm.h>
 #include <device.h>
 #include "alturia.h"
+#include <logging/log.h>
 
+LOG_MODULE_REGISTER(beeper, CONFIG_LOG_DEFAULT_LEVEL);
 K_SEM_DEFINE(lock,1,1);
 
 struct k_delayed_work work;
@@ -22,9 +24,14 @@ static void work_handler(struct k_work *item)
     struct device *led = device_get_binding(LED_GPIO_CONTROLLER);
     int res;
 
-    if(beeper == NULL){
-        printk("can not get device");
-        goto error;
+    if(beeper == NULL) {
+        LOG_ERR("can not get beeper device");
+        goto err_free_lock;
+    }
+
+    if(led == NULL) {
+        LOG_ERR("can not get led device");
+        goto err_free_lock;
     }
 
     struct k_delayed_work *dw =
@@ -36,12 +43,12 @@ static void work_handler(struct k_work *item)
         res = pwm_pin_set_usec(beeper, 4, 500, 0);
         gpio_pin_write(led, LED_GPIO_PIN, false);
     } else {
-        res = pwm_pin_set_usec(beeper, 4, 500, 250);
+        res = pwm_pin_set_usec(beeper, 4, 500, 10);
         gpio_pin_write(led, LED_GPIO_PIN, true);
     }
 
     if(res){
-        goto error;
+        goto err_free_lock;
     }
 
     data->count--;
@@ -50,7 +57,7 @@ static void work_handler(struct k_work *item)
         return;
     }
 
-error:
+err_free_lock:
     k_sem_give(&lock);
     return;
 }
