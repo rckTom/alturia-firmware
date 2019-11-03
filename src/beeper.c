@@ -1,5 +1,4 @@
 #include "beeper.h"
-#include <zephyr.h>
 #include <stdint.h>
 #include <drivers/pwm.h>
 #include <device.h>
@@ -11,6 +10,7 @@ K_SEM_DEFINE(lock,1,1);
 
 struct k_delayed_work work;
 
+
 struct beep_sequenz_data {
     struct k_delayed_work work;
     uint32_t count;
@@ -18,7 +18,7 @@ struct beep_sequenz_data {
     int32_t delay;
 } beep_sequenz;
 
-static void work_handler(struct k_work *item)
+static void beep_work_handler(struct k_work *item)
 {
     struct device *beeper = device_get_binding("PWM_2");
     struct device *led = device_get_binding(LED_GPIO_CONTROLLER);
@@ -67,13 +67,14 @@ int beep(int32_t duration, int32_t pitch)
     return beepn(duration, 1, pitch);
 }
 
-int beepn(int32_t duration, int32_t count, int32_t pitch){
-    if(k_sem_take(&lock, K_NO_WAIT)==0) {
+int beepn(int32_t duration, int32_t count, int32_t pitch)
+{
+    if(k_sem_take(&lock, K_NO_WAIT) == 0) {
         beep_sequenz.count = count*2;
         beep_sequenz.delay = duration;
         beep_sequenz.pitch = pitch;
 
-        k_delayed_work_init(&beep_sequenz.work, work_handler);
+        k_delayed_work_init(&beep_sequenz.work, beep_work_handler);
         k_work_submit(&(beep_sequenz.work.work));
         return 0;
     }
