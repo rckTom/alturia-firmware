@@ -67,6 +67,29 @@ int beep(int32_t duration, int32_t pitch)
     return beepn(duration, 1, pitch);
 }
 
+static int beep_cmd(int32_t pitch)
+{
+	struct device *beeper = device_get_binding("PWM2");
+	if (beeper == NULL) {
+		LOG_ERR("unable to get device");
+		return -ENODEV;
+	}
+
+	return pwm_pin_set_usec(beeper, 4, pitch, 10);
+
+}
+
+int beep_on(int32_t pitch)
+{
+	return beep_cmd(pitch);
+}
+
+int beep_off()
+{
+	return beep_cmd(0);
+}
+
+
 int beepn(int32_t duration, int32_t count, int32_t pitch)
 {
     if(k_sem_take(&lock, K_NO_WAIT) == 0) {
