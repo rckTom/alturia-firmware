@@ -27,8 +27,6 @@
 
 &usart1 {
 	current-speed = <115200>;
-	pinctrl-0 = <&usart1_pins_b>;
-	pinctrl-names = "default";
 	status = "okay";
 };
 
@@ -50,7 +48,7 @@
 
 &spi1 {
 	status = "okay";
-	cs-gpios = <&gpiob 1 0>,  <&gpiob 2 0>, <&gpiob 10 0>;
+	cs-gpios = <&gpiob 1 0>,  <&gpiob 10 0>, <&gpiob 2 0>;
 	ms5611: ms5607@0 {
 		status = "okay";
 		compatible = "meas,ms5607";
@@ -58,18 +56,18 @@
 		label= "ms5607";
 		spi-max-frequency = <20000000>;
 	};
-	bmi088: bmi088@1 {
-		status = "okay";
-		compatible = "bosch,bmi088-accel";
-		reg = <1>;
-		label = "bmi088-accel";
-		spi-max-frequency = <200000000>; 
-	};
-	bmi088_acc: bmi088@2 {
+	bmi088_gyr: bmi088_gyr@1 {
 		status = "okay";
 		compatible = "bosch,bmi088-gyro";
-		reg = <2>;
+		reg = <1>;
 		label = "bmi088-gyro";
+		spi-max-frequency = <1000000>;
+	};
+	bmi088_acc: bmi088_acc@2 {
+		status = "okay";
+		compatible = "bosch,bmi088-accel";
+		reg = <2>;
+		label = "bmi088-accel";
 		spi-max-frequency = <1000000>;
 	};
 };
