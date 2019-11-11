@@ -2,7 +2,7 @@
 #include <logging/log_ctrl.h>
 #include <logging/log.h>
 
-LOG_MODULE_DECLARE(alturia);
+LOG_MODULE_REGISTER(alturia, CONFIG_LOG_DEFAULT_LEVEL);
 
 void __attribute__((noreturn)) panic(const char *str)
 {
