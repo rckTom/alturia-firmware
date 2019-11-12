@@ -32,9 +32,10 @@ static int read_sys_config_handler(void* user, const char* section,
 	#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
 
 	if (MATCH("", "flightcfg_path")) {
-		strlcpy(sys_cfg->flightcfg_path, value, 31);
+		strlcpy(sys_cfg->flightcfg_path, value,
+			ARRAY_SIZE(sys_cfg->flightcfg_path));
 	} else if (MATCH("", "owner")) {
-		strlcpy(sys_cfg->owner, value, 31);
+		strlcpy(sys_cfg->owner, value, ARRAY_SIZE(sys_cfg->owner));
 	} else {
 		return 1;
 	}
