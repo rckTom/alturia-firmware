@@ -6,6 +6,7 @@
 #include <device.h>
 #include <drivers/sensor.h>
 #include "configuration.h"
+#include <string.h>
 #include <fs/fs.h>
 
 LOG_MODULE_DECLARE(alturia);
@@ -37,10 +38,16 @@ static void start_delay(int delay) {
 void main(void)
 {
 	int rc;
+	char flight_cfg_path[32] = ALTURIA_FLASH_MP;
 	init_gpios();
 	init_fs();
 	read_sys_config(ALTURIA_FLASH_MP"/config/syscfg.ini");
-	read_flight_config(ALTURIA_FLASH_MP"/config/defaultfc.ini");
+
+	strlcat(flight_cfg_path, get_sys_config()->flightcfg_path,
+		ARRAY_SIZE(flight_cfg_path));
+
+	printk("%s\n", flight_cfg_path);
+	read_flight_config(flight_cfg_path);
 
 	struct device *ms5607 = device_get_binding("ms5607");
 	if (ms5607 == NULL) {
