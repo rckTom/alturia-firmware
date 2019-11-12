@@ -1,4 +1,4 @@
-#include <fs/fs.h>
+#include "util.h"
 
 char* z_fgets(char* s, int n, struct fs_file_t *file)
 {
