@@ -8,8 +8,13 @@ include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 set(ZEPHYR_BOARD_FLASH_RUNNER jlink)
 project(alturia_firmware)
 
-target_sources(app PRIVATE src/sysinit.c
+target_include_directories(app PRIVATE lib/inih/)
+
+target_sources(app PRIVATE lib/inih/ini.c
+			   src/util.c
+			   src/sysinit.c
 			   src/alturia.c
                            src/beeper.c
-                           src/main.c)
+                           src/main.c
+			   src/configuration.c )
 

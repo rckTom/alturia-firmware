@@ -19,6 +19,8 @@
 #define IMU_ACC_CS_GPIO_PIN                 10
 #define ACC_CS_GPIO_PIN                     0
 
+#define ALTURIA_FLASH_MP                    "/lfs"
+
 void __attribute__((noreturn)) panic(const char *str);
 void init_gpios(void);
 
