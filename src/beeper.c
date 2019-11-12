@@ -40,10 +40,10 @@ static void beep_work_handler(struct k_work *item)
         CONTAINER_OF(dw, struct beep_sequenz_data, work);
 
     if(data->count % 2) {
-        res = pwm_pin_set_usec(beeper, 4, 500, 0);
+        res = pwm_pin_set_usec(beeper, 4, data->pitch, 0);
         gpio_pin_write(led, LED_GPIO_PIN, false);
     } else {
-        res = pwm_pin_set_usec(beeper, 4, 500, 10);
+        res = pwm_pin_set_usec(beeper, 4, data->pitch, data->pitch/2);
         gpio_pin_write(led, LED_GPIO_PIN, true);
     }
 
