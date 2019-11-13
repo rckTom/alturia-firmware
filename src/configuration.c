@@ -1,3 +1,4 @@
+#define _DEFAULT_SOURCE 1
 #include "ini.h"
 #include "configuration.h"
 #include "alturia.h"

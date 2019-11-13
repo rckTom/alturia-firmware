@@ -1,3 +1,4 @@
+#define _DEFAULT_SOURCE 1
 #include <zephyr.h>
 #include "sysinit.h"
 #include "alturia.h"
