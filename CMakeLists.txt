@@ -16,5 +16,6 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/alturia.c
                            src/beeper.c
                            src/main.c
-			   src/configuration.c )
+			   src/configuration.c
+			   src/datalogger.c)
 
