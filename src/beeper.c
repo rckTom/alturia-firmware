@@ -7,6 +7,7 @@
 
 LOG_MODULE_REGISTER(beeper, CONFIG_LOG_DEFAULT_LEVEL);
 K_SEM_DEFINE(lock,1,1);
+static uint8_t vol = VOLUME;
 
 struct k_delayed_work work;
 
@@ -44,7 +45,7 @@ static void beep_work_handler(struct k_work *item)
         gpio_pin_write(led, LED_GPIO_PIN, false);
     } else {
         res = pwm_pin_set_usec(beeper, 4, data->pitch,
-			       ((data->pitch/2)*VOLUME)/100);
+			       ((data->pitch/2)*vol)/100);
         gpio_pin_write(led, LED_GPIO_PIN, true);
     }
 
@@ -76,7 +77,7 @@ static int beep_cmd(int32_t pitch)
 		return -ENODEV;
 	}
 
-	return pwm_pin_set_usec(beeper, 4, pitch, ((pitch/2)*VOLUME)/100);
+	return pwm_pin_set_usec(beeper, 4, pitch, ((pitch/2)*vol)/100);
 
 }
 
@@ -103,4 +104,14 @@ int beepn(int32_t duration, int32_t count, int32_t pitch)
         return 0;
     }
     return -EBUSY;
+}
+
+int set_volume(uint8_t volume)
+{
+	if (volume > 100) {
+		return -EINVAL;
+	}
+
+	vol = volume;
+	return 0;
 }
