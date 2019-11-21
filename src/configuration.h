@@ -1,13 +1,42 @@
 #ifndef __ALTURIA_CONFIGURATION_H__
 #define __ALTURIA_CONFIGURATION_H__
 
+#include <stdbool.h>
+
+#define SYS_CONFIG_SCHEMA \
+	/*    TYPE, NAME		, EXT , SECTION , VALFCN, PARAM */ \
+	FIELD(char, flightcfg_path	, [64], 	, 	,	) \
+	FIELD(char, owner		, [32], 	, 	,	)
+
+#define FLIGHT_CONFIG_SCHEMA \
+	FIELD(int, start_delay		,     ,		,	,	)
+
 struct sys_config {
-	char flightcfg_path[64];
-	char owner[64];
+	#define FIELD(type, name, name_ext, section, valfcn, param) type name name_ext;
+		SYS_CONFIG_SCHEMA
+	#undef FIELD
+};
+
+struct sys_config_valid {
+	#define FIELD(type, name, name_ext, section, valfcn, param) \
+		      uint8_t name : 1;
+		SYS_CONFIG_SCHEMA
+	#undef FIELD
+	bool config_valid;
 };
 
 struct flight_config {
-	int start_delay;
+	#define FIELD(type, name, name_ext, section, valfcn, param) type name name_ext;
+		FLIGHT_CONFIG_SCHEMA
+	#undef FIELD
+};
+
+struct flight_config_valid {
+	#define FIELD(type, name, name_ext, section, valfcn, param) \
+		      uint8_t name : 1;
+		FLIGHT_CONFIG_SCHEMA
+	#undef FIELD
+	bool config_valid;
 };
 
 int read_sys_config(const char* path);
