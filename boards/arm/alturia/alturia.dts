@@ -26,7 +26,7 @@
 };
 
 &usart1 {
-	current-speed = <115200>;
+	current-speed = <1000000>;
 	status = "okay";
 };
 
@@ -61,14 +61,14 @@
 		compatible = "bosch,bmi088-gyro";
 		reg = <1>;
 		label = "bmi088-gyro";
-		spi-max-frequency = <1000000>;
+		spi-max-frequency = <10000000>;
 	};
 	bmi088_acc: bmi088_acc@2 {
 		status = "okay";
 		compatible = "bosch,bmi088-accel";
 		reg = <2>;
 		label = "bmi088-accel";
-		spi-max-frequency = <1000000>;
+		spi-max-frequency = <10000000>;
 	};
 };
 
