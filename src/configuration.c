@@ -62,11 +62,12 @@ static int read_sys_config_handler(void* user, const char* section,
 				   const char* name, const char* value)
 {
 	struct sys_config *sys_cfg = (struct sys_config *)user;
-	#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+		LOG_DBG("section: %s, name: %s, value: %s",log_strdup(section), log_strdup(name), log_strdup(value));
+	#define MATCH(s, n) (strcmp(section, s) == 0) && (strcmp(name, n) == 0)
 
 	#define PARSE_char(n, v) parse_char(v, sys_cfg->n, \
 					    ARRAY_SIZE(sys_cfg->n))
-	#define PARSE_int(n, v) parse_int(v, &sys_cfg->n)
+	#define PARSE_int(n, v) parse_int(v, &(sys_cfg->n))
 	#define PARSE_float(n, v) parse_float(v, &sys_cfg->n)
 
 	#define FIELD(t, n, name_ext, section, a, b)\
@@ -78,16 +79,15 @@ static int read_sys_config_handler(void* user, const char* section,
 		}\
 		sys_cfg_valid.n = 1; \
 		return 1;\
-	} else
-	SYS_CONFIG_SCHEMA
-	{
-		/* no match detected*/
-		return 1;
 	}
+	SYS_CONFIG_SCHEMA
+	/* no match detected*/
+	return 0;
 	#undef FIELD
 	#undef PARSE_char
 	#undef PARSE_int
 	#undef PARSE_float
+	#undef MATCH
 }
 
 int test_sys_cfg()
@@ -123,13 +123,12 @@ static int read_flight_config_handler(void *user, const char *section,
 				      const char *name, const char *value)
 {
 	struct flight_config * flight_cfg = (struct flight_config *)user;
-
 	#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
 
 	#define PARSE_char(n, v) parse_char(v, flight_cfg->n, \
 					    ARRAY_SIZE(flight_cfg->n))
-	#define PARSE_int(n, v) parse_int(v, &flight_cfg->n)
-	#define PARSE_float(n, v) parse_float(v, &flight_cfg->n)
+	#define PARSE_int(n, v) parse_int(v, &(flight_cfg->n))
+	#define PARSE_float(n, v) parse_float(v, &(flight_cfg->n))
 
 	#define FIELD(t, n, name_ext, section, a, b)\
 	if (MATCH(xstr(section), xstr(n))) {\
@@ -140,49 +139,53 @@ static int read_flight_config_handler(void *user, const char *section,
 		}\
 		flight_cfg_valid.n = 1; \
 		return 1;\
-	} else
-	FLIGHT_CONFIG_SCHEMA
-	{
-		/* no match detected*/
-		return 1;
 	}
+	FLIGHT_CONFIG_SCHEMA
+	return 0;
 	#undef FIELD
 	#undef PARSE_char
 	#undef PARSE_int
 	#undef PARSE_float
+	#undef MATCH
 }
 
 
 int read_sys_config(const char* path)
 {
-	int rc;
+	int rc, rc2;
 	struct fs_file_t fd;
 
 	rc = fs_open(&fd, ALTURIA_FLASH_MP"/config/sysconfig.ini");
 	if (rc != 0) {
-		LOG_ERR("error opening config file: %d", rc);
+		LOG_DBG("error opening config file: %d", rc);
 		return rc;
 	}
 
 	rc = ini_parse_stream(reader, &fd, read_sys_config_handler, &sys_cfg);
 	if (rc != 0) {
+		LOG_DBG("error parsing ini file");
 		rc = -EINVAL;
 		goto out;
 	}
 
 	rc = test_sys_cfg();
 	if (rc != 0) {
+		LOG_DBG("testing of configuration failed. some fields are missing");
 		goto out;
 	}
 
 out:
-	fs_close(&fd);
+	rc2 = fs_close(&fd);
+	if (rc2 != 0) {
+		LOG_ERR("unable to close file");
+		k_oops();
+	}
 	return rc;
 }
 
 int read_flight_config(const char *path)
 {
-	int rc;
+	int rc, rc2;
 	struct fs_file_t fd;
 
 	rc = fs_open(&fd, path);
@@ -203,6 +206,10 @@ int read_flight_config(const char *path)
 	}
 
 out:
-	fs_close(&fd);
+	rc2 = fs_close(&fd);
+	if (rc2 != 0) {
+		LOG_ERR("unable to close file");
+		k_oops();
+	}
 	return rc;
 }
