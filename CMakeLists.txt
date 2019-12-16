@@ -20,5 +20,6 @@ target_sources(app PRIVATE lib/inih/ini.c
                            src/beeper.c
                            src/main.c
 			   src/configuration.c
-			   src/datalogger.c)
+			   src/datalogger.c
+			   src/atmosphere.c)
 target_link_libraries(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/cmsis/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)
