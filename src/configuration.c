@@ -70,7 +70,7 @@ static int read_sys_config_handler(void* user, const char* section,
 	#define PARSE_int(n, v) parse_int(v, &(sys_cfg->n))
 	#define PARSE_float(n, v) parse_float(v, &sys_cfg->n)
 
-	#define FIELD(t, n, name_ext, section, a, b)\
+	#define FIELD(t, n, name_ext, section)\
 	if (MATCH(xstr(section), xstr(n))) {\
 		/* get the parse function based on type */ \
 		int res = __CONCAT(PARSE_, t)(n, value);\
@@ -93,7 +93,7 @@ static int read_sys_config_handler(void* user, const char* section,
 int test_sys_cfg()
 {
 	int res = 0;
-	#define FIELD(t, n, name_ext, section, a, b) \
+	#define FIELD(t, n, name_ext, section) \
 		if (sys_cfg_valid.n != 1) { \
 			LOG_ERR("missing field %s", log_strdup(xstr(n))); \
 			res = 1; \
@@ -108,7 +108,7 @@ int test_sys_cfg()
 int test_flight_cfg()
 {
 	int res = 0;
-	#define FIELD(t, n, name_ext, section, a, b) \
+	#define FIELD(t, n, name_ext, section) \
 		if (flight_cfg_valid.n != 1) { \
 			LOG_ERR("missing field %s", log_strdup(xstr(n))); \
 			res = 1; \
@@ -130,7 +130,7 @@ static int read_flight_config_handler(void *user, const char *section,
 	#define PARSE_int(n, v) parse_int(v, &(flight_cfg->n))
 	#define PARSE_float(n, v) parse_float(v, &(flight_cfg->n))
 
-	#define FIELD(t, n, name_ext, section, a, b)\
+	#define FIELD(t, n, name_ext, section)\
 	if (MATCH(xstr(section), xstr(n))) {\
 		/* get the parse function based on type */ \
 		int res = __CONCAT(PARSE_, t)(n, value);\

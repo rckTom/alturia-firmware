@@ -4,21 +4,22 @@
 #include <stdbool.h>
 
 #define SYS_CONFIG_SCHEMA \
-	/*    TYPE, NAME		, EXT , SECTION , VALFCN, PARAM */ \
-	FIELD(char, flightcfg_path	, [64], 	, 	,	) \
-	FIELD(char, owner		, [32], 	, 	,	)
+	/*    TYPE, NAME		, EXT , SECTION */ 	\
+	FIELD(char, flightcfg_path	, [64], 	) 	\
+	FIELD(char, owner		, [32], 	) 	\
+	FIELD(int , beeper_volume	,     ,		)
 
 #define FLIGHT_CONFIG_SCHEMA \
-	FIELD(int, start_delay		,     ,		,	,	)
+	FIELD(int, start_delay		,     ,		)
 
 struct sys_config {
-	#define FIELD(type, name, name_ext, section, valfcn, param) type name name_ext;
+	#define FIELD(type, name, name_ext, section) type name name_ext;
 		SYS_CONFIG_SCHEMA
 	#undef FIELD
 };
 
 struct sys_config_valid {
-	#define FIELD(type, name, name_ext, section, valfcn, param) \
+	#define FIELD(type, name, name_ext, section) \
 		      uint8_t name : 1;
 		SYS_CONFIG_SCHEMA
 	#undef FIELD
@@ -26,13 +27,13 @@ struct sys_config_valid {
 };
 
 struct flight_config {
-	#define FIELD(type, name, name_ext, section, valfcn, param) type name name_ext;
+	#define FIELD(type, name, name_ext, section) type name name_ext;
 		FLIGHT_CONFIG_SCHEMA
 	#undef FIELD
 };
 
 struct flight_config_valid {
-	#define FIELD(type, name, name_ext, section, valfcn, param) \
+	#define FIELD(type, name, name_ext, section) \
 		      uint8_t name : 1;
 		FLIGHT_CONFIG_SCHEMA
 	#undef FIELD
