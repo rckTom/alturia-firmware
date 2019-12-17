@@ -10,7 +10,7 @@
  * the COPYING file in the top-level directory.
  */
 
-#include "atmosphere.h"
+#include "is_atmosphere.h"
 #include "constants.h"
 #include <math.h>
 
@@ -71,7 +71,7 @@ struct layer *get_layer_from_p(float p)
 	return layers + (i - 1);
 }
 
-float calc_temperature(float h)
+float isa_calc_temperature(float h)
 {
 	int res = validate_height(h);
 
@@ -86,7 +86,7 @@ float calc_temperature(float h)
 	return layer->t_base + layer->t_lapse_rate * (h - layer->h_base);
 }
 
-float calc_pressure(float h)
+float isa_calc_pressure(float h)
 {
 	int res = validate_height(h);
 
@@ -111,7 +111,7 @@ float calc_pressure(float h)
 	       exp(-G * (h - layer->h_base) / (RS_AIR * layer->t_base));
 }
 
-float calc_height(float p)
+float isa_calc_height(float p)
 {
 	int res = validate_pressure(p);
 
@@ -133,10 +133,10 @@ float calc_height(float p)
 	       logf(p / layer->p_base);
 }
 
-void init()
+void isa_init()
 {
 	for (int i = 1; i < sizeof(layers) / sizeof(layers[0]); i++) {
-		layers[i].p_base = calc_pressure(layers[i].h_base);
-		layers[i].t_base = calc_temperature(layers[i].h_base);
+		layers[i].p_base = isa_calc_pressure(layers[i].h_base);
+		layers[i].t_base = isa_calc_temperature(layers[i].h_base);
 	}
 }
