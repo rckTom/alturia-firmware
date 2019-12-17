@@ -28,26 +28,59 @@ static struct layer layers[] = {
 	{ 71000.0f,             0,       0, -2.0e-3f }
 };
 
-struct layer *get_layer_from_h(float h)
+#define LAYER_COUNT sizeof(layers) / sizeof(layers[0])
+
+int validate_height(float h)
 {
-	for (int i = 0; i < sizeof(layers) / sizeof(layers[0]); i++) {
+	if (h < layers[0].h_base) {
+		return -1;
+	} else if (h > layers[LAYER_COUNT-1].h_base) {
+		return 1;
+	}
+	return 0;
+}
+
+int validate_pressure(float p)
+{
+	if (p > layers[0].p_base) {
+		return -1;
+	} else if (p < layers[LAYER_COUNT-1].p_base) {
+		return 1;
+	}
+	return 0;
+}
+
+struct layer *get_layer_from_h(float h)
+{	int i = 1;
+	for (; i < LAYER_COUNT; i++) {
 		if (layers[i].h_base >= h) {
-			return layers + (i - 1);
+			break;
 		}
 	}
+	return layers + (i - 1);
 }
 
 struct layer *get_layer_from_p(float p)
 {
-	for (int i = 0; i < sizeof(layers) / sizeof(layers[0]); i++) {
+	int i = 1;
+	for (; i < LAYER_COUNT; i++) {
 		if (layers[i].p_base <= p) {
-			return layers + (i - 1);
+			break;
 		}
 	}
+	return layers + (i - 1);
 }
 
 float calc_temperature(float h)
 {
+	int res = validate_height(h);
+
+	if (res == -1) {
+		return layers[0].t_base;
+	} else if (res == 1) {
+		return layers[LAYER_COUNT-1].t_base;
+	}
+
 	struct layer *layer = get_layer_from_h(h);
 
 	return layer->t_base + layer->t_lapse_rate * (h - layer->h_base);
@@ -55,6 +88,14 @@ float calc_temperature(float h)
 
 float calc_pressure(float h)
 {
+	int res = validate_height(h);
+
+	if (res == -1) {
+		return layers[0].p_base;
+	} else if (res == 1) {
+		return layers[LAYER_COUNT-1].p_base;
+	}
+
 	struct layer *layer = get_layer_from_h(h);
 
 	if (layer->t_lapse_rate != 0.f) {
@@ -72,6 +113,14 @@ float calc_pressure(float h)
 
 float calc_height(float p)
 {
+	int res = validate_pressure(p);
+
+	if (res == -1) {
+		return layers[0].h_base;
+	} else if (res == 1) {
+		return layers[LAYER_COUNT-1].h_base;
+	}
+
 	struct layer *layer = get_layer_from_p(p);
 
 	if (layer->t_lapse_rate != 0.f) {
