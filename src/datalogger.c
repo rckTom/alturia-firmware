@@ -16,17 +16,188 @@
 #include <zephyr.h>
 #include <logging/log.h>
 
-LOG_MODULE_REGISTER(datalogger, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(datalogger,4);
+K_MEM_POOL_DEFINE(mem_pool, 4, 256, 4, 4);
+K_FIFO_DEFINE(fifo);
 
 static struct fs_file_t fd;
+static bool log_open;
+static char current_path[32];
+
+enum consumer_cmd {
+	LOG_TRACK_FORMAT,
+	LOG_TRACK_DATA,
+	LOG_TRACK_NAMES,
+	LOG_FILE,
+	OPEN_LOG,
+	CLOSE_LOG,
+};
+
+struct fifo_item {
+	void *fifo_reserved;
+	enum consumer_cmd cmd;
+	struct log_data *data;
+};
+
+#define FIFO_ITEM_SIZE sizeof(struct fifo_item)
+
+
+int dl_open_log(const char *path)
+{
+	struct fifo_item *item;
+
+	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	if (item == NULL) {
+		return -ENOMEM;
+	}
+
+	strncpy(current_path, path, ARRAY_SIZE(current_path));
+
+	item->cmd = OPEN_LOG;
+	k_fifo_put(&fifo, item);
+	return 0;
+}
+
+int dl_close_log()
+{
+	struct fifo_item *item;
+
+	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	if (item == NULL) {
+		return -ENOMEM;
+	}
+
+	item->cmd = CLOSE_LOG;
+	k_fifo_put(&fifo, item);
+	return 0;
+
+}
+
+int dl_add_file(uint8_t fid, const char *path)
+{
+	struct fifo_item *item;
+	struct log_data *file_data;
+
+	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	if (item == NULL) {
+		return -ENOMEM;
+	}
+
+	file_data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
+				      strlen(path) + 1);
+
+	if (file_data == NULL) {
+		return -ENOMEM;
+	}
+
+	file_data->id = fid;
+	file_data->data_size = strlen(path) + 1;
+	strncpy(file_data->data, path, file_data->data_size);
+
+	item->cmd = LOG_FILE;
+	item->data = file_data;
+
+	k_fifo_put(&fifo, item);
+	return 0;
+}
+
+int dl_add_track_format_chunk(uint8_t tid, const char* format)
+{
+	struct fifo_item *item;
+
+	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	if (item == NULL) {
+		return -ENOMEM;
+	}
+
+	item->data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
+				       strlen(format) + 1);
+
+	if (item->data == NULL) {
+		return -ENOMEM;
+	}
+
+	item->data->data_size = strlen(format) + 1;
+	strncpy(item->data->data, format, item->data->data_size);
+	item->data->id = tid;
+
+	item->cmd = LOG_TRACK_FORMAT;
+
+	k_fifo_put(&fifo, item);
+	return 0;
+}
+
+int dl_alloc_track_data_buffer(struct log_data **data, uint8_t tid, size_t size)
+{
+	*data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) + size);
+
+	if (*data == NULL) {
+		return -ENOMEM;
+	}
+
+	(*data)->id = tid;
+	(*data)->data_size = size;
+
+	return 0;
+}
+
+int dl_add_track_data(struct log_data *data)
+{
+	struct fifo_item *item;
+
+	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	if (item == NULL) {
+		return -ENOMEM;
+	}
+
+	item->cmd = LOG_TRACK_DATA;
+	item->data = data;
+
+	k_fifo_put(&fifo, item);
+	return 0;
+}
+
+int dl_add_track_names_chunk(uint8_t tid, const char* names)
+{
+	struct fifo_item *item;
+
+	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	if (item == NULL) {
+		return -ENOMEM;
+	}
+
+	item->data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
+				       strlen(names) + 1);
+
+	if(item->data == NULL) {
+		return -ENOMEM;
+	}
+
+	item->data->data_size = strlen(names) + 1;
+	strncpy(item->data->data, names, item->data->data_size);
+	item->data->id = tid;
+
+	item->cmd = LOG_TRACK_NAMES;
+
+	k_fifo_put(&fifo, item);
+	return 0;
+}
 
 int open_log(const char *path)
 {
-	return fs_open(&fd, path);
+	int res;
+	res = fs_open(&fd, path);
+	if (res == 0) {
+		log_open = true;
+		return res;
+	}
+	log_open = false;
+	return res;
 }
 
 int close_log()
 {
+	log_open = false;
 	return fs_close(&fd);
 }
 
@@ -133,3 +304,73 @@ out:
 	fs_close(&file);
 	return rc;
 }
+
+void datalogger_consumer()
+{
+	struct fifo_item *item;
+	int res;
+
+	while (1) {
+		item = k_fifo_get(&fifo, K_FOREVER);
+		if (item == NULL) {
+			continue;
+		}
+		LOG_DBG("received new data item");
+		LOG_DBG("cmd %d", item->cmd);
+
+		if(item->cmd == LOG_FILE) {
+			struct log_data *data;
+			data = item->data;
+
+			res = add_file(data->id, data->data);
+			k_free(data);
+
+			if(res != 0) {
+				/* TODO: What to do with errors */
+			}
+		} else if (item->cmd == LOG_TRACK_DATA) {
+			struct log_data *data;
+			data = item->data;
+
+			res = add_track_data(data->id, data->data,
+					     data->data_size);
+			k_free(data);
+
+			if(res != 0) {
+
+			}
+		} else if (item->cmd == LOG_TRACK_FORMAT) {
+			struct log_data *data;
+			data = item->data;
+			LOG_DBG("format: %s", log_strdup(data->data));
+			res = add_track_format_chunk(data->id, data->data);
+			k_free(data);
+
+			if (res != 0) {
+
+			}
+		} else if (item->cmd == LOG_TRACK_NAMES) {
+			struct log_data *data;
+			data = item->data;
+
+			res = add_track_names_chunk(data->id, data->data);
+			k_free(data);
+
+			if (res != 0) {
+
+			}
+		} else if (item->cmd == OPEN_LOG) {
+			LOG_DBG("open log file with filename %s", log_strdup(current_path));
+			res = open_log(current_path);
+		} else if (item ->cmd == CLOSE_LOG) {
+			res = close_log();
+		} else {
+			LOG_ERR("cmd not known");
+		}
+
+		k_free(item);
+	}
+}
+
+K_THREAD_DEFINE(dl_tid, CONFIG_DATALOGGER_STACK_SIZE, datalogger_consumer,
+		NULL, NULL, NULL, CONFIG_DATALOGGER_THREAD_PRIORITY, 0, K_NO_WAIT);

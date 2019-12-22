@@ -113,19 +113,19 @@ void main(void)
 	beep_pyro_status();
 	start = k_uptime_get();
 
-	rc = open_log(ALTURIA_FLASH_MP"/data/press_new.dat");
+	rc = dl_open_log(ALTURIA_FLASH_MP"/data/press_new.dat");
 	if (rc != 0) {
 		LOG_ERR("unable to open log file");
 		return;
 	}
 
-	rc = add_track_format_chunk(0, "qdddddddd");
+	rc = dl_add_track_format_chunk(0, "qdddddddd");
 	if(rc != 0) {
 		LOG_ERR("unable to write format string");
 		return;
 	}
 
-	rc = add_track_names_chunk(0, "time,pressure,pressure2,accx,accy,accz,gyrx,gyry,gyrz");
+	rc = dl_add_track_names_chunk(0, "time,pressure,pressure2,accx,accy,accz,gyrx,gyry,gyrz");
 	if(rc != 0) {
 		LOG_ERR("unable to write track names");
 		return;
@@ -173,7 +173,7 @@ void main(void)
 		err = sensor_channel_get(bmi088_gyro, SENSOR_CHAN_GYRO_Z, gyr+2);
 
 		double dval = sensor_value_to_double(&val);
-		union {
+		union values{
 			u8_t data[16];
 			struct{
 				s64_t t;
@@ -186,19 +186,22 @@ void main(void)
 				double gyr_y;
 				double gyr_z;
 			} __packed val;
-		} values;
+		};
+		struct log_data *logdata;
+		dl_alloc_track_data_buffer(&logdata, 0, sizeof(union values));
 
-		values.val.pres = dval;
-		values.val.pres2 = dval*2;
-		values.val.acc_x = sensor_value_to_double(acc);
-		values.val.acc_y = sensor_value_to_double(acc+1);
-		values.val.acc_z = sensor_value_to_double(acc+2);
-		values.val.gyr_x = sensor_value_to_double(gyr);
-		values.val.gyr_y = sensor_value_to_double(gyr+1);
-		values.val.gyr_z = sensor_value_to_double(gyr+2);
-		values.val.t = timestamp;
+		union values *values = (union values *)logdata->data;
+		values->val.pres = dval;
+		values->val.pres2 = dval*2;
+		values->val.acc_x = sensor_value_to_double(acc);
+		values->val.acc_y = sensor_value_to_double(acc+1);
+		values->val.acc_z = sensor_value_to_double(acc+2);
+		values->val.gyr_x = sensor_value_to_double(gyr);
+		values->val.gyr_y = sensor_value_to_double(gyr+1);
+		values->val.gyr_z = sensor_value_to_double(gyr+2);
+		values->val.t = timestamp;
 
-		rc = add_track_data(0, &values, sizeof(values));
+		rc = dl_add_track_data(logdata);
 		if (rc != 0) {
 			LOG_ERR("can not write data");
 			break;
@@ -206,7 +209,7 @@ void main(void)
 		i++;
 	}
 	LOG_INF("Time spent for 1000 samples %lld", k_uptime_delta(&start));
-	close_log();
+	dl_close_log();
 	while(1) {
 		k_sleep(10000);
 		beepn(K_MSEC(10),1,400);

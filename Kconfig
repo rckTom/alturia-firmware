@@ -1,0 +1,10 @@
+menu "Datalogger"
+	config DATALOGGER_THREAD_PRIORITY
+		int "Datalogger thread priority"
+		default 0
+	config DATALOGGER_STACK_SIZE
+		int "Stack size for datalogger thread"
+		default 1024
+endmenu
+
+source "$ZEPHYR_BASE/Kconfig"
