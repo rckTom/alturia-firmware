@@ -1,4 +1,7 @@
 menu "Datalogger"
+	config DATALOGGER_LOG_LEVEL
+		int "Datalogger log level"
+		default 3
 	config DATALOGGER_THREAD_PRIORITY
 		int "Datalogger thread priority"
 		default 0

@@ -16,7 +16,7 @@
 #include <zephyr.h>
 #include <logging/log.h>
 
-LOG_MODULE_REGISTER(datalogger,4);
+LOG_MODULE_REGISTER(datalogger,CONFIG_DATALOGGER_LOG_LEVEL);
 K_MEM_POOL_DEFINE(mem_pool, 4, 256, 4, 4);
 K_FIFO_DEFINE(fifo);
 
