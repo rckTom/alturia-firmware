@@ -23,6 +23,7 @@
 #include <fs/fs.h>
 #include "datalogger.h"
 #include "arm_math.h"
+#include "usb/usb_device.h"
 
 LOG_MODULE_DECLARE(alturia);
 
@@ -68,6 +69,13 @@ void main(void)
 	int rc;
 	char flight_cfg_path[32] = ALTURIA_FLASH_MP;
 	init_gpios();
+
+	rc = usb_enable(NULL);
+	if (rc != 0) {
+		LOG_ERR("unable to enable usb");
+		return;
+	}
+
 	init_fs();
 
 	rc = read_sys_config(ALTURIA_FLASH_MP"/config/syscfg.ini");
