@@ -1,3 +1,15 @@
+/*
+ * Alturia Firmware - The firmware for the alturia flight computer
+ *
+ * Copyright (c) Thomas Schmid, 2019
+ *
+ * Authors:
+ *  Thomas Schmid <tom@lfence.de>
+ *
+ * This work is licensed under the terms of the GNU GPL, version 3.  See
+ * the COPYING file in the top-level directory.
+ */
+
 #include "kalman.h"
 
 #define DEFINE_MATRIX(NAME, M, N) \
@@ -6,12 +18,27 @@
 
 #define MATRIX_INDEX(i,j,mat) i*mat->numCols+j
 
+/**
+ * mat_set() - Set element [i,j] of matrix mat to the specified value
+ * @mat: Pointer to a matrix instance
+ * @value: Value
+ * @i: row index
+ * @j: column index
+ */
 static inline void mat_set(arm_matrix_instance_f32 *mat, float32_t value,
 			int i, int j)
 {
 	mat->pData[MATRIX_INDEX(i,j,mat)] = value;
 }
 
+/**
+ * mat_mult_ABC() - Computed the matrix multiplication A*B*C
+ * @A: Matrix A
+ * @B: Matrix B
+ * @C: Matrix C
+ *
+ * Return: return value < 0 indicates errors
+ */
 static int mat_mult_ABC(const arm_matrix_instance_f32 *A,
 		const arm_matrix_instance_f32 *B,
 		const arm_matrix_instance_f32 *C,
@@ -31,12 +58,23 @@ static int mat_mult_ABC(const arm_matrix_instance_f32 *A,
 	return res;
 }
 
+/**
+ * mat_resize() - Set matrix row and column count
+ * @mat: matrix to change
+ * @rows: new row count
+ * @columns: new column count
+ */
 static void mat_resize(arm_matrix_instance_f32 *mat, int rows, int cols)
 {
 	mat->numRows = rows;
 	mat->numCols = cols;
 }
 
+/**
+ * mat_copy_size() - Set size of matrix mat_dest to size of matrix src
+ * @mat_dest: matrix to change size of
+ * @src: matrix to copy size from
+ */
 static void mat_copy_size(arm_matrix_instance_f32 *mat_dest,
 			const arm_matrix_instance_f32 *src)
 {
@@ -44,6 +82,10 @@ static void mat_copy_size(arm_matrix_instance_f32 *mat_dest,
 	mat_dest->numRows = src->numRows;
 }
 
+/**
+ * mat_eye_sub_A() - Computes the matrix expression I-A, where I is the identity
+ * matrix
+ */
 static void mat_eye_sub_A(const arm_matrix_instance_f32 *A)
 {
 	for (int i = 0; i < A->numRows; i++) {
@@ -135,7 +177,11 @@ int kalman_correct(struct kalman_sys *sys, const arm_matrix_instance_f32 *u)
 	temp2.pData = temp2_data;
 	temp3.pData = temp3_data;
 
-	/* Calculate Kalman gain K */
+	/*
+	 * Calculate Kalman gain K
+	 * K ( k )= P̂ ( k ) · (C T · C · P̂ ( k ) · C T + R ( k )) ^ − 1
+	 */
+
 	mat_resize(&temp1, sys->C.numRows, sys->CT.numCols);
 	res = mat_mult_ABC(&sys->C, &sys->P_pre, &sys->CT, &temp1);
 	if (res != ARM_MATH_SUCCESS) {
@@ -159,7 +205,11 @@ int kalman_correct(struct kalman_sys *sys, const arm_matrix_instance_f32 *u)
 		goto math_error;
 	}
 
-	/* Calculate corrected state vector */
+	/*
+	 * Calculate corrected state vector x̃
+	 * x̃ ( k ) = x̂ ( k ) + K ( k ) · y ( k ) − C · x̂ ( k ) − D · u ( k )
+	 */
+
 	if (u != NULL) {
 		mat_resize(&temp1, sys->D.numRows, u->numCols);
 		res = arm_mat_mult_f32(&sys->D, u, &temp1);
@@ -210,7 +260,11 @@ int kalman_correct(struct kalman_sys *sys, const arm_matrix_instance_f32 *u)
 	}
 
 
-	/* Calculate corrected covariance matrix */
+	/*
+	 * Calculate corrected covariance matrix
+	 * P̃ ( k ) = I − K ( k ) · C · P̂ ( k )
+	 */
+
 	mat_resize(&temp1, sys->K.numRows, sys->C.numCols);
 	res = arm_mat_mult_f32(&sys->K, &sys->C, &temp1);
 	if (res != ARM_MATH_SUCCESS) {
