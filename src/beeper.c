@@ -25,12 +25,12 @@ static void beep_work_handler(struct k_work *item)
     struct device *led = device_get_binding(LED_GPIO_CONTROLLER);
     int res;
 
-    if(beeper == NULL) {
+    if (beeper == NULL) {
         LOG_ERR("can not get beeper device");
         goto err_free_lock;
     }
 
-    if(led == NULL) {
+    if (led == NULL) {
         LOG_ERR("can not get led device");
         goto err_free_lock;
     }
@@ -40,7 +40,7 @@ static void beep_work_handler(struct k_work *item)
     struct beep_sequenz_data *data =
         CONTAINER_OF(dw, struct beep_sequenz_data, work);
 
-    if(data->count % 2) {
+    if (data->count % 2) {
         res = pwm_pin_set_usec(beeper, 4, data->pitch, 0);
         gpio_pin_write(led, LED_GPIO_PIN, false);
     } else {
@@ -49,12 +49,12 @@ static void beep_work_handler(struct k_work *item)
         gpio_pin_write(led, LED_GPIO_PIN, true);
     }
 
-    if(res){
+    if (res){
         goto err_free_lock;
     }
 
     data->count--;
-    if(data->count > 0) {
+    if (data->count > 0) {
         k_delayed_work_submit(dw, data->delay);
         return;
     }
@@ -94,7 +94,7 @@ int beep_off()
 
 int beepn(int32_t duration, int32_t count, int32_t pitch)
 {
-    if(k_sem_take(&lock, K_NO_WAIT) == 0) {
+    if (k_sem_take(&lock, K_NO_WAIT) == 0) {
         beep_sequenz.count = count*2;
         beep_sequenz.delay = duration;
         beep_sequenz.pitch = pitch;
