@@ -133,12 +133,6 @@ float isa_calc_height(float p)
 	       logf(p / layer->p_base);
 }
 
-
-/**
- * isa_init() - Initialize the layer table
- *
- * Initilizes the layer table layers based on the first entry of the table
- */
 void isa_init()
 {
 	for (int i = 1; i < sizeof(layers) / sizeof(layers[0]); i++) {
