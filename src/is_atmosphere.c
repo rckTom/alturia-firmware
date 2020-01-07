@@ -30,7 +30,7 @@ static struct layer layers[] = {
 
 #define LAYER_COUNT sizeof(layers) / sizeof(layers[0])
 
-int validate_height(float h)
+static int validate_height(float h)
 {
 	if (h < layers[0].h_base) {
 		return -1;
@@ -40,7 +40,7 @@ int validate_height(float h)
 	return 0;
 }
 
-int validate_pressure(float p)
+static int validate_pressure(float p)
 {
 	if (p > layers[0].p_base) {
 		return -1;
@@ -50,7 +50,7 @@ int validate_pressure(float p)
 	return 0;
 }
 
-struct layer *get_layer_from_h(float h)
+static struct layer *get_layer_from_h(float h)
 {	int i = 1;
 	for (; i < LAYER_COUNT; i++) {
 		if (layers[i].h_base >= h) {
@@ -60,7 +60,7 @@ struct layer *get_layer_from_h(float h)
 	return layers + (i - 1);
 }
 
-struct layer *get_layer_from_p(float p)
+static struct layer *get_layer_from_p(float p)
 {
 	int i = 1;
 	for (; i < LAYER_COUNT; i++) {
