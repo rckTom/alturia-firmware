@@ -40,6 +40,23 @@ struct kalman_sys{
 	arm_matrix_instance_f32 y;
 };
 
+#define INIT_MATRIX(sys_name, member_name, rows, cols) \
+	float32_t sys_name_member_name_data[rows*cols]; \
+	sys_name.member_name.pData = sys_name_member_name_data; \
+	sys_name.numRows = rows; \
+	sys_name.numCols = cols;
+
+#define DEFINE_KALMAN_FILTER(name, m, n, p) \
+	struct kalman_sys name; \
+	INIT_MATRIX(name, A, n, n) \
+	INIT_MATRIX(name, B, n, m) \
+	INIT_MATRIX(name, C, p, n) \
+	INIT_MATRIX(name, D, p, m) \
+	INIT_MATRIX(name, G, n, m) \
+	INIT_MATRIX(name, GT, m, n) \
+	INIT_MATRIX(name, AT, n, n) \
+	INIT_MATRIX(name, CT, n, p) \
+
 void kalman_sys_step(struct kalman_sys *sys, arm_matrix_instance_f32 *u);
 
 #endif
