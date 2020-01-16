@@ -46,16 +46,16 @@ static void make_dir_structure()
         const char *path;
     } dirs[] = {
         {
-            .path = ALTURIA_FLASH_MP"/config",
+            .path = ALTURIA_FLASH_MP "/config",
         },
         {
-            .path = ALTURIA_FLASH_MP"/sys",
+            .path = ALTURIA_FLASH_MP "/sys",
         },
         {
-            .path = ALTURIA_FLASH_MP"/data",
+            .path = ALTURIA_FLASH_MP "/data",
         },
         {
-            .path = ALTURIA_FLASH_MP"/user",
+            .path = ALTURIA_FLASH_MP "/user",
         }
     };
 
