@@ -14,12 +14,14 @@
 #define __ALTURIA_KALMAN_H__
 
 #include "arm_math.h"
+#include <assert.h>
 
 #ifndef KALMAN_MAX_ORDER
 #define __KALMAN_MAX_ORDER 6
 #else
 #define __KALMAN_MAX_ORDER KALMAN_MAX_ORDER
 #endif
+
 
 struct kalman_sys{
 	arm_matrix_instance_f32 A;
@@ -40,22 +42,44 @@ struct kalman_sys{
 	arm_matrix_instance_f32 y;
 };
 
-#define INIT_MATRIX(sys_name, member_name, rows, cols) \
-	float32_t sys_name_member_name_data[rows*cols]; \
-	sys_name.member_name.pData = sys_name_member_name_data; \
-	sys_name.numRows = rows; \
-	sys_name.numCols = cols;
+#define KALMAN_SYS_INIT_EMPTY_MATRIX(member_name, rows, cols) \
+	.member_name = { \
+		.numRows = rows, \
+		.numCols = cols, \
+		.pData = (float32_t[rows * cols]){}, \
+	}
+
+#define KALMAN_SYS_INIT_MATRIX(member_name, rows, cols, content) \
+	.member_name = { \
+		.numRows = rows, \
+		.numCols = cols, \
+		.pData = (float32_t[rows * cols])content, \
+	}
+
 
 #define DEFINE_KALMAN_FILTER(name, m, n, p) \
-	struct kalman_sys name; \
-	INIT_MATRIX(name, A, n, n) \
-	INIT_MATRIX(name, B, n, m) \
-	INIT_MATRIX(name, C, p, n) \
-	INIT_MATRIX(name, D, p, m) \
-	INIT_MATRIX(name, G, n, m) \
-	INIT_MATRIX(name, GT, m, n) \
-	INIT_MATRIX(name, AT, n, n) \
-	INIT_MATRIX(name, CT, n, p) \
+	static_assert(n <= __KALMAN_MAX_ORDER, "Kalman filter order too large");\
+	static struct kalman_sys name = { \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(A, n, n), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(B, n, m), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(C, p, n), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(D, p, m), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(G, n, m), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(GT, m, n), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(AT, n, n), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(CT, n, p), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(R, m, m), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(Q, m, m), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(K, n, m), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(x_pre, n, 1), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(x_cor, n, 1), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(P_pre, n, n), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(P_cor, n, n), \
+		KALMAN_SYS_INIT_EMPTY_MATRIX(y, p, 1) \
+	};
+
+int kalman_predict(struct kalman_sys *sys, const arm_matrix_instance_f32 *u);
+int kalman_correct(struct kalman_sys *sys, const arm_matrix_instance_f32 *u);
 
 void kalman_sys_step(struct kalman_sys *sys, arm_matrix_instance_f32 *u);
 

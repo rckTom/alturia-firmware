@@ -9,7 +9,7 @@ include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 
 
 project(alturia_firmware)
-
+set_property(TARGET app PROPERTY C_STANDARD 11)
 target_include_directories(app PRIVATE lib/inih/
 				       lib/cmsis/CMSIS/DSP/Include )
 
