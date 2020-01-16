@@ -21,6 +21,11 @@
 		};
 	};
 
+	pyros{
+		compatible = "pyros";
+		gpios = <&gpioa 1 0>, <&gpiob 2 0>, <&gpioc 2 0>;
+	};
+
 	aliases {
 		led0 = &user_led;
 	};
@@ -46,6 +51,8 @@
 		status = "okay";
 	};
 };
+
+
 
 &spi1 {
 	status = "okay";

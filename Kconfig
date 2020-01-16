@@ -21,6 +21,14 @@ menu "Beeper"
 		default 4
 endmenu
 
+menu "Pyros"
+	config PYROS_ON_TIME
+		int "On time"
+		default 1000
+		help
+		  Pyro on time in milliseconds
+
+endmenu
 
 config KALMAN_MAX_ORDER
 	int "Kalman filter maximum order"

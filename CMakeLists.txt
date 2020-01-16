@@ -4,6 +4,7 @@ set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(BOARD alturia)
 set(BOARD_FLASH_RUNNER jlink)
 set(BOARD_DEBUG_RUNNER jlink)
+set(DTS_ROOT ${CMAKE_CURRENT_LIST_DIR})
 
 include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 
@@ -22,5 +23,6 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/configuration.c
 			   src/datalogger.c
 			   src/is_atmosphere.c
-			   src/kalman.c)
+			   src/kalman.c
+			   src/pyros.c)
 target_link_libraries(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/cmsis/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)

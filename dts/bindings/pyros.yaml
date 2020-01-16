@@ -1,0 +1,8 @@
+compatible: "pyros"
+
+description: "Device tree node representing a number of pyros"
+
+properties:
+    gpios:
+        type: phandle-array
+        required: true
