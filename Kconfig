@@ -1,3 +1,5 @@
+menu "Alturia"
+
 menu "Datalogger"
 	config DATALOGGER_LOG_LEVEL
 		int "Datalogger log level"
@@ -19,4 +21,10 @@ menu "Beeper"
 		default 4
 endmenu
 
+
+config KALMAN_MAX_ORDER
+	int "Kalman filter maximum order"
+	default 6
+
+endmenu
 source "$ZEPHYR_BASE/Kconfig"

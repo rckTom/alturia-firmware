@@ -33,6 +33,8 @@
 
 #define ALTURIA_FLASH_MP                    "/lfs"
 
+#define KALMAN_MAX_ORDER		    CONFIG_KALMAN_MAX_ORDER
+
 void __attribute__((noreturn)) panic(const char *str);
 void init_gpios(void);
 
