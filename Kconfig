@@ -10,4 +10,13 @@ menu "Datalogger"
 		default 1024
 endmenu
 
+menu "Beeper"
+	config BEEPER_PWM_DEVICE_NAME
+		string "Beeper pwm device name"
+		default "PWM2"
+	config BEEPER_PWM_PIN_NUMBER
+		int "Beeper pwm pin number"
+		default 4
+endmenu
+
 source "$ZEPHYR_BASE/Kconfig"
