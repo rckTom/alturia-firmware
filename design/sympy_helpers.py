@@ -27,3 +27,19 @@ def subs_matrix_to_mat_symbol(expr, symbol, pattern):
 
     return expr
 
+def subsMatrixSymbols(expr):
+    symbols = expr.atoms(sp.MatrixSymbol)
+    formats = dict()
+
+    for symbol in symbols:
+        f = symbol.name + "{},{}"
+        formats[f] = symbol
+        expr, M = subs_mat_symbol_to_matrix(expr, symbol, f)
+
+    return expr, formats
+
+def subsMatrixElements(expr, symbols):
+    for f, symbol in symbols.items():
+        expr = subs_matrix_to_mat_symbol(expr, symbol, f)
+    return expr
+

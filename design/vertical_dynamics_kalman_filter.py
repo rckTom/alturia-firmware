@@ -30,22 +30,6 @@ Q = sp.Symbol('variance_acc')
 R = sp.Matrix([[sp.Symbol('variance_meas_h'), 0],
                [0, sp.Symbol('variance_meas_a')]])
 
-def subsMatrixSymbols(expr):
-    symbols = expr.atoms(sp.MatrixSymbol)
-    formats = dict()
-
-    for symbol in symbols:
-        f = symbol.name + "{},{}"
-        formats[f] = symbol
-        expr, M = sph.subs_mat_symbol_to_matrix(expr, symbol, f)
-
-    return expr, formats
-
-def subsMatrixElements(expr, symbols):
-    for f, symbol in symbols.items():
-        expr = sph.subs_matrix_to_mat_symbol(expr, symbol, f)
-    return expr
-
 def main():
     dt = sp.Symbol('dt')
     A_d = (A*dt).exp()
@@ -57,9 +41,9 @@ def main():
     exprs = {"x_cor": x_cor, "P_cor" : P_cor, "x_pre": x_pre, "P_pre": P_pre}
 
     for k, expr in exprs.items():
-        expr, expr_formats = subsMatrixSymbols(expr)
+        expr, expr_formats = sph.subsMatrixSymbols(expr)
         expr = expr.doit()
-        expr = subsMatrixElements(expr, expr_formats)
+        expr = sph.subsMatrixElements(expr, expr_formats)
         exprs[k] = expr
 
     with open("vertical_dynamics_kalman_filter.pkl", "wb") as f:
