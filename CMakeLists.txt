@@ -23,7 +23,9 @@ add_custom_command(OUTPUT  ${CMAKE_CURRENT_LIST_DIR}/design/vertical_dynamics_ka
 add_custom_command(OUTPUT  ${CMAKE_CURRENT_LIST_DIR}/src/generated/kalman_vertical_dynamics.c
 			   ${CMAKE_CURRENT_LIST_DIR}/src/generated/kalman_vertical_dynamics.h
 	           WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/design
-		   COMMAND python ${CMAKE_CURRENT_LIST_DIR}/design/gen_code.py
+		   COMMAND python ${CMAKE_CURRENT_LIST_DIR}/design/gen_code.py &&
+		           uncrustify --replace --no-backup -l C -c ${CMAKE_CURRENT_LIST_DIR}/.uncrustify.cfg ${CMAKE_CURRENT_LIST_DIR}/src/generated/kalman_vertical_dynamics.c >/dev/null 2>&1 &&
+			   uncrustify --replace --no-backup -l C -c ${CMAKE_CURRENT_LIST_DIR}/.uncrustify.cfg ${CMAKE_CURRENT_LIST_DIR}/src/generated/kalman_vertical_dynamics.h >/dev/null 2>&1
 		   DEPENDS ${CMAKE_CURRENT_LIST_DIR}/design/vertical_dynamics_kalman_filter.pkl
 		   	   ${CMAKE_CURRENT_LIST_DIR}/design/vertical_dynamics_kalman_filter.py
 		   COMMENT "Create C code for vertical dynamics kalman filter")
