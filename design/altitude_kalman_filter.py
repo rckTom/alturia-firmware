@@ -17,35 +17,33 @@ import pickle
 from argparse import ArgumentParser
 
 
-A = sp.Matrix([[0, 1, 0],
-               [0, 0, 1],
-               [0, 0, 0]])
+var_process_accel = sp.Symbol('var_process_accel')
+var_meas_altitude = sp.Symbol('var_meas_altitude')
 
-C = sp.Matrix([[1, 0, 0],
-               [0, 0, 1]])
+A = sp.Matrix([[0, 1],
+               [0, 0]])
 
-G = sp.Matrix([0, 0, 1])
+C = sp.Matrix([1, 0]).T
 
-Q = sp.Symbol('variance_acc')
-
-R = sp.Matrix([[sp.Symbol('variance_meas_h'), 0],
-               [0, sp.Symbol('variance_meas_a')]])
+G = sp.Matrix([0, 1])
+Q = var_process_accel
+R = sp.Matrix([var_meas_altitude])
 
 def main(args):
-    dt = sp.Symbol('dt')
-    A_d = (A*dt).exp()
-    G_d = A_d*G
-
+    (x_pre, P_pre) = ctrl.kalman_predict(A, None, G, Q)
     (x_cor, P_cor) = ctrl.kalman_correct(C, None, R)
-    (x_pre, P_pre) = ctrl.kalman_predict(A_d, None, G_d, Q)
 
-    exprs = {"x_cor": x_cor, "P_cor" : P_cor, "x_pre": x_pre, "P_pre": P_pre}
+    exprs = {"x_pre": x_pre,
+            "P_pre": P_pre,
+            "x_cor": x_cor,
+            "P_cor": P_cor}
 
     for k, expr in exprs.items():
-        expr, expr_formats = sph.subsMatrixSymbols(expr)
+        expr, f = sph.subsMatrixSymbols(expr)
         expr = expr.doit()
-        expr = sph.subsMatrixElements(expr, expr_formats)
+        expr = sph.subsMatrixElements(expr, f)
         exprs[k] = expr
+
 
     x_pre = sp.MatrixSymbol("x_pre", *x_pre.shape)
     P_pre = sp.MatrixSymbol("P_pre", *P_pre.shape)
@@ -59,6 +57,8 @@ def main(args):
 
     with open(args.outfile, "wb") as f:
         pickle.dump(eqs, f)
+
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
