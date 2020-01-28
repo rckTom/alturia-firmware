@@ -1,0 +1,8 @@
+compatible: "beeper"
+
+description: "Device tree node representing a single beeper device driven by a pwm signal"
+
+properties:
+        pwms:
+                type: phandle-array
+                required: true

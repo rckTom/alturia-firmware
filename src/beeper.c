@@ -17,11 +17,16 @@
 #include "alturia.h"
 #include <logging/log.h>
 
-#define BEEPER_PIN_NUM CONFIG_BEEPER_PWM_PIN_NUMBER
-#define BEEPER_DEV_NAME CONFIG_BEEPER_PWM_DEVICE_NAME
 
 LOG_MODULE_REGISTER(beeper, CONFIG_LOG_DEFAULT_LEVEL);
 K_SEM_DEFINE(lock,1,1);
+
+static const struct beeper_device {
+	const char *pwm_controller;
+	int pwm_channel;
+	int period; /* period is not used */
+} beeper_device = DT_BEEPER_BEEPER_PWMS;
+
 static uint8_t vol = VOLUME;
 
 struct k_delayed_work work;
@@ -35,7 +40,7 @@ struct beep_sequenz_data {
 
 static void beep_work_handler(struct k_work *item)
 {
-    struct device *beeper = device_get_binding(BEEPER_DEV_NAME);
+    struct device *beeper = device_get_binding(beeper_device.pwm_controller);
     struct device *led = device_get_binding(LED_GPIO_CONTROLLER);
     int res;
 
@@ -55,11 +60,11 @@ static void beep_work_handler(struct k_work *item)
         CONTAINER_OF(dw, struct beep_sequenz_data, work);
 
     if (data->count % 2) {
-        res = pwm_pin_set_usec(beeper, BEEPER_PIN_NUM, data->pitch, 0,
+        res = pwm_pin_set_usec(beeper, beeper_device.pwm_channel, data->pitch, 0,
 			       PWM_POLARITY_NORMAL);
         gpio_pin_write(led, LED_GPIO_PIN, false);
     } else {
-        res = pwm_pin_set_usec(beeper, BEEPER_PIN_NUM, data->pitch,
+        res = pwm_pin_set_usec(beeper, beeper_device.pwm_channel, data->pitch,
 			       ((data->pitch/2)*vol)/100, PWM_POLARITY_NORMAL);
         gpio_pin_write(led, LED_GPIO_PIN, true);
     }
@@ -87,13 +92,13 @@ int beep(int32_t duration, int32_t pitch)
 static int beep_cmd(int32_t pitch)
 {
 	struct device *beeper =
-			device_get_binding(BEEPER_DEV_NAME);
+			device_get_binding(beeper_device.pwm_controller);
 	if (beeper == NULL) {
 		LOG_ERR("unable to get device");
 		return -ENODEV;
 	}
 
-	return pwm_pin_set_usec(beeper, BEEPER_PIN_NUM, pitch,
+	return pwm_pin_set_usec(beeper, beeper_device.pwm_channel, pitch,
 				((pitch/2)*vol)/100, PWM_POLARITY_NORMAL);
 
 }

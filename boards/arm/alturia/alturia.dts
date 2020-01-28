@@ -26,9 +26,18 @@
 		gpios = <&gpioa 1 0>, <&gpiob 2 0>, <&gpioc 2 0>;
 	};
 
+	beeper {
+		compatible = "beeper";
+		pwms = <&pwm2 4 1000000>;
+	};
+
 	aliases {
 		led0 = &user_led;
 	};
+};
+
+&rtc {
+	status = "okay";
 };
 
 &usart1 {
@@ -38,7 +47,7 @@
 
 &timers2 {
 	status = "okay";
-	pwm {
+	pwm2: pwm {
 		st,prescaler = <100>;
 		status = "okay";
 	};
@@ -46,7 +55,7 @@
 
 &timers4 {
 	status = "okay";
-	pwm {
+	pwm4: pwm {
 		st,prescaler = <100>;
 		status = "okay";
 	};

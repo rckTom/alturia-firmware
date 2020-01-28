@@ -34,15 +34,6 @@ menu "Datalogger"
 	endmenu
 endmenu
 
-menu "Beeper"
-	config BEEPER_PWM_DEVICE_NAME
-		string "Beeper pwm device name"
-		default "PWM2"
-	config BEEPER_PWM_PIN_NUMBER
-		int "Beeper pwm pin number"
-		default 4
-endmenu
-
 menu "Pyros"
 	config PYROS_ON_TIME
 		int "On time"
