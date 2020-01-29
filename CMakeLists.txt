@@ -52,6 +52,10 @@ generate_linear_kalman_filter(TARGET app
 			      SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/vertical_dynamics_kalman_filter.py
 			      SYSNAME vertical_dynamics_kalman)
 
+generate_linear_kalman_filter(TARGET app
+			      SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/constant_altitude_kalman_filter.py
+			      SYSNAME constant_altitude_kalman)
+
 target_sources(app PRIVATE lib/inih/ini.c
 			   src/util.c
 			   src/sysinit.c
