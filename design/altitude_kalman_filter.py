@@ -15,6 +15,7 @@ import sympy as sp
 import sympy_helpers as sph
 import pickle
 from argparse import ArgumentParser
+from gen_code_linear_kalman_filter import kalman_sys_export
 
 
 var_process_accel = sp.Symbol('var_process_accel')
@@ -30,33 +31,14 @@ Q = var_process_accel
 R = sp.Matrix([var_meas_altitude])
 
 def main(args):
-    (x_pre, P_pre) = ctrl.kalman_predict(A, None, G, Q)
+    dt = sp.Symbol('dt')
+    A_d = (A*dt).exp()
+    G_d = A_d*G
+
+    (x_pre, P_pre) = ctrl.kalman_predict(A_d, None, G_d, Q)
     (x_cor, P_cor) = ctrl.kalman_correct(C, None, R)
 
-    exprs = {"x_pre": x_pre,
-            "P_pre": P_pre,
-            "x_cor": x_cor,
-            "P_cor": P_cor}
-
-    for k, expr in exprs.items():
-        expr, f = sph.subsMatrixSymbols(expr)
-        expr = expr.doit()
-        expr = sph.subsMatrixElements(expr, f)
-        exprs[k] = expr
-
-
-    x_pre = sp.MatrixSymbol("x_pre", *x_pre.shape)
-    P_pre = sp.MatrixSymbol("P_pre", *P_pre.shape)
-    x_cor = sp.MatrixSymbol("x_cor", *x_cor.shape)
-    P_cor = sp.MatrixSymbol("P_cor", *P_cor.shape)
-
-    eqs = {"correct": [sp.Eq(x_cor, exprs["x_cor"]),
-                      sp.Eq(P_cor, exprs["P_cor"])],
-           "predict": [sp.Eq(x_pre, exprs["x_pre"]),
-                      sp.Eq(P_pre, exprs["P_pre"])]}
-
-    with open(args.outfile, "wb") as f:
-        pickle.dump(eqs, f)
+    kalman_sys_export(x_pre, P_pre, x_cor, P_cor, args.outfile)
 
 
 

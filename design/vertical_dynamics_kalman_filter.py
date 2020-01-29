@@ -15,6 +15,7 @@ import sympy as sp
 import sympy_helpers as sph
 import pickle
 from argparse import ArgumentParser
+from gen_code_linear_kalman_filter import kalman_sys_export
 
 
 A = sp.Matrix([[0, 1, 0],
@@ -39,26 +40,7 @@ def main(args):
     (x_cor, P_cor) = ctrl.kalman_correct(C, None, R)
     (x_pre, P_pre) = ctrl.kalman_predict(A_d, None, G_d, Q)
 
-    exprs = {"x_cor": x_cor, "P_cor" : P_cor, "x_pre": x_pre, "P_pre": P_pre}
-
-    for k, expr in exprs.items():
-        expr, expr_formats = sph.subsMatrixSymbols(expr)
-        expr = expr.doit()
-        expr = sph.subsMatrixElements(expr, expr_formats)
-        exprs[k] = expr
-
-    x_pre = sp.MatrixSymbol("x_pre", *x_pre.shape)
-    P_pre = sp.MatrixSymbol("P_pre", *P_pre.shape)
-    x_cor = sp.MatrixSymbol("x_cor", *x_cor.shape)
-    P_cor = sp.MatrixSymbol("P_cor", *P_cor.shape)
-
-    eqs = {"correct": [sp.Eq(x_cor, exprs["x_cor"]),
-                      sp.Eq(P_cor, exprs["P_cor"])],
-           "predict": [sp.Eq(x_pre, exprs["x_pre"]),
-                      sp.Eq(P_pre, exprs["P_pre"])]}
-
-    with open(args.outfile, "wb") as f:
-        pickle.dump(eqs, f)
+    kalman_sys_export(x_pre, P_pre, x_cor, P_cor, args.outfile)
 
 if __name__ == "__main__":
     parser = ArgumentParser()
