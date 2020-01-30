@@ -43,9 +43,15 @@ menu "Pyros"
 
 endmenu
 
-config KALMAN_MAX_ORDER
-	int "Kalman filter maximum order"
-	default 6
+menu "DAQ"
+	config DAQ_LOG_LEVEL
+		int "Log level"
+		default 3
+
+	config DAQ_PRIO
+		int "Priority of daq thread"
+		default 0
+endmenu
 
 endmenu
 source "$ZEPHYR_BASE/Kconfig"
