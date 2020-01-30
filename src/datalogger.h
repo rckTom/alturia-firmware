@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __DATALOGGER_H__
-#define __DATALOGGER_H__
+#ifndef ALTURIA__DATALOGGER__H
+#define ALTURIA__DATALOGGER__H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -84,4 +84,4 @@ int dl_add_track_names_chunk(uint8_t tid, const char *names);
  */
 int dl_add_file(uint8_t fid, const char *path);
 
-#endif /* __DATALOGGER_H__ */
+#endif /* ALTURIA__DATALOGGER__H */

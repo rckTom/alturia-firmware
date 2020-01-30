@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __ALTURIA_H__
-#define __ALTURIA_H__
+#ifndef ALTURIA__MAIN__H
+#define ALTURIA__MAIN__H
 
 #include <zephyr.h>
 #include <drivers/gpio.h>

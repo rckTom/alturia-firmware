@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __BEEPER_H__
-#define __BEEPER_H__
+#ifndef ALTURIA__BEEPER__H
+#define ALTURIA__BEEPER__H
 
 #include <zephyr.h>
 

@@ -10,16 +10,15 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __ALTURIA_FLIGHTCTRL_H__
-#define __ALTURIA_FLIGHTCTRl_H__
+#ifndef ALTURIA__FLIGHTCTRL__H
+#define ALTURIA__FLIGHTCTRl__H
 
 enum flight_state {
         FLS_INIT,
         FLS_PAD,
         FLS_BOOST,
         FLS_ABORT,
-        FLS_COAST_SLOW,
-        FLS_COAST_FAST,
+        FLS_COAST,
         FLS_DESCENT,
         FLS_FREE_FALL,
         FLS_LANDED
@@ -28,4 +27,4 @@ enum flight_state {
 
 void flightctrl_init();
 
-#endif /* __ALTURIA_FLIGHTCTRL_H__ */
+#endif /* ALTURIA__FLIGHTCTRL__H */

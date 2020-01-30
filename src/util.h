@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __ALTURIA_UTIL_H__
-#define __ALTURIA_UTIL_H__
+#ifndef ALTURIA__UTIL__H
+#define ALTURIA__UTIL__H
 
 #include <fs/fs.h>
 

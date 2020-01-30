@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __ALTURIA_KALMAN_H__
-#define __ALTURIA_KALMAN_H__
+#ifndef ALTURIA__KALMAN__H
+#define ALTURIA__KALMAN__H
 
 #include "arm_math.h"
 #include <assert.h>

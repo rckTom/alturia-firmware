@@ -10,10 +10,10 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __ALTURIA_PYROS_H__
-#define __ALTURIA_PYROS_H__
+#ifndef ALTURIA__PYROS__H
+#define ALTURIA__PYROS__H
 
 void pyros_init();
 int pyros_fire();
 
-#endif /* __ALTURIA_PYROS_H__ */
+#endif /* ALTURIA__PYROS__H */

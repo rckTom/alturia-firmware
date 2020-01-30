@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __ALTURIA_ATMOSPHERE_H__
-#define __ALTURIA_ATMOSPHERE_H__
+#ifndef ALTURIA__ATMOSPHERE__H
+#define ALTURIA__ATMOSPHERE__H
 
 /**
  * isa_init() - Initialize the layer table
@@ -44,4 +44,4 @@ float isa_calc_pressure(float height);
  */
 float isa_calc_temperature(float height);
 
-#endif /* __ALTURIA_ATMOSPHERE_H__ */
+#endif /* ALTURIA__ATMOSPHERE__H */

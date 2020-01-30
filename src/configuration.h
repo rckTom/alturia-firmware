@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __ALTURIA_CONFIGURATION_H__
-#define __ALTURIA_CONFIGURATION_H__
+#ifndef ALTURIA__CONFIGURATION__H
+#define ALTURIA__CONFIGURATION__H
 
 #include <stdbool.h>
 
@@ -58,4 +58,4 @@ int read_flight_config(const char* path);
 const struct sys_config *get_sys_config();
 const struct flight_config *get_flight_config();
 
-#endif /* __ALTURIA_CONFIGURATION_H__ */
+#endif /* ALTURIA__CONFIGURATION__H */

@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __SYSINIT_H__
-#define __SYSINIT_H__
+#ifndef ALTURIA__SYSINIT__H
+#define ALTURIA__SYSINIT__H
 
 int init_fs(void);
 

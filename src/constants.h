@@ -10,10 +10,10 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef __ALTURIA_CONSTANTS_H__
-#define __ALTURIA_CONSTANTS_H__
+#ifndef ALTURIA__CONSTANTS__H
+#define ALTURIA__CONSTANTS__H
 
 #define RS_AIR		287.058f
 #define G		9.81f
 
-#endif /* __ALTURIA_CONSTANTS_H__ */
+#endif /* ALTURIA__CONSTANTS__H */
