@@ -33,31 +33,31 @@ static const struct {
     {
         .gpio_controller  = BARO_CS_GPIO_CONTROLLER,
         .gpio_pin = BARO_CS_GPIO_PIN,
-        .gpio_flags = GPIO_DIR_OUT,
+        .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     },
     {
         .gpio_controller  = IMU_GYRO_CS_GPIO_CONTROLLER,
         .gpio_pin = IMU_GYRO_CS_GPIO_PIN,
-        .gpio_flags = GPIO_DIR_OUT,
+        .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     },
     {
         .gpio_controller = IMU_ACC_CS_GPIO_CONTROLLER,
         .gpio_pin = IMU_ACC_CS_GPIO_PIN,
-        .gpio_flags = GPIO_DIR_OUT,
+        .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     },
     {
         .gpio_controller = ACC_CS_GPIO_CONTROLLER,
         .gpio_pin = ACC_CS_GPIO_PIN,
-        .gpio_flags = GPIO_DIR_OUT,
+        .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     },
     {
         .gpio_controller = LED_GPIO_CONTROLLER,
         .gpio_pin = LED_GPIO_PIN,
-        .gpio_flags = GPIO_DIR_OUT,
+        .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     }
 };
@@ -82,11 +82,11 @@ void init_gpios(void)
             panic("could not configure pin");
         }
 
-        if (gpios[n].gpio_flags & GPIO_DIR_IN) {
+        if (gpios[n].gpio_flags & GPIO_INPUT) {
             continue;
         }
 
-        res =  gpio_pin_write(dev, gpios[n].gpio_pin, gpios[n].initial_state);
+        res =  gpio_pin_set(dev, gpios[n].gpio_pin, gpios[n].initial_state);
         if (res != 0) {
             panic("could not set initial state\n");
         }

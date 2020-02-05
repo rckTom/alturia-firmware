@@ -33,7 +33,7 @@ void pyro_work_handler(struct k_work *work) {
 						struct k_delayed_work, work);
 	struct pyro *pyro_data = CONTAINER_OF(delayed_work, struct pyro, work);
 
-	if(gpio_pin_write(pyro_data->dev, pyro_data->pin, 0) != 0) {
+	if(gpio_pin_set(pyro_data->dev, pyro_data->pin, 0) != 0) {
 		LOG_ERR("pyro pin write error. device: %s, pin: %d, flags %d",
 			log_strdup(pyro_data->dev_name), pyro_data->pin,
 			pyro_data->flags);

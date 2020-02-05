@@ -62,11 +62,11 @@ static void beep_work_handler(struct k_work *item)
     if (data->count % 2) {
         res = pwm_pin_set_usec(beeper, beeper_device.pwm_channel, data->pitch, 0,
 			       PWM_POLARITY_NORMAL);
-        gpio_pin_write(led, LED_GPIO_PIN, false);
+        gpio_pin_set(led, LED_GPIO_PIN, false);
     } else {
         res = pwm_pin_set_usec(beeper, beeper_device.pwm_channel, data->pitch,
 			       ((data->pitch/2)*vol)/100, PWM_POLARITY_NORMAL);
-        gpio_pin_write(led, LED_GPIO_PIN, true);
+        gpio_pin_set(led, LED_GPIO_PIN, true);
     }
 
     if (res){
