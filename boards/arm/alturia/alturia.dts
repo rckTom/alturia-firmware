@@ -30,7 +30,7 @@
 
 	pyros{
 		compatible = "pyros";
-		gpios = <&gpioa 1 0>, <&gpiob 2 0>, <&gpioc 2 0>;
+		gpios = <&gpiob 4 0>, <&gpiob 5 0>, <&gpiob 6 0>, <&gpiob 7 0>;
 	};
 
 	beeper {
