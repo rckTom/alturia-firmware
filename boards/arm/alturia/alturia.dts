@@ -68,11 +68,9 @@
 	};
 };
 
-
-
 &spi1 {
 	status = "okay";
-	cs-gpios = <&gpiob 1 0>,  <&gpiob 10 0>, <&gpiob 2 0>;
+	cs-gpios = <&gpiob 1 0>,  <&gpiob 10 0>, <&gpiob 2 0>, <&gpiob 0 0>;
 	ms5607: ms5607@0 {
 		status = "okay";
 		compatible = "meas,ms5607";
@@ -93,6 +91,13 @@
 		reg = <2>;
 		label = "bmi088-accel";
 		spi-max-frequency = <10000000>;
+	};
+	ais2120sx: ais2120sx@3 {
+		status = "okay";
+		compatible ="st,aisx120sx";
+		reg = <3>;
+		label = "aisx2120sx";
+		spi-max-frequency = <1000000>;
 	};
 };
 
