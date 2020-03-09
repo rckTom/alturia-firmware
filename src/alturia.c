@@ -31,32 +31,32 @@ static const struct {
     const bool initial_state;
 } gpios[] = {
     {
-        .gpio_controller  = BARO_CS_GPIO_CONTROLLER,
-        .gpio_pin = BARO_CS_GPIO_PIN,
+        .gpio_controller  = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_PIN,
         .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     },
     {
-        .gpio_controller  = IMU_GYRO_CS_GPIO_CONTROLLER,
-        .gpio_pin = IMU_GYRO_CS_GPIO_PIN,
+        .gpio_controller  = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_PIN,
         .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     },
     {
-        .gpio_controller = IMU_ACC_CS_GPIO_CONTROLLER,
-        .gpio_pin = IMU_ACC_CS_GPIO_PIN,
+        .gpio_controller = DT_ALIAS_ACC_SENSOR_CS_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_ACC_SENSOR_CS_GPIOS_PIN,
         .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     },
     {
-        .gpio_controller = ACC_CS_GPIO_CONTROLLER,
-        .gpio_pin = ACC_CS_GPIO_PIN,
+        .gpio_controller = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_PIN,
         .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     },
     {
-        .gpio_controller = LED_GPIO_CONTROLLER,
-        .gpio_pin = LED_GPIO_PIN,
+        .gpio_controller = DT_ALIAS_LED0_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_LED0_GPIOS_PIN,
         .gpio_flags = GPIO_OUTPUT,
         .initial_state = true,
     }

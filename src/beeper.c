@@ -41,7 +41,7 @@ struct beep_sequenz_data {
 static void beep_work_handler(struct k_work *item)
 {
     struct device *beeper = device_get_binding(beeper_device.pwm_controller);
-    struct device *led = device_get_binding(LED_GPIO_CONTROLLER);
+    struct device *led = device_get_binding(DT_ALIAS_LED0_GPIOS_CONTROLLER);
     int res;
 
     if (beeper == NULL) {
@@ -62,11 +62,11 @@ static void beep_work_handler(struct k_work *item)
     if (data->count % 2) {
         res = pwm_pin_set_usec(beeper, beeper_device.pwm_channel, data->pitch, 0,
 			       PWM_POLARITY_NORMAL);
-        gpio_pin_set(led, LED_GPIO_PIN, false);
+        gpio_pin_set(led, DT_ALIAS_LED0_GPIOS_PIN, false);
     } else {
         res = pwm_pin_set_usec(beeper, beeper_device.pwm_channel, data->pitch,
 			       ((data->pitch/2)*vol)/100, PWM_POLARITY_NORMAL);
-        gpio_pin_set(led, LED_GPIO_PIN, true);
+        gpio_pin_set(led, DT_ALIAS_LED0_GPIOS_PIN, true);
     }
 
     if (res){

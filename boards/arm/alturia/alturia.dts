@@ -18,6 +18,7 @@
 		pressure-sensor = &ms5607;
 		acc-sensor = &bmi088_acc;
 		gyro-sensor = &bmi088_gyr;
+		highg-sensor = &ais2120sx;
 	};
 
 	leds {
