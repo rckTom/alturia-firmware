@@ -23,43 +23,6 @@
 
 LOG_MODULE_DECLARE(alturia);
 
-static void start_delay(int delay) {
-	while (delay-- > 0) {
-		if (delay >= 3) {
-			k_sleep(K_SECONDS(1));
-			beep(50,400);
-		}
-		else if (delay >= 2) {
-			k_sleep(K_MSEC(500));
-			beep(50,400);
-			k_sleep(K_MSEC(500));
-			beep(50,400);
-		} else {
-			k_sleep(K_MSEC(250));
-			beep(50,400);
-			k_sleep(K_MSEC(250));
-			beep(50,450);
-			k_sleep(K_MSEC(250));
-			beep(50,400);
-			k_sleep(K_MSEC(250));
-			beep(50,450);
-		}
-	}
-}
-
-
-void beep_pyro_status()
-{
-	for (int i = 0; i<4; i++) {
-		if (i % 2 == 0) {
-			beepn(80,2,400);
-			k_sleep(1000);
-		} else {
-			beep(250,450);
-			k_sleep(1000);
-		}
-	}
-}
 void main(void)
 {
 	int rc;
