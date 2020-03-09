@@ -23,6 +23,106 @@
 LOG_MODULE_DECLARE(alturia);
 
 /*
+ * Pheripherals
+ */
+
+static const struct {
+    const char* gpio_controller;
+    const u32_t gpio_pin;
+    const int gpio_flags;
+    const bool initial_state;
+} gpios[] = {
+    {
+        .gpio_controller  = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_PIN,
+        .gpio_flags = GPIO_OUTPUT,
+        .initial_state = true,
+    },
+    {
+        .gpio_controller  = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_PIN,
+        .gpio_flags = GPIO_OUTPUT,
+        .initial_state = true,
+    },
+    {
+        .gpio_controller = DT_ALIAS_ACC_SENSOR_CS_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_ACC_SENSOR_CS_GPIOS_PIN,
+        .gpio_flags = GPIO_OUTPUT,
+        .initial_state = true,
+    },
+    {
+        .gpio_controller = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_PIN,
+        .gpio_flags = GPIO_OUTPUT,
+        .initial_state = true,
+    },
+    {
+        .gpio_controller = DT_ALIAS_LED0_GPIOS_CONTROLLER,
+        .gpio_pin = DT_ALIAS_LED0_GPIOS_PIN,
+        .gpio_flags = GPIO_OUTPUT,
+        .initial_state = true,
+    }
+};
+
+static int init_gpios(void)
+{
+    struct device *dev;
+    uint8_t n;
+    int res;
+
+    for(n = 0; n < ARRAY_SIZE(gpios); n++){
+        dev = device_get_binding(gpios[n].gpio_controller);
+
+        if (!dev)
+        {
+            LOG_ERR("could not get device %s", gpios[n].gpio_controller);
+            panic("could not get device\n");
+        }
+
+        res = gpio_pin_configure(dev, gpios[n].gpio_pin, gpios[n].gpio_flags);
+        if (res != 0) {
+            panic("could not configure pin");
+        }
+
+        if (gpios[n].gpio_flags & GPIO_INPUT) {
+            continue;
+        }
+
+        res =  gpio_pin_set(dev, gpios[n].gpio_pin, gpios[n].initial_state);
+        if (res != 0) {
+            panic("could not set initial state\n");
+        }
+    }
+
+    return res;
+}
+
+static int init_usb(void)
+{
+	int rc = usb_enable(NULL);
+
+	if (rc != 0) {
+		LOG_ERR("unable to enable usb");
+		return;
+	}
+
+	return rc;
+}
+
+int init_peripherals(void)
+{
+	int res;
+
+	res = init_gpios();
+	if (res != 0) {
+		return res;
+	}
+
+	res = init_usb();
+	return res;
+}
+
+/*
 * Filesystem stuff
 */
 
@@ -38,7 +138,7 @@ static struct fs_mount_t lfs_storage_mnt = {
  * Check directory structure and create appropriate structure if it does not
  * exist
  **/
-static void make_dir_structure()
+static int make_dir_structure()
 {
     int rc;
     struct fs_dirent entry;
@@ -66,16 +166,18 @@ static void make_dir_structure()
             rc = fs_mkdir(dirs[i].path);
             if (rc != 0) {
                 LOG_ERR("unable to create directory %s", dirs[i].path);
-                k_oops();
+		break;
             }
         } else if (rc != 0) {
             LOG_ERR("fs_stat failed");
-            k_oops();
+	    break;
         }
     }
+
+    return rc;
 }
 
-void init_fs(void)
+int init_fs(void)
 {
 	struct fs_mount_t *mp = &lfs_storage_mnt;
 	unsigned int id = (uintptr_t)mp->storage_dev;
@@ -85,25 +187,28 @@ void init_fs(void)
 	rc = flash_area_open(id, &pfa);
 	if (rc < 0) {
 		LOG_ERR("Unable to find flash area %u: %d", id, rc);
-		k_oops();
+		return rc;
 	}
 
 	if (IS_ENABLED(CONFIG_APP_WIPE_STORAGE)) {
-		printk("Erasing flash area ... ");
+		LOG_INF("Erasing flash area ... ");
 		rc = flash_area_erase(pfa, 0, pfa->fa_size);
-		printk("%d\n", rc);
+		LOG_INF("Done");
 		flash_area_close(pfa);
 	}
-
 
 	rc = fs_mount(mp);
 	if (rc < 0) {
 		LOG_ERR("Unable to mount id %u at %s: %d",
 			(unsigned int)mp->storage_dev, mp->mnt_point, rc);
 		fs_unmount(mp);
-		k_oops();
+		return rc;
 	}
 
-	make_dir_structure();
+	rc = make_dir_structure();
+	if (rc < 0) {
+		LOG_ERR("Unable to create default file structure");
+	}
 
+	return rc;
 }
