@@ -14,6 +14,7 @@
 #define ALTURIA__PYROS__H
 
 void pyros_init();
-int pyros_fire();
+int pyros_fire(unsigned int pyro);
+void get_pyro_status(unsigned int pyro);
 
 #endif /* ALTURIA__PYROS__H */
