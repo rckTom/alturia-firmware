@@ -65,7 +65,6 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/configuration.c
 			   src/datalogger.c
 			   src/is_atmosphere.c
-			   src/kalman.c
 			   src/pyros.c
 			   src/daq.c)
 
