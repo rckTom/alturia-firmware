@@ -128,7 +128,7 @@ int beepn(int32_t duration, int32_t count, int32_t pitch)
     return -EBUSY;
 }
 
-int set_volume(uint8_t volume)
+int beeper_set_volume(uint8_t volume)
 {
 	if (volume > 100) {
 		return -EINVAL;

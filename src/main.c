@@ -46,7 +46,7 @@ void main(void)
 		panic();
 	}
 
-	set_volume(get_sys_config()->beeper_volume);
+	beeper_set_volume(get_sys_config()->beeper_volume);
 	strlcat(flight_cfg_path, get_sys_config()->flightcfg_path,
 		ARRAY_SIZE(flight_cfg_path));
 

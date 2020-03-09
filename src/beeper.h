@@ -13,14 +13,14 @@
 #ifndef ALTURIA__BEEPER__H
 #define ALTURIA__BEEPER__H
 
-#include <zephyr.h>
+#include <stdint.h>
 
-#define VOLUME 5 /* 0 to 100 */
+#define VOLUME 100 /* 0 to 100 */
 
 int beep_off();
 int beep_on(int32_t pitch);
-int beep(s32_t duration, s32_t pitch);
-int beepn(s32_t duration, s32_t count, s32_t pitch);
-int set_volume(uint8_t volume);
+int beep(int32_t duration, int32_t pitch);
+int beepn(int32_t duration, int32_t count, int32_t pitch);
+int beeper_set_volume(uint8_t volume);
 
 #endif
