@@ -16,6 +16,7 @@
 #include <storage/flash_map.h>
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
+#include <usb/usb_device.h>
 #include "alturia.h"
 
 #define CONFIG_APP_WIPE_STORAGE 0
@@ -27,41 +28,41 @@ LOG_MODULE_DECLARE(alturia);
  */
 
 static const struct {
-    const char* gpio_controller;
-    const u32_t gpio_pin;
-    const int gpio_flags;
-    const bool initial_state;
+	const char* gpio_controller;
+	const u32_t gpio_pin;
+	const int gpio_flags;
+	const bool initial_state;
 } gpios[] = {
-    {
-        .gpio_controller  = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_CONTROLLER,
-        .gpio_pin = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_PIN,
-        .gpio_flags = GPIO_OUTPUT,
-        .initial_state = true,
-    },
-    {
-        .gpio_controller  = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_CONTROLLER,
-        .gpio_pin = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_PIN,
-        .gpio_flags = GPIO_OUTPUT,
-        .initial_state = true,
-    },
-    {
-        .gpio_controller = DT_ALIAS_ACC_SENSOR_CS_GPIOS_CONTROLLER,
-        .gpio_pin = DT_ALIAS_ACC_SENSOR_CS_GPIOS_PIN,
-        .gpio_flags = GPIO_OUTPUT,
-        .initial_state = true,
-    },
-    {
-        .gpio_controller = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_CONTROLLER,
-        .gpio_pin = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_PIN,
-        .gpio_flags = GPIO_OUTPUT,
-        .initial_state = true,
-    },
-    {
-        .gpio_controller = DT_ALIAS_LED0_GPIOS_CONTROLLER,
-        .gpio_pin = DT_ALIAS_LED0_GPIOS_PIN,
-        .gpio_flags = GPIO_OUTPUT,
-        .initial_state = true,
-    }
+	{
+		.gpio_controller = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_CONTROLLER,
+		.gpio_pin = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_PIN,
+		.gpio_flags = GPIO_OUTPUT,
+		.initial_state = true,
+	},
+	{
+		.gpio_controller = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_CONTROLLER,
+		.gpio_pin = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_PIN,
+		.gpio_flags = GPIO_OUTPUT,
+		.initial_state = true,
+	},
+	{
+		.gpio_controller = DT_ALIAS_ACC_SENSOR_CS_GPIOS_CONTROLLER,
+		.gpio_pin = DT_ALIAS_ACC_SENSOR_CS_GPIOS_PIN,
+		.gpio_flags = GPIO_OUTPUT,
+		.initial_state = true,
+	},
+	{
+		.gpio_controller = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_CONTROLLER,
+		.gpio_pin = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_PIN,
+		.gpio_flags = GPIO_OUTPUT,
+		.initial_state = true,
+	},
+	{
+		.gpio_controller = DT_ALIAS_LED0_GPIOS_CONTROLLER,
+		.gpio_pin = DT_ALIAS_LED0_GPIOS_PIN,
+		.gpio_flags = GPIO_OUTPUT,
+		.initial_state = true,
+	}
 };
 
 static int init_gpios(void)
@@ -70,31 +71,36 @@ static int init_gpios(void)
     uint8_t n;
     int res;
 
-    for(n = 0; n < ARRAY_SIZE(gpios); n++){
-        dev = device_get_binding(gpios[n].gpio_controller);
+	for(n = 0; n < ARRAY_SIZE(gpios); n++){
+		dev = device_get_binding(gpios[n].gpio_controller);
 
-        if (!dev)
-        {
-            LOG_ERR("could not get device %s", gpios[n].gpio_controller);
-            panic("could not get device\n");
-        }
+		if (!dev)
+		{
+			LOG_ERR("could not get device %s",
+				gpios[n].gpio_controller);
+			panic();
+		}
 
-        res = gpio_pin_configure(dev, gpios[n].gpio_pin, gpios[n].gpio_flags);
-        if (res != 0) {
-            panic("could not configure pin");
-        }
+		res = gpio_pin_configure(dev, gpios[n].gpio_pin,
+					 gpios[n].gpio_flags);
+		if (res != 0) {
+			LOG_ERR("could not configure pin");
+			panic();
+		}
 
-        if (gpios[n].gpio_flags & GPIO_INPUT) {
-            continue;
-        }
+		if (gpios[n].gpio_flags & GPIO_INPUT) {
+			continue;
+		}
 
-        res =  gpio_pin_set(dev, gpios[n].gpio_pin, gpios[n].initial_state);
-        if (res != 0) {
-            panic("could not set initial state\n");
-        }
-    }
+		res =  gpio_pin_set(dev, gpios[n].gpio_pin,
+				    gpios[n].initial_state);
+		if (res != 0) {
+			LOG_ERR("could not set initial state");
+			panic();
+		}
+	}
 
-    return res;
+	return res;
 }
 
 static int init_usb(void)
@@ -103,7 +109,6 @@ static int init_usb(void)
 
 	if (rc != 0) {
 		LOG_ERR("unable to enable usb");
-		return;
 	}
 
 	return rc;
@@ -140,41 +145,42 @@ static struct fs_mount_t lfs_storage_mnt = {
  **/
 static int make_dir_structure()
 {
-    int rc;
-    struct fs_dirent entry;
-    static const struct dirs {
-        const char *path;
-    } dirs[] = {
-        {
-            .path = ALTURIA_FLASH_MP "/config",
-        },
-        {
-            .path = ALTURIA_FLASH_MP "/sys",
-        },
-        {
-            .path = ALTURIA_FLASH_MP "/data",
-        },
-        {
-            .path = ALTURIA_FLASH_MP "/user",
-        }
-    };
+	int rc;
+	struct fs_dirent entry;
+	static const struct dirs {
+	const char *path;
+	} dirs[] = {
+		{
+			.path = ALTURIA_FLASH_MP "/config",
+		},
+		{
+			.path = ALTURIA_FLASH_MP "/sys",
+		},
+		{
+			.path = ALTURIA_FLASH_MP "/data",
+		},
+		{
+			.path = ALTURIA_FLASH_MP "/user",
+		}
+	};
 
-    for (int i = 0; i < ARRAY_SIZE(dirs); i++) {
-        rc = fs_stat(dirs[i].path, &entry);
-        if (rc == -ENOENT) {
-            LOG_INF("Create directory %s", dirs[i].path);
-            rc = fs_mkdir(dirs[i].path);
-            if (rc != 0) {
-                LOG_ERR("unable to create directory %s", dirs[i].path);
-		break;
-            }
-        } else if (rc != 0) {
-            LOG_ERR("fs_stat failed");
-	    break;
-        }
-    }
+	for (int i = 0; i < ARRAY_SIZE(dirs); i++) {
+		rc = fs_stat(dirs[i].path, &entry);
+		if (rc == -ENOENT) {
+			LOG_INF("Create directory %s", dirs[i].path);
+			rc = fs_mkdir(dirs[i].path);
+			if (rc != 0) {
+				LOG_ERR("unable to create directory %s",
+					dirs[i].path);
+				break;
+			}
+		} else if (rc != 0) {
+			LOG_ERR("fs_stat failed");
+			break;
+		}
+	}
 
-    return rc;
+	return rc;
 }
 
 int init_fs(void)
