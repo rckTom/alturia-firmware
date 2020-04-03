@@ -14,7 +14,9 @@
 #define ALTURIA__UTIL__H
 
 #include <fs/fs.h>
+#include <drivers/sensor.h>
 
 char* z_fgets(char* s, int n, struct fs_file_t *file);
+float sensor_value_to_float(struct sensor_value *val);
 
 #endif
