@@ -78,14 +78,14 @@ static int init_gpios(void)
 		{
 			LOG_ERR("could not get device %s",
 				gpios[n].gpio_controller);
-			panic();
+			k_oops();
 		}
 
 		res = gpio_pin_configure(dev, gpios[n].gpio_pin,
 					 gpios[n].gpio_flags);
 		if (res != 0) {
 			LOG_ERR("could not configure pin");
-			panic();
+			k_oops();
 		}
 
 		if (gpios[n].gpio_flags & GPIO_INPUT) {
@@ -96,7 +96,7 @@ static int init_gpios(void)
 				    gpios[n].initial_state);
 		if (res != 0) {
 			LOG_ERR("could not set initial state");
-			panic();
+			k_oops();
 		}
 	}
 

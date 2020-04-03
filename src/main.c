@@ -31,19 +31,19 @@ void main(void)
 	rc = init_peripherals();
 	if (rc != 0) {
 		LOG_ERR("Unable to initialize gpios");
-		panic();
+		k_oops();
 	}
 
 	rc = init_fs();
 	if (rc != 0) {
 		LOG_ERR("Unable to initialize filesystem");
-		panic();
+		k_oops();
 	}
 
 	rc = read_sys_config(ALTURIA_FLASH_MP"/config/syscfg.ini");
 	if (rc != 0) {
 		LOG_ERR("Can not read systemconfig. Aborting");
-		panic();
+		k_oops();
 	}
 
 	beeper_set_volume(get_sys_config()->beeper_volume);

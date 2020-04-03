@@ -14,15 +14,10 @@
 #include "beeper.h"
 #include <logging/log_ctrl.h>
 #include <logging/log.h>
+#include <fs/fs.h>
+#include "string.h"
 
 LOG_MODULE_REGISTER(alturia, CONFIG_LOG_DEFAULT_LEVEL);
-
-void __attribute__((noreturn)) panic(void)
-{
-	log_panic();
-	k_panic();
-	while(1);
-}
 
 void start_delay(int delay) {
 	while (delay-- > 0) {
