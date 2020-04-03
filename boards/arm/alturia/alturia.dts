@@ -111,7 +111,9 @@
 		label="s25fl512";
 		spi-max-frequency = <20000000>;
 		jedec-id = [01 02 20];
-		size = <512000000>;
+		page-size = <0x200>;
+		erase-types = <0x40000 0xD8 0 0 0 0 0 0>;
+		size = <536870912>;
 		hold-gpios = <&gpioc 13 0>;
 	};
 };
@@ -123,7 +125,7 @@
 		#size-cells = <1>;
 		storage_partition: partition@0 {
 			label = "storage";
-			reg = <0x00000 0x3D09000>;
+			reg = <0x00000 0x4000000>;
 		};
 	};
 };
