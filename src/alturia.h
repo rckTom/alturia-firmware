@@ -18,10 +18,13 @@
 #include <device.h>
 
 #define ALTURIA_FLASH_MP                    "/lfs"
+#define ALTURIA_MINIMUM_FREE_SPACE	    1024*3
 
 #define KALMAN_MAX_ORDER		    CONFIG_KALMAN_MAX_ORDER
 
 void __attribute__((noreturn)) panic(void);
 void start_delay(int delay);
+int next_datalog_path(char *path, size_t n);
+int check_free_space(void);
 
 #endif

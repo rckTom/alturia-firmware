@@ -47,3 +47,41 @@ void start_delay(int delay) {
 		}
 	}
 }
+
+int next_datalog_path(char *path, size_t n)
+{
+	struct fs_dirent entry;
+	char _path[32];
+	int rc;
+
+	while (true) {
+		rc = fs_stat(_path, &entry);
+		if(rc == -ENOENT){
+			break;
+		} else if (rc <= 0) {
+			return rc;
+		}
+	}
+
+	strlcpy(path, _path, n);
+	return 0;
+}
+
+int check_free_space(void)
+{
+	struct fs_statvfs stats;
+	u32_t free_space;
+	int rc;
+
+	rc = fs_statvfs(ALTURIA_FLASH_MP, &stats);
+
+	free_space = stats.f_bfree * stats.f_bsize;
+
+	LOG_INF("Free flash space: %d bytes", free_space);
+
+	if (free_space <= ALTURIA_MINIMUM_FREE_SPACE) {
+		return -1;
+	}
+
+	return 0;
+}
