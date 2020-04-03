@@ -77,7 +77,7 @@ static int init_gpios(void)
 		if (!dev)
 		{
 			LOG_ERR("could not get device %s",
-				gpios[n].gpio_controller);
+				log_strdup(gpios[n].gpio_controller));
 			k_oops();
 		}
 
@@ -135,7 +135,6 @@ FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(storage);
 static struct fs_mount_t lfs_storage_mnt = {
 	.type = FS_LITTLEFS,
 	.fs_data = &storage,
-	.storage_dev = (void *)DT_FLASH_AREA_STORAGE_ID,
 	.mnt_point = ALTURIA_FLASH_MP,
 };
 
@@ -167,11 +166,12 @@ static int make_dir_structure()
 	for (int i = 0; i < ARRAY_SIZE(dirs); i++) {
 		rc = fs_stat(dirs[i].path, &entry);
 		if (rc == -ENOENT) {
-			LOG_INF("Create directory %s", dirs[i].path);
+			LOG_INF("Create directory %s",
+				log_strdup(dirs[i].path));
 			rc = fs_mkdir(dirs[i].path);
 			if (rc != 0) {
 				LOG_ERR("unable to create directory %s",
-					dirs[i].path);
+					log_strdup(dirs[i].path));
 				break;
 			}
 		} else if (rc != 0) {
@@ -186,7 +186,7 @@ static int make_dir_structure()
 int init_fs(void)
 {
 	struct fs_mount_t *mp = &lfs_storage_mnt;
-	unsigned int id = (uintptr_t)mp->storage_dev;
+	unsigned int id = DT_FLASH_AREA_STORAGE_ID;
 	const struct flash_area *pfa;
 	int rc;
 
@@ -206,12 +206,11 @@ int init_fs(void)
 	rc = fs_mount(mp);
 	if (rc < 0) {
 		LOG_ERR("Unable to mount id %u at %s: %d",
-			(unsigned int)mp->storage_dev, mp->mnt_point, rc);
-		fs_unmount(mp);
+	 		id, log_strdup(mp->mnt_point), rc);
 		return rc;
 	}
 
-	rc = make_dir_structure();
+ 	rc = make_dir_structure();
 	if (rc < 0) {
 		LOG_ERR("Unable to create default file structure");
 	}
