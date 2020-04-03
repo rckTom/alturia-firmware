@@ -186,7 +186,7 @@ int dl_add_track_names_chunk(uint8_t tid, const char* names)
 	return 0;
 }
 
-int open_log(const char *path)
+static int open_log(const char *path)
 {
 	int res;
 	res = fs_open(&fd, path);
@@ -198,13 +198,13 @@ int open_log(const char *path)
 	return res;
 }
 
-int close_log()
+static int close_log()
 {
 	log_open = false;
 	return fs_close(&fd);
 }
 
-int add_track_format_chunk(uint8_t tid, const char* format)
+static int add_track_format_chunk(uint8_t tid, const char* format)
 {
 	int rc;
 	uint8_t bf = ((1 & 0xF) << 4) | (tid & 0xF);
@@ -222,7 +222,7 @@ int add_track_format_chunk(uint8_t tid, const char* format)
 	return 0;
 }
 
-int add_track_names_chunk(uint8_t tid, const char* names)
+static int add_track_names_chunk(uint8_t tid, const char* names)
 {
 	int rc;
 	uint8_t bf = ((2 & 0xF) << 4) | (tid & 0xF);
@@ -240,7 +240,7 @@ int add_track_names_chunk(uint8_t tid, const char* names)
 	return 0;
 }
 
-int add_track_data(uint8_t tid, void *data, size_t length)
+static int add_track_data(uint8_t tid, void *data, size_t length)
 {
 	int rc;
 	uint8_t bf = ((3 & 0xF) << 4) | (tid & 0xF);
@@ -257,7 +257,7 @@ int add_track_data(uint8_t tid, void *data, size_t length)
 	return 0;
 }
 
-int add_file(uint8_t fid, const char *path)
+static int add_file(uint8_t fid, const char *path)
 {
 	int rc;
 	struct fs_dirent entry;
