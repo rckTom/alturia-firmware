@@ -295,7 +295,6 @@ static int add_file(uint8_t fid, const char *path)
 		} else if (rc < 0) {
 			goto out;
 		}
-		printk("%c", buf);
 		rc = fs_write(&fd, &buf, 1);
 		if (rc != 1) {
 			goto out;
@@ -308,7 +307,7 @@ out:
 	return rc;
 }
 
-void datalogger_consumer()
+void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 {
 	struct fifo_item *item;
 	int res;
@@ -376,4 +375,6 @@ void datalogger_consumer()
 }
 
 K_THREAD_DEFINE(dl_tid, CONFIG_DATALOGGER_STACK_SIZE, datalogger_consumer,
-		NULL, NULL, NULL, CONFIG_DATALOGGER_THREAD_PRIORITY, 0, K_NO_WAIT);
+		NULL, NULL, NULL, CONFIG_DATALOGGER_THREAD_PRIORITY, 0,
+		K_NO_WAIT);
+
