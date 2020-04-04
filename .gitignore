@@ -2,3 +2,6 @@
 __pycache__/
 /design/*.pkl
 /src/generated/
+
+.gdbinit
+.vscode/
