@@ -51,6 +51,9 @@ menu "DAQ"
 	config DAQ_PRIO
 		int "Priority of daq thread"
 		default 0
+	config SENSOR_DAQ_STACK_SIZE
+		int "Stack size for sensor daq threads"
+		default 512
 endmenu
 
 endmenu

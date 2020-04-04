@@ -14,83 +14,109 @@
 #include <device.h>
 #include <drivers/sensor.h>
 #include <logging/log.h>
+#include "datalogger.h"
+#include "is_atmosphere.h"
+#include "util.h"
 
 LOG_MODULE_REGISTER(DAQ, CONFIG_DAQ_LOG_LEVEL);
 
-K_TIMER_DEFINE(sample_timer, NULL, NULL);
+struct sensor_value acc_sample[3];
+struct sensor_value gyr_sample[3];
+struct sensor_value press_sample;
 
-void daq_thread_fcn()
+static const struct sensor_daq_data {
+	const char *sensor_device_label;
+	enum sensor_channel channel;
+	struct sensor_value *sval;
+} sensor_daq[] = {
+	{
+		.sensor_device_label = DT_ALIAS_PRESSURE_SENSOR_LABEL,
+		.channel = SENSOR_CHAN_PRESS,
+		.sval = &press_sample
+	},
+	{
+		.sensor_device_label = DT_ALIAS_ACC_SENSOR_LABEL,
+		.channel = SENSOR_CHAN_ACCEL_XYZ,
+		.sval = acc_sample,
+	},
+	{
+		.sensor_device_label = DT_ALIAS_GYRO_SENSOR_LABEL,
+		.channel = SENSOR_CHAN_GYRO_XYZ,
+		.sval = gyr_sample,
+	},
+};
+
+#define NUM_SENSOR_DAQ ARRAY_SIZE(sensor_daq)
+
+K_SEM_DEFINE(timer_sync_sem, 0, NUM_SENSOR_DAQ);
+K_SEM_DEFINE(daq_sync_sem, NUM_SENSOR_DAQ, NUM_SENSOR_DAQ);
+K_MUTEX_DEFINE(data_lock);
+
+static void timer_expr_fnc(struct k_timer *timer)
 {
-	int res;
-	struct device *acc_sens =
-		device_get_binding(DT_ALIAS_ACC_SENSOR_LABEL);
-	struct device *press_sens =
-		device_get_binding(DT_ALIAS_PRESSURE_SENSOR_LABEL);
-	struct device *gyr_sens =
-		device_get_binding(DT_ALIAS_GYRO_SENSOR_LABEL);
-
-	if(acc_sens == NULL) {
-		LOG_ERR("unable to get acceleration sensor");
-		k_oops();
-	}
-
-	if(press_sens == NULL) {
-		LOG_ERR("unable to get pressure sensor");
-		k_oops();
-	}
-
-	if(gyr_sens == NULL) {
-		LOG_ERR("unable to get gyro sensor");
-		k_oops();
-	}
-
-	k_timer_start(&sample_timer, 0, K_MSEC(100));
-
-	while(true) {
-		k_timer_status_sync(&sample_timer);
-
-		struct sensor_value acc_sample[3];
-		struct sensor_value gyr_sample[3];
-		struct sensor_value press_sample;
-
-		s64_t time_stamp = k_uptime_get();
-
-		res = sensor_sample_fetch(press_sens);
-		if(res != 0) {
-			LOG_ERR("unable to fetch values from pressure sensor");
-		}
-
-		res = sensor_sample_fetch(acc_sens);
-		if(res != 0) {
-			LOG_ERR("unable to fetch values from acceleration sensor");
-		}
-
-		res = sensor_sample_fetch(gyr_sens);
-		if(res != 0) {
-			LOG_ERR("unable to fetch values from gyro sensor");
-		}
-
-		res = sensor_channel_get(press_sens, SENSOR_CHAN_PRESS,
-					 &press_sample);
-		if(res != 0) {
-			LOG_ERR("unable to get value pressure sensor");
-		}
-
-		res = sensor_channel_get(acc_sens, SENSOR_CHAN_ACCEL_XYZ,
-					 acc_sample);
-		if(res != 0) {
-			LOG_ERR("unable to get value from acceleration sensor. Error code %d", res);
-		}
-
-		res = sensor_channel_get(gyr_sens, SENSOR_CHAN_GYRO_XYZ,
-					 gyr_sample);
-		if(res != 0) {
-			LOG_ERR("unabel to get value from gyro sensor. Error code %d", res);
-		}
+	for (int i = 0; i < NUM_SENSOR_DAQ; i++) {
+		k_sem_give(&timer_sync_sem);
 	}
 }
 
-K_THREAD_DEFINE(daq_thread, 512,
-		daq_thread_fcn, NULL, NULL, NULL,
-		CONFIG_DAQ_PRIO, 0, K_NO_WAIT);
+K_TIMER_DEFINE(sample_timer, timer_expr_fnc, NULL);
 
+static void daq_sensor_thread_fnc(void * daq_data, void *arg1, void *arg2)
+{
+	int res = 0;
+	struct sensor_daq_data *data = daq_data;
+
+	struct device *dev = device_get_binding(data->sensor_device_label);
+
+	if (dev == NULL) {
+		LOG_ERR("unable to get sensor device %s",
+			log_strdup(data->sensor_device_label));
+		k_oops();
+	}
+
+	while (true) {
+		k_sem_take(&timer_sync_sem, K_FOREVER);
+
+		res = sensor_sample_fetch(dev);
+
+		if (res != 0) {
+			LOG_ERR("unable to fetch sensor value for device %s",
+				log_strdup(data->sensor_device_label));
+			k_oops();
+		}
+
+		res = sensor_channel_get(dev, data->channel, data->sval);
+
+		if (res != 0) {
+			LOG_ERR("unable to get sensor value for device %s",
+				log_strdup(data->sensor_device_label));
+			k_oops();
+		}
+
+		k_sem_give(&daq_sync_sem);
+	}
+}
+
+int daq_start()
+{
+	k_timer_start(&sample_timer, 0, K_MSEC(1000));
+	return 0;
+}
+
+int daq_sync()
+{
+	int rc = 0;
+
+	for (int i = 0; i < NUM_SENSOR_DAQ; i++) {
+		rc = k_sem_take(&daq_sync_sem, K_FOREVER);
+	}
+
+	return rc;
+}
+
+K_THREAD_DEFINE(DAQ_0, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
+		&sensor_daq[0], NULL, NULL, CONFIG_DAQ_PRIO, 0, K_NO_WAIT);
+K_THREAD_DEFINE(DAQ_1, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
+		&sensor_daq[1], NULL, NULL, CONFIG_DAQ_PRIO, 0, K_NO_WAIT);
+K_THREAD_DEFINE(DAQ_2, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
+		&sensor_daq[2], NULL, NULL, CONFIG_DAQ_PRIO, 0, K_NO_WAIT);

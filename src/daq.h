@@ -13,4 +13,13 @@
 #ifndef ALTURIA__DAQ__H
 #define ALTURIA__DAQ__H
 
-#endif /* ALTURIA__DAQ__H
+#include "drivers/sensor.h"
+
+extern struct sensor_value acc_sample[];
+extern struct sensor_value gyr_sample[];
+extern struct sensor_value press_sample;
+
+int daq_sync();
+int daq_start();
+
+#endif /* ALTURIA__DAQ__H */
