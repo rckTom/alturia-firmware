@@ -13,7 +13,8 @@ project(alturia_firmware)
 set_property(TARGET app PROPERTY C_STANDARD 11)
 target_include_directories(app PRIVATE lib/inih/
 				       lib/cmsis/CMSIS/DSP/Include
-				       src/generated/)
+				       src/generated/
+				       src/filter/)
 
 function(generate_linear_kalman_filter)
 	cmake_parse_arguments(
@@ -46,15 +47,15 @@ endfunction()
 
 generate_linear_kalman_filter(TARGET app
 			      SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/altitude_kalman_filter.py
-			      SYSNAME altitude_kalman)
+			      SYSNAME altitude_kalman_impl)
 
 generate_linear_kalman_filter(TARGET app
 			      SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/vertical_dynamics_kalman_filter.py
-			      SYSNAME vertical_dynamics_kalman)
+			      SYSNAME vertical_dynamics_kalman_impl)
 
 generate_linear_kalman_filter(TARGET app
 			      SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/constant_altitude_kalman_filter.py
-			      SYSNAME constant_altitude_kalman)
+			      SYSNAME constant_altitude_kalman_impl)
 
 target_sources(app PRIVATE lib/inih/ini.c
 			   src/util.c
@@ -66,6 +67,7 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/datalogger.c
 			   src/is_atmosphere.c
 			   src/pyros.c
-			   src/daq.c)
+			   src/daq.c
+			   src/filter/kalman_filter.c)
 
 target_link_libraries(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/cmsis/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)
