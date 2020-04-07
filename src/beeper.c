@@ -75,7 +75,7 @@ static void beep_work_handler(struct k_work *item)
 
     data->count--;
     if (data->count > 0) {
-        k_delayed_work_submit(dw, data->delay);
+        k_delayed_work_submit(dw, K_MSEC(data->delay));
         return;
     }
 

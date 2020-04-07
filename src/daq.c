@@ -49,7 +49,7 @@ static const struct sensor_daq_data {
 #define NUM_SENSOR_DAQ ARRAY_SIZE(sensor_daq)
 
 K_SEM_DEFINE(timer_sync_sem, 0, NUM_SENSOR_DAQ);
-K_SEM_DEFINE(daq_sync_sem, NUM_SENSOR_DAQ, NUM_SENSOR_DAQ);
+K_SEM_DEFINE(daq_sync_sem, 0, NUM_SENSOR_DAQ);
 K_MUTEX_DEFINE(data_lock);
 
 static void timer_expr_fnc(struct k_timer *timer)
@@ -99,7 +99,7 @@ static void daq_sensor_thread_fnc(void * daq_data, void *arg1, void *arg2)
 
 int daq_start()
 {
-	k_timer_start(&sample_timer, 0, K_MSEC(1000));
+	k_timer_start(&sample_timer, K_NO_WAIT, K_MSEC(100));
 	return 0;
 }
 
@@ -115,8 +115,8 @@ int daq_sync()
 }
 
 K_THREAD_DEFINE(DAQ_0, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
-		&sensor_daq[0], NULL, NULL, CONFIG_DAQ_PRIO, 0, K_NO_WAIT);
+		&sensor_daq[0], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);
 K_THREAD_DEFINE(DAQ_1, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
-		&sensor_daq[1], NULL, NULL, CONFIG_DAQ_PRIO, 0, K_NO_WAIT);
+		&sensor_daq[1], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);
 K_THREAD_DEFINE(DAQ_2, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
-		&sensor_daq[2], NULL, NULL, CONFIG_DAQ_PRIO, 0, K_NO_WAIT);
+		&sensor_daq[2], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);

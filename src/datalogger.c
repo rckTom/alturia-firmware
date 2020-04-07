@@ -375,6 +375,5 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 }
 
 K_THREAD_DEFINE(dl_tid, CONFIG_DATALOGGER_STACK_SIZE, datalogger_consumer,
-		NULL, NULL, NULL, CONFIG_DATALOGGER_THREAD_PRIORITY, 0,
-		K_NO_WAIT);
+		NULL, NULL, NULL, CONFIG_DATALOGGER_THREAD_PRIORITY, 0, 0);
 
