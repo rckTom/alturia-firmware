@@ -19,7 +19,7 @@
 char* z_fgets(char* s, int n, struct fs_file_t *file)
 {
     int c;
-    int res;
+    int res = 0;
     char* cs;
     cs = s;
 
