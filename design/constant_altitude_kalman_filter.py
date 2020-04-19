@@ -2,7 +2,6 @@ import control as ctrl
 import sympy as sp
 import sympy_helpers as sph
 import pickle
-from gen_code_linear_kalman_filter import kalman_sys_export
 
 from argparse import ArgumentParser
 
@@ -25,7 +24,7 @@ def main(args):
     x_pre, P_pre = ctrl.kalman_predict(A_d, None, G_d, Q)
     x_cor, P_cor = ctrl.kalman_correct(C, None, R)
 
-    kalman_sys_export(x_pre, P_pre, x_cor, P_cor, args.outfile)
+    ctrl.kalman_sys_export(x_pre, P_pre, x_cor, P_cor, args.outfile)
 
 
 if __name__ == "__main__":

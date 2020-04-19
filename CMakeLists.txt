@@ -16,7 +16,7 @@ target_include_directories(app PRIVATE lib/inih/
 				       src/generated/
 				       src/filter/)
 
-function(generate_linear_kalman_filter)
+function(symbolic_codegen)
 	cmake_parse_arguments(
 		ARGS
 		""
@@ -28,34 +28,34 @@ function(generate_linear_kalman_filter)
 	add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/design/${ARGS_SYSNAME}.pkl
 			   COMMAND python ${ARGS_SYMBOLIC_SCRIPT} --outfile ${CMAKE_CURRENT_LIST_DIR}/design/${ARGS_SYSNAME}.pkl
 			   DEPENDS ${ARGS_SYMBOLIC_SCRIPT}
-			   COMMENT "Generate symbolic representation of ${ARGS_SYSNAME} kalman filter")
+			   COMMENT "Generate symbolic representation of ${ARGS_SYSNAME}r")
 
 	add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_SYSNAME}.c
 				  ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_SYSNAME}.h
-			   COMMAND python ${CMAKE_CURRENT_LIST_DIR}/design/gen_code_linear_kalman_filter.py
+			   COMMAND python ${CMAKE_CURRENT_LIST_DIR}/design/codegen.py
 					--input ${CMAKE_CURRENT_LIST_DIR}/design/${ARGS_SYSNAME}.pkl
 					--prefix ${ARGS_SYSNAME}
 					--outdir ${CMAKE_CURRENT_LIST_DIR}/src/generated &&
 					uncrustify --replace --no-backup -l C -c ${CMAKE_CURRENT_LIST_DIR}/.uncrustify.cfg ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_SYSNAME}.c >/dev/null 2>&1 &&
 					uncrustify --replace --no-backup -l C -c ${CMAKE_CURRENT_LIST_DIR}/.uncrustify.cfg ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_SYSNAME}.h >/dev/null 2>&1
 			   DEPENDS ${CMAKE_CURRENT_LIST_DIR}/design/${ARGS_SYSNAME}.pkl
-			   COMMENT "Generate c code for ${ARGS_SYSNAME} kalman filter")
+			   COMMENT "Generate c code for ${ARGS_SYSNAME}")
 
 	target_sources(${ARGS_TARGET} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_SYSNAME}.c
 					      ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_SYSNAME}.h)
 endfunction()
 
-generate_linear_kalman_filter(TARGET app
-			      SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/altitude_kalman_filter.py
-			      SYSNAME altitude_kalman_impl)
+symbolic_codegen(TARGET app
+	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/altitude_kalman_filter.py
+	SYSNAME altitude_kalman_impl)
 
-generate_linear_kalman_filter(TARGET app
-			      SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/vertical_dynamics_kalman_filter.py
-			      SYSNAME vertical_dynamics_kalman_impl)
+symbolic_codegen(TARGET app
+	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/vertical_dynamics_kalman_filter.py
+	SYSNAME vertical_dynamics_kalman_impl)
 
-generate_linear_kalman_filter(TARGET app
-			      SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/constant_altitude_kalman_filter.py
-			      SYSNAME constant_altitude_kalman_impl)
+symbolic_codegen(TARGET app
+	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/constant_altitude_kalman_filter.py
+	SYSNAME constant_altitude_kalman_impl)
 
 target_sources(app PRIVATE lib/inih/ini.c
 			   src/util.c
