@@ -16,7 +16,7 @@ target_include_directories(app PRIVATE lib/inih/
 				       src/generated/
 				       src/filter/)
 
-function(symbolic_codegen)
+function(cached_symbolic_codegen)
 	cmake_parse_arguments(
 		ARGS
 		""
@@ -45,17 +45,48 @@ function(symbolic_codegen)
 					      ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_SYSNAME}.h)
 endfunction()
 
-symbolic_codegen(TARGET app
+function(symbolic_codegen)
+	cmake_parse_arguments(
+		ARGS
+		""
+		"TARGET;SYMBOLIC_SCRIPT;PREFIX"
+		""
+		${ARGN}
+	)
+
+	add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_PREFIX}.c
+				  ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_PREFIX}.h
+				  COMMAND python ${ARGS_SYMBOLIC_SCRIPT}
+				  --prefix ${ARGS_PREFIX}
+				  --outdir ${CMAKE_CURRENT_LIST_DIR}/src/generated &&
+				  uncrustify --replace --no-backup -l C -c ${CMAKE_CURRENT_LIST_DIR}/.uncrustify.cfg ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_PREFIX}.c >/dev/null 2>&1 &&
+				  uncrustify --replace --no-backup -l C -c ${CMAKE_CURRENT_LIST_DIR}/.uncrustify.cfg ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_PREFIX}.h >/dev/null 2>&1
+		     DEPENDS ${ARGS_SYMBOLIC_SCRIPT}
+		     COMMENT "Generate c code for ${ARGS_PREFIX}")
+
+	target_sources(${ARGS_TARGET} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_PREFIX}.c
+					      ${CMAKE_CURRENT_LIST_DIR}/src/generated/${ARGS_PREFIX}.h)
+endfunction()
+
+cached_symbolic_codegen(TARGET app
 	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/altitude_kalman_filter.py
 	SYSNAME altitude_kalman_impl)
 
-symbolic_codegen(TARGET app
+cached_symbolic_codegen(TARGET app
 	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/vertical_dynamics_kalman_filter.py
 	SYSNAME vertical_dynamics_kalman_impl)
 
-symbolic_codegen(TARGET app
+cached_symbolic_codegen(TARGET app
 	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/constant_altitude_kalman_filter.py
 	SYSNAME constant_altitude_kalman_impl)
+
+symbolic_codegen(TARGET app
+	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/transformations.py
+	PREFIX transformations_impl)
+
+symbolic_codegen(TARGET app
+	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/attitude_estimation.py
+	PREFIX attitude_estimation_impl)
 
 target_sources(app PRIVATE lib/inih/ini.c
 			   src/util.c
@@ -69,6 +100,7 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/pyros.c
 			   src/daq.c
 			   src/filter/kalman_filter.c
+			   src/math_ex.c
 			   src/servos.c)
 
 target_link_libraries(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/cmsis/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)
