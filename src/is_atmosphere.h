@@ -14,13 +14,6 @@
 #define ALTURIA__ATMOSPHERE__H
 
 /**
- * isa_init() - Initialize the layer table
- *
- * Initilizes the layer table layers based on the first entry of the table
- */
-void isa_init();
-
-/**
  * isa_calc_height() - Calculate altitude based on pressure
  * @p: pressure in Pascal
  *

@@ -15,6 +15,8 @@
 #include <zephyr.h>
 #include <device.h>
 #include <logging/log.h>
+#include <devicetree.h>
+#include <init.h>
 
 LOG_MODULE_REGISTER(pyros, CONFIG_LOG_DEFAULT_LEVEL);
 
@@ -25,6 +27,7 @@ static struct pyro{
 	struct device *dev;
 	struct k_delayed_work work;
 } pyro_gpios[] = DT_PYROS_PYROS_GPIOS;
+
 
 #define NUM_PYROS ARRAY_SIZE(pyro_gpios)
 
@@ -55,7 +58,7 @@ int pyros_fire(unsigned int pyro)
 	return 0;
 }
 
-void pyros_init()
+static int pyros_init()
 {
 	struct device *dev;
 	int res;
@@ -64,7 +67,7 @@ void pyros_init()
 		dev = device_get_binding(pyro_gpios[i].dev_name);
 		if (dev == NULL) {
 			LOG_ERR("Device not found");
-			k_oops();
+			return -ENODEV;
 		}
 
 		res = gpio_pin_configure(dev, pyro_gpios[i].pin,
@@ -75,10 +78,14 @@ void pyros_init()
 			        "flags %d. Error code %d",
 				log_strdup(pyro_gpios[i].dev_name),
 				pyro_gpios[i].pin, pyro_gpios[i].flags, res);
-			k_oops();
+			return -EINVAL;
 		}
 
 		pyro_gpios[i].dev = dev;
 		k_delayed_work_init(&pyro_gpios[i].work, pyro_work_handler);
 	}
+
+	return 0;
 }
+
+SYS_INIT(pyros_init, APPLICATION, 0);

@@ -13,6 +13,7 @@
 #include "is_atmosphere.h"
 #include "constants.h"
 #include <math.h>
+#include <init.h>
 
 struct layer {
 	float h_base, p_base, t_base, t_lapse_rate;
@@ -133,10 +134,14 @@ float isa_calc_height(float p)
 	       logf(p / layer->p_base);
 }
 
-void isa_init()
+int isa_init()
 {
 	for (int i = 1; i < sizeof(layers) / sizeof(layers[0]); i++) {
 		layers[i].p_base = isa_calc_pressure(layers[i].h_base);
 		layers[i].t_base = isa_calc_temperature(layers[i].h_base);
 	}
+
+	return 0;
 }
+
+SYS_INIT(isa_init, APPLICATION, 0);

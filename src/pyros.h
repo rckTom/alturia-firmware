@@ -13,7 +13,6 @@
 #ifndef ALTURIA__PYROS__H
 #define ALTURIA__PYROS__H
 
-void pyros_init();
 int pyros_fire(unsigned int pyro);
 void get_pyro_status(unsigned int pyro);
 
