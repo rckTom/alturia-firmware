@@ -1,0 +1,8 @@
+compatible: "servos"
+
+description: "Device tree node representing a number of servos"
+
+properties:
+    pwms:
+        type: phandle-array
+        required: true

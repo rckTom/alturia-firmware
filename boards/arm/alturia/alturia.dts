@@ -39,8 +39,9 @@
 		pwms = <&pwm2 4 1000000>;
 	};
 
-	chosen {
-		test = "Test";
+	servos {
+		compatible = "servos";
+		pwms = <&pwm8 2 50000000>, <&pwm8 3 50000000>;
 	};
 };
 
@@ -64,6 +65,14 @@
 &timers4 {
 	status = "okay";
 	pwm4: pwm {
+		st,prescaler = <100>;
+		status = "okay";
+	};
+};
+
+&timers8 {
+	status = "okay";
+	pwm8: pwm {
 		st,prescaler = <100>;
 		status = "okay";
 	};

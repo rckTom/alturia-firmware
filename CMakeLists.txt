@@ -68,6 +68,7 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/is_atmosphere.c
 			   src/pyros.c
 			   src/daq.c
-			   src/filter/kalman_filter.c)
+			   src/filter/kalman_filter.c
+			   src/servos.c)
 
 target_link_libraries(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/cmsis/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)
