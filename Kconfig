@@ -56,5 +56,22 @@ menu "DAQ"
 		default 512
 endmenu
 
+
+menu "Event system"
+
+	config EVENT_HANDLER_THREAD_STACK_SIZE
+		int "Stack size of async event handler thread"
+		default 2048
+
+	config EVENT_QUEUE_LENGTH
+		int "Maximum number of enqueued async events"
+		default 256
+
+	config EVENT_TIMERS_NUMBER
+		int "Maximum number of event timers"
+		default 8
+
 endmenu
+endmenu
+
 source "$ZEPHYR_BASE/Kconfig"

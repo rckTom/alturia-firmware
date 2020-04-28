@@ -101,6 +101,12 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/daq.c
 			   src/filter/kalman_filter.c
 			   src/math_ex.c
-			   src/servos.c)
+			   src/servos.c
+			   src/numeric.c
+			   src/events.c
+			   src/conditions.c
+			   src/flightstate.c
+			   src/actions.c
+			   src/eventtimer.c)
 
 target_link_libraries(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/cmsis/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)

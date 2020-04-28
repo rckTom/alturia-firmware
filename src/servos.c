@@ -72,10 +72,7 @@ int servo_set_angle(int servo, u8_t angle)
 					       servo_data[servo].min_us) *
 					       angle / 180;
 
-	return pwm_pin_set_usec(servo_data[servo].pwm_dev,
-				servo_config[servo].pwm_channel,
-				servo_config[servo].period/1000,
-				pw, 0);
+	return servo_set_us(servo, pw);
 }
 
 static int servo_init()
