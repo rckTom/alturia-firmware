@@ -3,16 +3,4 @@ if BOARD_ALTURIA
 config BOARD
 	default "alturia"
 
-if UART_CONSOLE
-	config UART_1
-		default y
-endif
-
-if PWM
-	config PWM_STM32_2
-		default y
-	config PWM_STM32_4
-		default y
-endif
-
 endif
