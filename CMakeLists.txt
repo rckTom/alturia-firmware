@@ -109,4 +109,3 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/actions.c
 			   src/eventtimer.c)
 
-target_link_libraries(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/cmsis/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)
