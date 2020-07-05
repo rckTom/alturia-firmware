@@ -25,8 +25,10 @@ K_SEM_DEFINE(lock,1,1);
 static const struct beeper_device {
 	const char *pwm_controller;
 	int pwm_channel;
-	int period; /* period is not used */
-} beeper_device = DT_BEEPER_BEEPER_PWMS;
+} beeper_device = {
+	DT_PWMS_LABEL_BY_IDX(DT_NODELABEL(beeper),0),
+	DT_PWMS_CHANNEL_BY_IDX(DT_NODELABEL(beeper),0)
+};
 
 static struct device *pwm_dev;
 static struct device *led_dev;
@@ -54,11 +56,11 @@ static void beep_work_handler(struct k_work *item)
     if (data->count % 2) {
         res = pwm_pin_set_usec(pwm_dev, beeper_device.pwm_channel, data->pitch, 0,
 			       PWM_POLARITY_NORMAL);
-        gpio_pin_set(led_dev, DT_ALIAS_LED0_GPIOS_PIN, false);
+        gpio_pin_set(led_dev, DT_GPIO_PIN(DT_ALIAS(led0), gpios), false);
     } else {
         res = pwm_pin_set_usec(pwm_dev, beeper_device.pwm_channel, data->pitch,
 			       ((data->pitch/2)*vol)/100, PWM_POLARITY_NORMAL);
-        gpio_pin_set(led_dev, DT_ALIAS_LED0_GPIOS_PIN, true);
+        gpio_pin_set(led_dev, DT_GPIO_PIN(DT_ALIAS(led0),gpios), true);
     }
 
     if (res){
@@ -130,7 +132,7 @@ static int beeper_init()
 		return -ENODEV;
 	}
 
-	led_dev = device_get_binding(DT_ALIAS_LED0_GPIOS_CONTROLLER);
+	led_dev = device_get_binding(DT_GPIO_LABEL(DT_ALIAS(led0),gpios));
 	if (led_dev == NULL) {
 	        LOG_ERR("can not get led device");
 		return -ENODEV;
