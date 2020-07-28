@@ -1,0 +1,15 @@
+identifier: alturia_v1.2
+name: alturia
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+supported:
+  - usb_device
+  - gpio
+  - spi
+  - i2c
+  - can
+  - adc
+  - counter

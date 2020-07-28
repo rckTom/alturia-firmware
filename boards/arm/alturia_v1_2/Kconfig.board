@@ -1,0 +1,3 @@
+config BOARD_ALTURIA_V1_2
+	bool "Alturia Altimeter Hardware Version 1.2"
+	depends on SOC_STM32F405XG

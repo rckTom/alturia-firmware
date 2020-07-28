@@ -1,0 +1,184 @@
+/dts-v1/;
+#include <st/f4/stm32f405Xg.dtsi>
+
+/ {
+	model = "Alturia Altimeter";
+	compatible = "alturia_v1_2";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,ccm = &ccm0;
+	};
+
+	aliases {
+		led0 = &user_led;
+		pressure-sensor = &ms5607;
+		acc-sensor = &bmi088_acc;
+		gyro-sensor = &bmi088_gyr;
+		highg-sensor = &ais2120sx;
+		norflash = &mt25ql;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		user_led: led_0 {
+			gpios = <&gpioc 8 GPIO_INT_ACTIVE_HIGH>;
+			label = "User LED";
+		};
+	};
+
+	pwmleds: pwmleds {
+		compatible = "pwm-leds";
+
+		red_led {
+			pwms = <&pwm3 1 100000>;
+		};
+
+		green_led {
+			pwms = <&pwm3 2 100000>;
+		};
+
+		blue_led {
+			pwms = <&pwm3 3 100000>;
+		};
+	};
+
+	pyros: pyros {
+		compatible = "pyros";
+		pyro1 {
+			gpios = <&gpioa 2 0>;
+		};
+		pyro2 {
+			gpios = <&gpioa 1 0>;
+		};
+		pyro3 {
+			gpios = <&gpioc 14 0>;
+		};
+		pyro4 {
+			gpios = <&gpioa 3 0>;
+		};
+	};
+
+	beeper: beeper {
+		compatible = "beeper";
+		pwms = <&pwm2 1 50000000>;
+	};
+
+	servos: servos {
+		compatible = "servos";
+		servo1 {
+			pwms = <&pwm4 3 50000000>;
+		};
+		servo2 {
+			pwms = <&pwm4 4 50000000>;
+		};
+	};
+};
+
+&usart1 {
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&timers2 {
+	status = "okay";
+	pwm2: pwm {
+		st,prescaler = <100>;
+		status = "okay";
+	};
+};
+
+&timers4 {
+	status = "okay";
+	pwm4: pwm {
+		st,prescaler = <100>;
+		status = "okay";
+	};
+};
+
+&timers3 {
+	status = "okay";
+	pwm3: pwm {
+		st,prescaler = <100>;
+		status = "okay";
+	};
+};
+
+&can2 {
+	status = "okay";
+};
+
+&i2c2 {
+	status = "okay";
+};
+
+&spi2 {
+	status = "okay";
+	cs-gpios = <&gpioa 8 0>,  <&gpiob 1 0>, <&gpioc 5 0>, <&gpiob 12 0>;
+	ms5607: ms5607@0 {
+		status = "okay";
+		compatible = "meas,ms5607";
+		reg = <0>;
+		label= "ms5607";
+		spi-max-frequency = <20000000>;
+	};
+	bmi088_gyr: bmi088_gyr@1 {
+		status = "okay";
+		compatible = "bosch,bmi088-gyro";
+		reg = <1>;
+		label = "bmi088-gyro";
+		spi-max-frequency = <10000000>;
+	};
+	bmi088_acc: bmi088_acc@2 {
+		status = "okay";
+		compatible = "bosch,bmi088-accel";
+		reg = <2>;
+		label = "bmi088-accel";
+		spi-max-frequency = <10000000>;
+	};
+	ais2120sx: ais2120sx@3 {
+		status = "okay";
+		compatible ="st,aisx120sx";
+		reg = <3>;
+		label = "aisx2120sx";
+		spi-max-frequency = <1000000>;
+	};
+};
+
+&spi1 {
+	status = "okay";
+	cs-gpios = <&gpioc 4 0>;
+	mt25ql: mt25ql512ABB@0 {
+		status = "okay";
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		label="mt25ql";
+		spi-max-frequency = <1000000>;
+		jedec-id = [20 BA 20];
+		size = <134217728>;
+		hold-gpios = <&gpioa 4 0>;
+	};
+};
+
+&mt25ql {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		storage_partition: partition@0 {
+			label = "storage";
+			reg = <0x00000 0x1000000>;
+		};
+	};
+};
+
+&adc1 {
+	status = "okay";
+};
+
+&usbotg_fs {
+	status = "okay";
+};
