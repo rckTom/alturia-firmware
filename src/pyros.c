@@ -20,13 +20,18 @@
 
 LOG_MODULE_REGISTER(pyros, CONFIG_LOG_DEFAULT_LEVEL);
 
+#define PYRO_INIT_MACRO(node_id) \
+	{.dev_name = DT_GPIO_LABEL(node_id, gpios), \
+	 .pin = DT_GPIO_PIN(node_id, gpios), \
+	 .flags = DT_GPIO_FLAGS(node_id, gpios)},
+
 static struct pyro{
 	const char *dev_name;
 	const int pin;
 	const int flags;
 	struct device *dev;
 	struct k_delayed_work work;
-} pyro_gpios[] = DT_PYROS_PYROS_GPIOS;
+} pyro_gpios[] = {DT_FOREACH_CHILD(DT_NODELABEL(pyros),PYRO_INIT_MACRO)};
 
 
 #define NUM_PYROS ARRAY_SIZE(pyro_gpios)
@@ -35,7 +40,7 @@ void pyro_work_handler(struct k_work *work) {
 	struct k_delayed_work *delayed_work = CONTAINER_OF(work,
 						struct k_delayed_work, work);
 	struct pyro *pyro_data = CONTAINER_OF(delayed_work, struct pyro, work);
-
+	LOG_INF("set pyro low");
 	if(gpio_pin_set(pyro_data->dev, pyro_data->pin, 0) != 0) {
 		LOG_ERR("pyro pin write error. device: %s, pin: %d, flags %d",
 			log_strdup(pyro_data->dev_name), pyro_data->pin,
@@ -51,11 +56,15 @@ int pyros_fire(unsigned int pyro)
 		LOG_ERR("No pyro with index %d available. Can not fire", pyro);
 		return -ENODEV;
 	}
+	res = gpio_pin_set(pyro_gpios[pyro].dev, pyro_gpios[pyro].pin, true);
+	if (res != 0) {
+		LOG_ERR("unable to set pyro pin");
+	}
 
 	res = k_delayed_work_submit(&pyro_gpios[pyro].work,
 				    K_MSEC(CONFIG_PYROS_ON_TIME));
 
-	return 0;
+	return res;
 }
 
 static int pyros_init()
@@ -71,7 +80,7 @@ static int pyros_init()
 		}
 
 		res = gpio_pin_configure(dev, pyro_gpios[i].pin,
-					 pyro_gpios[i].flags);
+					 GPIO_OUTPUT_LOW);
 
 		if (res != 0) {
 			LOG_ERR("Unable to initialize pyro on %s pin %d with"

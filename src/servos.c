@@ -1,17 +1,25 @@
 #include "servos.h"
 
 #include <zephyr.h>
+#include <devicetree.h>
 #include <init.h>
 #include <drivers/pwm.h>
 #include <logging/log.h>
 
 LOG_MODULE_REGISTER(servos, CONFIG_LOG_DEFAULT_LEVEL);
 
+#define SERVO_INIT_MACRO(node_id) \
+	{DT_PWMS_LABEL(node_id), \
+	DT_PWMS_CHANNEL(node_id), \
+	DT_PWMS_CELL_BY_IDX(node_id, period, 0)},
+
 static const struct servo_config {
 	const char *pwm_controller;
 	int pwm_channel;
-	int period; /* period is not used */
-} servo_config[] = DT_SERVOS_SERVOS_PWMS;
+	int period;
+} servo_config[] = {
+	DT_FOREACH_CHILD(DT_NODELABEL(servos),SERVO_INIT_MACRO)
+};
 
 static struct servo_data_config {
 	/* PWM Device */
