@@ -11,6 +11,8 @@
  */
 
 #include <zephyr.h>
+#include <device.h>
+#include <devicetree.h>
 #include <fs/fs.h>
 #include <fs/littlefs.h>
 #include <storage/flash_map.h>
@@ -34,35 +36,43 @@ static const struct {
 	const bool initial_state;
 } gpios[] = {
 	{
-		.gpio_controller = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_CONTROLLER,
-		.gpio_pin = DT_ALIAS_PRESSURE_SENSOR_CS_GPIOS_PIN,
+		.gpio_controller = DT_SPI_DEV_CS_GPIOS_LABEL(DT_ALIAS(pressure_sensor)),
+		.gpio_pin = DT_SPI_DEV_CS_GPIOS_PIN(DT_ALIAS(pressure_sensor)),
 		.gpio_flags = GPIO_OUTPUT,
 		.initial_state = true,
 	},
 	{
-		.gpio_controller = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_CONTROLLER,
-		.gpio_pin = DT_ALIAS_GYRO_SENSOR_CS_GPIOS_PIN,
+		.gpio_controller = DT_SPI_DEV_CS_GPIOS_LABEL(DT_ALIAS(gyro_sensor)),
+		.gpio_pin = DT_SPI_DEV_CS_GPIOS_PIN(DT_ALIAS(gyro_sensor)),
 		.gpio_flags = GPIO_OUTPUT,
 		.initial_state = true,
 	},
 	{
-		.gpio_controller = DT_ALIAS_ACC_SENSOR_CS_GPIOS_CONTROLLER,
-		.gpio_pin = DT_ALIAS_ACC_SENSOR_CS_GPIOS_PIN,
+		.gpio_controller = DT_SPI_DEV_CS_GPIOS_LABEL(DT_ALIAS(acc_sensor)),
+		.gpio_pin = DT_SPI_DEV_CS_GPIOS_PIN(DT_ALIAS(acc_sensor)),
 		.gpio_flags = GPIO_OUTPUT,
 		.initial_state = true,
 	},
 	{
-		.gpio_controller = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_CONTROLLER,
-		.gpio_pin = DT_ALIAS_HIGHG_SENSOR_CS_GPIOS_PIN,
+		.gpio_controller = DT_SPI_DEV_CS_GPIOS_LABEL(DT_ALIAS(highg_sensor)),
+		.gpio_pin = DT_SPI_DEV_CS_GPIOS_PIN(DT_ALIAS(highg_sensor)),
 		.gpio_flags = GPIO_OUTPUT,
 		.initial_state = true,
 	},
 	{
-		.gpio_controller = DT_ALIAS_LED0_GPIOS_CONTROLLER,
-		.gpio_pin = DT_ALIAS_LED0_GPIOS_PIN,
+		.gpio_controller = DT_GPIO_LABEL(DT_ALIAS(norflash), hold_gpios),
+		.gpio_pin = DT_GPIO_PIN(DT_ALIAS(norflash), hold_gpios),
+		.gpio_flags = GPIO_OUTPUT,
+		.initial_state = true,
+	},
+#ifdef CONFIG_BOARD_ALTURIA_V1_2
+	{
+		.gpio_controller = DT_GPIO_LABEL(DT_ALIAS(led0), gpios),
+		.gpio_pin = DT_GPIO_LABEL(DT_ALIAS(led0), gpios),
 		.gpio_flags = GPIO_OUTPUT,
 		.initial_state = true,
 	}
+#endif
 };
 
 static int init_gpios(void)
@@ -114,13 +124,14 @@ static int init_usb(void)
 	return rc;
 }
 
-int init_peripherals(void)
+int init_peripherals(struct device * dev)
 {
 	int res;
 
 	res = init_gpios();
 	if (res != 0) {
-		return res;
+		LOG_ERR("unable to initialize gpios");
+		k_oops();
 	}
 
 	res = init_usb();
@@ -186,7 +197,7 @@ static int make_dir_structure()
 int init_fs(void)
 {
 	struct fs_mount_t *mp = &lfs_storage_mnt;
-	unsigned int id = DT_FLASH_AREA_STORAGE_ID;
+	unsigned int id = DT_FIXED_PARTITION_ID(DT_NODE_BY_FIXED_PARTITION_LABEL(storage));
 	const struct flash_area *pfa;
 	int rc;
 
@@ -217,3 +228,5 @@ int init_fs(void)
 
 	return rc;
 }
+
+SYS_INIT(init_peripherals, POST_KERNEL, 0);
