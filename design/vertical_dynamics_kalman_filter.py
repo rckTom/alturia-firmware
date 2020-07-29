@@ -16,7 +16,6 @@ import sympy_helpers as sph
 import pickle
 from argparse import ArgumentParser
 
-
 A = sp.Matrix([[0, 1, 0],
                [0, 0, 1],
                [0, 0, 0]])
@@ -24,20 +23,35 @@ A = sp.Matrix([[0, 1, 0],
 C = sp.Matrix([[1, 0, 0],
                [0, 0, 1]])
 
-G = sp.Matrix([0, 0, 1])
+G = sp.Matrix([[1, 0],
+	       [0, 0],
+	       [0, 1]])
 
-Q = sp.Symbol('variance_acc')
+Q = sp.Matrix([[sp.Symbol('variance_h'), 0],
+	      [0, sp.Symbol('variance_acc')]])
 
 R = sp.Matrix([[sp.Symbol('variance_meas_h'), 0],
                [0, sp.Symbol('variance_meas_a')]])
 
-def main(args):
-    dt = sp.Symbol('dt')
-    A_d = (A*dt).exp()
-    G_d = A_d*G
+def predict():
+	dt = sp.Symbol('dt')
+	A_d = (A*dt).exp()
+	G_d = A_d*G
 
-    (x_cor, P_cor) = ctrl.kalman_correct(C, None, R)
-    (x_pre, P_pre) = ctrl.kalman_predict(A_d, None, G_d, Q)
+	return ctrl.kalman_predict(A_d, None, G_d, Q)
+
+def correct():
+	return ctrl.kalman_correct(C, None, R)
+
+def main(args):
+    #estimation of expaction of y
+    # second order I
+
+
+    #estimation of expaction of delta y
+
+    (x_cor, P_cor) = correct()
+    (x_pre, P_pre) = predict()
 
     ctrl.kalman_sys_export(x_pre, P_pre, x_cor, P_cor, args.outfile)
 

@@ -28,13 +28,19 @@ G = sp.Matrix([0, 1])
 Q = var_process_accel
 R = sp.Matrix([var_meas_altitude])
 
-def main(args):
+def predict():
     dt = sp.Symbol('dt')
     A_d = (A*dt).exp()
     G_d = A_d*G
 
-    (x_pre, P_pre) = ctrl.kalman_predict(A_d, None, G_d, Q)
-    (x_cor, P_cor) = ctrl.kalman_correct(C, None, R)
+    return ctrl.kalman_predict(A_d, None, G_d, Q)
+
+def correct():
+    return ctrl.kalman_correct(C, None, R)
+
+def main(args):
+    (x_pre, P_pre) = predict()
+    (x_cor, P_cor) = correct()
 
     ctrl.kalman_sys_export(x_pre, P_pre, x_cor, P_cor, args.outfile)
 
