@@ -11,16 +11,18 @@
  */
 
 #include "datalogger.h"
+#include <devicetree.h>
 #include <fs/fs.h>
+#include <logging/log.h>
 #include <string.h>
 #include <zephyr.h>
-#include <logging/log.h>
 
-LOG_MODULE_REGISTER(datalogger,CONFIG_DATALOGGER_LOG_LEVEL);
-K_MEM_POOL_DEFINE(mem_pool, CONFIG_DATALOGGER_MEM_POOL_MIN_BLOCK_SIZE,
-			    CONFIG_DATALOGGER_MEM_POOL_MAX_BLOCK_SIZE,
-			    CONFIG_DATALOGGER_MEM_POOL_BLOCK_COUNT,
-			    CONFIG_DATALOGGER_MEM_POOL_ALIGN);
+LOG_MODULE_REGISTER(datalogger, CONFIG_DATALOGGER_LOG_LEVEL);
+__ccm_bss_section K_MEM_POOL_DEFINE(mem_pool,
+				    CONFIG_DATALOGGER_MEM_POOL_MIN_BLOCK_SIZE,
+				    CONFIG_DATALOGGER_MEM_POOL_MAX_BLOCK_SIZE,
+				    CONFIG_DATALOGGER_MEM_POOL_BLOCK_COUNT,
+				    CONFIG_DATALOGGER_MEM_POOL_ALIGN);
 K_FIFO_DEFINE(fifo);
 
 static struct fs_file_t fd;
@@ -43,7 +45,6 @@ struct fifo_item {
 };
 
 #define FIFO_ITEM_SIZE sizeof(struct fifo_item)
-
 
 int dl_open_log(const char *path)
 {
@@ -73,7 +74,6 @@ int dl_close_log()
 	item->cmd = CLOSE_LOG;
 	k_fifo_put(&fifo, item);
 	return 0;
-
 }
 
 int dl_add_file(uint8_t fid, const char *path)
@@ -87,7 +87,7 @@ int dl_add_file(uint8_t fid, const char *path)
 	}
 
 	file_data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
-				      strlen(path) + 1);
+						     strlen(path) + 1);
 
 	if (file_data == NULL) {
 		return -ENOMEM;
@@ -104,7 +104,7 @@ int dl_add_file(uint8_t fid, const char *path)
 	return 0;
 }
 
-int dl_add_track_format_chunk(uint8_t tid, const char* format)
+int dl_add_track_format_chunk(uint8_t tid, const char *format)
 {
 	struct fifo_item *item;
 
@@ -114,7 +114,7 @@ int dl_add_track_format_chunk(uint8_t tid, const char* format)
 	}
 
 	item->data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
-				       strlen(format) + 1);
+						      strlen(format) + 1);
 
 	if (item->data == NULL) {
 		return -ENOMEM;
@@ -160,7 +160,7 @@ int dl_add_track_data(struct log_data *data)
 	return 0;
 }
 
-int dl_add_track_names_chunk(uint8_t tid, const char* names)
+int dl_add_track_names_chunk(uint8_t tid, const char *names)
 {
 	struct fifo_item *item;
 
@@ -170,9 +170,9 @@ int dl_add_track_names_chunk(uint8_t tid, const char* names)
 	}
 
 	item->data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
-				       strlen(names) + 1);
+						      strlen(names) + 1);
 
-	if(item->data == NULL) {
+	if (item->data == NULL) {
 		return -ENOMEM;
 	}
 
@@ -184,6 +184,16 @@ int dl_add_track_names_chunk(uint8_t tid, const char* names)
 
 	k_fifo_put(&fifo, item);
 	return 0;
+}
+
+int dl_start_track(uint8_t tid, const char *names, const char *fmt)
+{
+	int rc = dl_add_track_format_chunk(tid, fmt);
+	if (rc != 0) {
+		return rc;
+	}
+
+	return dl_add_track_names_chunk(tid, names);
 }
 
 static int open_log(const char *path)
@@ -204,7 +214,7 @@ static int close_log()
 	return fs_close(&fd);
 }
 
-static int add_track_format_chunk(uint8_t tid, const char* format)
+static int add_track_format_chunk(uint8_t tid, const char *format)
 {
 	int rc;
 	uint8_t bf = ((1 & 0xF) << 4) | (tid & 0xF);
@@ -222,7 +232,7 @@ static int add_track_format_chunk(uint8_t tid, const char* format)
 	return 0;
 }
 
-static int add_track_names_chunk(uint8_t tid, const char* names)
+static int add_track_names_chunk(uint8_t tid, const char *names)
 {
 	int rc;
 	uint8_t bf = ((2 & 0xF) << 4) | (tid & 0xF);
@@ -231,9 +241,9 @@ static int add_track_names_chunk(uint8_t tid, const char* names)
 		return -EIO;
 	}
 
-	size_t dl = strlen(names)+1;
+	size_t dl = strlen(names) + 1;
 	rc = fs_write(&fd, names, dl);
-	if (rc != dl){
+	if (rc != dl) {
 		return -EIO;
 	}
 
@@ -250,10 +260,9 @@ static int add_track_data(uint8_t tid, void *data, size_t length)
 	}
 
 	rc = fs_write(&fd, data, length);
-	if (rc != length){
+	if (rc != length) {
 		return -EIO;
 	}
-
 	return 0;
 }
 
@@ -263,7 +272,7 @@ static int add_file(uint8_t fid, const char *path)
 	struct fs_dirent entry;
 	struct fs_file_t file;
 	uint8_t bf = ((4 & 0xF) << 4) | (fid & 0xF);
-	u32_t size;
+	uint32_t size;
 
 	rc = fs_stat(path, &entry);
 	if (rc != 0) {
@@ -287,7 +296,7 @@ static int add_file(uint8_t fid, const char *path)
 		return rc;
 	}
 
-	while(1) {
+	while (1) {
 		uint8_t buf;
 		rc = fs_read(&file, &buf, 1);
 		if (rc == 0) {
@@ -317,17 +326,19 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 		if (item == NULL) {
 			continue;
 		}
+		uint32_t s = k_cycle_get_32();
+		enum consumer_cmd cmd = item->cmd;
 		LOG_DBG("received new data item");
 		LOG_DBG("cmd %d", item->cmd);
 
-		if(item->cmd == LOG_FILE) {
+		if (item->cmd == LOG_FILE) {
 			struct log_data *data;
 			data = item->data;
 
 			res = add_file(data->id, data->data);
 			k_free(data);
 
-			if(res != 0) {
+			if (res != 0) {
 				/* TODO: What to do with errors */
 			}
 		} else if (item->cmd == LOG_TRACK_DATA) {
@@ -338,9 +349,7 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 					     data->data_size);
 			k_free(data);
 
-			if(res != 0) {
-
-			}
+			if (res != 0) {}
 		} else if (item->cmd == LOG_TRACK_FORMAT) {
 			struct log_data *data;
 			data = item->data;
@@ -348,9 +357,7 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 			res = add_track_format_chunk(data->id, data->data);
 			k_free(data);
 
-			if (res != 0) {
-
-			}
+			if (res != 0) {}
 		} else if (item->cmd == LOG_TRACK_NAMES) {
 			struct log_data *data;
 			data = item->data;
@@ -358,22 +365,23 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 			res = add_track_names_chunk(data->id, data->data);
 			k_free(data);
 
-			if (res != 0) {
-
-			}
+			if (res != 0) {}
 		} else if (item->cmd == OPEN_LOG) {
-			LOG_DBG("open log file with filename %s", log_strdup(current_path));
+			LOG_DBG("open log file with filename %s",
+				log_strdup(current_path));
 			res = open_log(current_path);
-		} else if (item ->cmd == CLOSE_LOG) {
+		} else if (item->cmd == CLOSE_LOG) {
 			res = close_log();
 		} else {
 			LOG_ERR("cmd not known");
 		}
 
+
+
 		k_free(item);
+		LOG_INF("cmd %d toke %d us", cmd, k_cyc_to_us_near32(k_cycle_get_32() - s));
 	}
 }
 
-K_THREAD_DEFINE(dl_tid, CONFIG_DATALOGGER_STACK_SIZE, datalogger_consumer,
-		NULL, NULL, NULL, CONFIG_DATALOGGER_THREAD_PRIORITY, 0, 0);
-
+K_THREAD_DEFINE(dl_tid, CONFIG_DATALOGGER_STACK_SIZE, datalogger_consumer, NULL,
+		NULL, NULL, CONFIG_DATALOGGER_THREAD_PRIORITY, 0, 0);

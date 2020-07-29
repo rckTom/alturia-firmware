@@ -20,7 +20,7 @@
 #define DATALOG_FILE_FORMAT_VERSION 1
 
 struct log_data {
-	u8_t id;
+	uint8_t id;
 	size_t data_size;
 	uint8_t data[];
 };
@@ -83,5 +83,7 @@ int dl_add_track_names_chunk(uint8_t tid, const char *names);
  * @path: Path to the file which should be included
  */
 int dl_add_file(uint8_t fid, const char *path);
+
+int dl_start_track(uint8_t tid, const char *names, const char *fmt);
 
 #endif /* ALTURIA__DATALOGGER__H */
