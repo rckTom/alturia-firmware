@@ -11,6 +11,7 @@
  */
 
 #include <zephyr.h>
+#include <devicetree.h>
 #include <device.h>
 #include <drivers/sensor.h>
 #include <logging/log.h>
@@ -30,20 +31,20 @@ static const struct sensor_daq_data {
 	struct sensor_value *sval;
 } sensor_daq[] = {
 	{
-		.sensor_device_label = DT_ALIAS_PRESSURE_SENSOR_LABEL,
+		.sensor_device_label = DT_LABEL(DT_ALIAS(pressure_sensor)),
 		.channel = SENSOR_CHAN_PRESS,
 		.sval = &press_sample
 	},
-	{
-		.sensor_device_label = DT_ALIAS_ACC_SENSOR_LABEL,
+/* 	{
+		.sensor_device_label = DT_LABEL(DT_ALIAS(acc_sensor)),
 		.channel = SENSOR_CHAN_ACCEL_XYZ,
 		.sval = acc_sample,
 	},
 	{
-		.sensor_device_label = DT_ALIAS_GYRO_SENSOR_LABEL,
+		.sensor_device_label = DT_LABEL(DT_ALIAS(gyro_sensor)),
 		.channel = SENSOR_CHAN_GYRO_XYZ,
 		.sval = gyr_sample,
-	},
+	}, */
 };
 
 #define NUM_SENSOR_DAQ ARRAY_SIZE(sensor_daq)
@@ -99,7 +100,7 @@ static void daq_sensor_thread_fnc(void * daq_data, void *arg1, void *arg2)
 
 int daq_start()
 {
-	k_timer_start(&sample_timer, K_NO_WAIT, K_MSEC(100));
+	k_timer_start(&sample_timer, K_NO_WAIT, K_MSEC(1000));
 	return 0;
 }
 
@@ -114,9 +115,10 @@ int daq_sync()
 	return rc;
 }
 
-K_THREAD_DEFINE(DAQ_0, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
-		&sensor_daq[0], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);
-K_THREAD_DEFINE(DAQ_1, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
+//K_THREAD_DEFINE(DAQ_PRES, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
+//		&sensor_daq[0], NULL, NULL, CONFIG_DAQ_PRIO - 1, 0, 0);
+/* K_THREAD_DEFINE(DAQ_ACC, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
 		&sensor_daq[1], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);
-K_THREAD_DEFINE(DAQ_2, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
+K_THREAD_DEFINE(DAQ_GYR, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
 		&sensor_daq[2], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);
+ */

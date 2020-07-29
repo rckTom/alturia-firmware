@@ -15,8 +15,8 @@
 
 #include "drivers/sensor.h"
 
-extern struct sensor_value acc_sample[];
-extern struct sensor_value gyr_sample[];
+extern struct sensor_value acc_sample[3];
+extern struct sensor_value gyr_sample[3];
 extern struct sensor_value press_sample;
 
 int daq_sync();
