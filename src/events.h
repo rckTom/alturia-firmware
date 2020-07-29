@@ -1,8 +1,8 @@
 #ifndef ALTURIA_EVENTS_H
 #define ALTURIA_EVENTS_H
 
-#include <zephyr.h>
 #include "conditions.h"
+#include <zephyr.h>
 
 typedef enum events {
 	EVT_BOOT,
@@ -18,9 +18,8 @@ typedef enum events {
 	EVT_ENUM_END,
 } event_type;
 
-
 typedef struct timer_event_data {
-	u8_t timer_number;
+	uint8_t timer_number;
 } timer_event_data_t;
 
 typedef struct ascent_height_event_data {
@@ -41,7 +40,7 @@ typedef struct descent_rate_event_data {
 
 struct event {
 	event_type evt_type;
-	void * param;
+	void *param;
 	condition_t *evt_conditions;
 	struct action *action_list;
 	struct event *next;
@@ -52,9 +51,9 @@ void event_call_actions_async(struct event *evt);
 int event_check_conditions(const struct event *evt);
 void event_action_append(struct event *evt, struct action *act);
 void event_append(struct event *evt);
-struct event* event_get(event_type evt_type);
-void event_initialize(struct event *evt, event_type type, void * param, condition_t *cond);
+struct event *event_get(event_type evt_type);
+void event_initialize(struct event *evt, event_type type, void *param,
+		      condition_t *cond);
 void event_loop();
-
 
 #endif

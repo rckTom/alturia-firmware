@@ -3,8 +3,8 @@
 
 #include <zephyr.h>
 
-int event_timer_start(u8_t timer_number, u32_t count, bool cyclic);
-int event_timer_stop(u8_t timer_number);
+int event_timer_start(uint8_t timer_number, uint32_t count, bool cyclic);
+int event_timer_stop(uint8_t timer_number);
 void setup_event_timers();
 
 #endif

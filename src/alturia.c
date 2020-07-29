@@ -65,7 +65,7 @@ int next_datalog_path(char *path, size_t n)
 int check_free_space(void)
 {
 	struct fs_statvfs stats;
-	u32_t free_space;
+	uint32_t free_space;
 	int rc;
 
 	rc = fs_statvfs(ALTURIA_FLASH_MP, &stats);

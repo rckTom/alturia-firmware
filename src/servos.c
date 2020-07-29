@@ -26,15 +26,15 @@ static struct servo_data_config {
 	struct device *pwm_dev;
 
 	/* Maximum servo angle */
-	u32_t max_us;
+	uint32_t max_us;
 
 	/* Minimum servo angle */
-	u32_t min_us;
+	uint32_t min_us;
 } servo_data[ARRAY_SIZE(servo_config)];
 
 #define NUM_SERVOS ARRAY_SIZE(servo_config)
 
-int servo_set_max_us(u8_t servo, u32_t max_us)
+int servo_set_max_us(uint8_t servo, uint32_t max_us)
 {
 	if (servo >= NUM_SERVOS) {
 		return -ENODEV;
@@ -44,7 +44,7 @@ int servo_set_max_us(u8_t servo, u32_t max_us)
 	return 0;
 }
 
-int servo_set_min_us(u8_t servo, u32_t min_us)
+int servo_set_min_us(uint8_t servo, uint32_t min_us)
 {
 	if (servo >= NUM_SERVOS) {
 		return -ENODEV;
@@ -54,7 +54,7 @@ int servo_set_min_us(u8_t servo, u32_t min_us)
 	return 0;
 }
 
-int servo_set_us(int servo, u32_t us)
+int servo_set_us(int servo, uint32_t us)
 {
 	const struct servo_data_config *data = servo_data + servo;
 
@@ -70,13 +70,13 @@ int servo_set_us(int servo, u32_t us)
 				us, 0);
 }
 
-int servo_set_angle(int servo, u8_t angle)
+int servo_set_angle(int servo, uint8_t angle)
 {
 	if (servo >= NUM_SERVOS) {
 		return -ENODEV;
 	};
 
-	u32_t pw = servo_data[servo].min_us + (servo_data[servo].max_us -
+	uint32_t pw = servo_data[servo].min_us + (servo_data[servo].max_us -
 					       servo_data[servo].min_us) *
 					       angle / 180;
 

@@ -1,8 +1,8 @@
 #include "events.h"
 #include "util.h"
-#include <zephyr.h>
 #include <init.h>
 #include <logging/log.h>
+#include <zephyr.h>
 
 LOG_MODULE_REGISTER(eventtimer, CONFIG_LOG_DEFAULT_LEVEL);
 
@@ -15,8 +15,8 @@ struct event_timer event_timers[16];
 
 static void event_timer_expr(struct k_timer *timer)
 {
-	struct event_timer *evt_timer = CONTAINER_OF(timer, struct event_timer,
-						     timer);
+	struct event_timer *evt_timer =
+	    CONTAINER_OF(timer, struct event_timer, timer);
 
 	if (evt_timer->evt == NULL) {
 		LOG_ERR("Event timer expired but no reference to event found");
@@ -26,8 +26,7 @@ static void event_timer_expr(struct k_timer *timer)
 	event_call_actions_async(evt_timer->evt);
 }
 
-
-int event_timer_start(u8_t timer_number, u32_t count, bool cyclic)
+int event_timer_start(uint8_t timer_number, uint32_t count, bool cyclic)
 {
 	if (timer_number >= ARRAY_SIZE(event_timers)) {
 		LOG_ERR("Timer number to large");
@@ -46,7 +45,7 @@ int event_timer_start(u8_t timer_number, u32_t count, bool cyclic)
 	return 0;
 }
 
-int event_timer_stop(u8_t timer_number)
+int event_timer_stop(uint8_t timer_number)
 {
 	if (timer_number >= ARRAY_SIZE(event_timers)) {
 		LOG_ERR("Timer number to large");
@@ -58,8 +57,9 @@ int event_timer_stop(u8_t timer_number)
 	return 0;
 }
 
-int setup_event_timers() {
-	struct event* evt = event_get(EVT_TIMER_EXPR);
+int setup_event_timers()
+{
+	struct event *evt = event_get(EVT_TIMER_EXPR);
 
 	if (evt == NULL) {
 		return -EINVAL;
@@ -68,7 +68,7 @@ int setup_event_timers() {
 	while (1) {
 		timer_event_data_t *data = evt->param;
 
-		if(data->timer_number >= ARRAY_SIZE(event_timers)) {
+		if (data->timer_number >= ARRAY_SIZE(event_timers)) {
 			LOG_ERR("timer number to large");
 			return -EINVAL;
 		}
@@ -85,7 +85,8 @@ int setup_event_timers() {
 	return 0;
 }
 
-static int event_timer_init() {
+static int event_timer_init()
+{
 	for (int i = 0; i < ARRAY_SIZE(event_timers); i++) {
 		k_timer_init(&(event_timers + i)->timer, event_timer_expr,
 			     NULL);
