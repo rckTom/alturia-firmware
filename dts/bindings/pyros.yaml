@@ -2,7 +2,9 @@ compatible: "pyros"
 
 description: "Device tree node representing a number of pyros"
 
-properties:
+child-binding:
+  description: Pyro child node
+  properties:
     gpios:
-        type: phandle-array
-        required: true
+      type: phandle-array
+      required: true

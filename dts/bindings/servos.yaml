@@ -2,7 +2,10 @@ compatible: "servos"
 
 description: "Device tree node representing a number of servos"
 
-properties:
+
+child-binding:
+  description: Servo child binding
+  properties:
     pwms:
-        type: phandle-array
-        required: true
+      type: phandle-array
+      required: true
