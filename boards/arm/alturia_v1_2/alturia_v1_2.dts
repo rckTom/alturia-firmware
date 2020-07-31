@@ -14,35 +14,29 @@
 	};
 
 	aliases {
-		led0 = &user_led;
 		pressure-sensor = &ms5607;
 		acc-sensor = &bmi088_acc;
 		gyro-sensor = &bmi088_gyr;
 		highg-sensor = &ais2120sx;
 		norflash = &mt25ql;
-	};
-
-	leds {
-		compatible = "gpio-leds";
-		user_led: led_0 {
-			gpios = <&gpioc 8 GPIO_INT_ACTIVE_HIGH>;
-			label = "User LED";
-		};
+		red-led = &red_led;
+		green-led = &green_led;
+		blue-led = &blue_led;
 	};
 
 	pwmleds: pwmleds {
 		compatible = "pwm-leds";
 
-		red_led {
-			pwms = <&pwm3 1 100000>;
+		red_led: red_led {
+			pwms = <&pwm3 1 100000 PWM_POLARITY_INVERTED >;
 		};
 
-		green_led {
-			pwms = <&pwm3 2 100000>;
+		green_led: green_led {
+			pwms = <&pwm3 2 100000 PWM_POLARITY_INVERTED>;
 		};
 
-		blue_led {
-			pwms = <&pwm3 3 100000>;
+		blue_led: blue_led {
+			pwms = <&pwm3 3 100000 PWM_POLARITY_INVERTED>;
 		};
 	};
 
