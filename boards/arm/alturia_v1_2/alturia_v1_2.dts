@@ -58,16 +58,16 @@
 
 	beeper: beeper {
 		compatible = "beeper";
-		pwms = <&pwm2 1 50000000>;
+		pwms = <&pwm2 1 50000000 PWM_POLARITY_NORMAL>;
 	};
 
 	servos: servos {
 		compatible = "servos";
 		servo1 {
-			pwms = <&pwm4 3 50000000>;
+			pwms = <&pwm4 3 50000000 PWM_POLARITY_NORMAL>;
 		};
 		servo2 {
-			pwms = <&pwm4 4 50000000>;
+			pwms = <&pwm4 4 50000000 PWM_POLARITY_NORMAL>;
 		};
 	};
 };
