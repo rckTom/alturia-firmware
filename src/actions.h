@@ -26,14 +26,14 @@ struct action {
 };
 
 struct event_timer_data {
-	s32_t count;
+	int32_t count;
 	uint8_t timer_number;
 	bool cyclic;
 };
 
 struct beep_action_data {
-	s32_t duration;
-	s32_t pitch;
+	int32_t duration;
+	int32_t pitch;
 };
 
 struct servo_action_data {
