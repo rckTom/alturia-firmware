@@ -11,7 +11,7 @@ LOG_MODULE_REGISTER(servos, CONFIG_LOG_DEFAULT_LEVEL);
 #define SERVO_INIT_MACRO(node_id) \
 	{DT_PWMS_LABEL(node_id), \
 	DT_PWMS_CHANNEL(node_id), \
-	DT_PWMS_CELL_BY_IDX(node_id, period, 0)},
+	DT_PWMS_PERIOD(node_id)},
 
 static const struct servo_config {
 	const char *pwm_controller;
