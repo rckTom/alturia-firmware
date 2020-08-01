@@ -31,7 +31,6 @@ static const struct beeper_device {
 };
 
 static struct device *pwm_dev;
-static struct device *led_dev;
 
 static uint8_t vol = VOLUME;
 
@@ -56,11 +55,9 @@ static void beep_work_handler(struct k_work *item)
     if (data->count % 2) {
         res = pwm_pin_set_usec(pwm_dev, beeper_device.pwm_channel, data->pitch, 0,
 			       PWM_POLARITY_NORMAL);
-        gpio_pin_set(led_dev, DT_GPIO_PIN(DT_ALIAS(led0), gpios), false);
     } else {
         res = pwm_pin_set_usec(pwm_dev, beeper_device.pwm_channel, data->pitch,
 			       ((data->pitch/2)*vol)/100, PWM_POLARITY_NORMAL);
-        gpio_pin_set(led_dev, DT_GPIO_PIN(DT_ALIAS(led0),gpios), true);
     }
 
     if (res){
@@ -129,12 +126,6 @@ static int beeper_init()
 	pwm_dev = device_get_binding(beeper_device.pwm_controller);
 	if (pwm_dev == NULL) {
 		LOG_ERR("unable to get device");
-		return -ENODEV;
-	}
-
-	led_dev = device_get_binding(DT_GPIO_LABEL(DT_ALIAS(led0),gpios));
-	if (led_dev == NULL) {
-	        LOG_ERR("can not get led device");
 		return -ENODEV;
 	}
 
