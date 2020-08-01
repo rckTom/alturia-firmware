@@ -167,7 +167,7 @@ int read_sys_config(const char* path)
 	int rc, rc2;
 	struct fs_file_t fd;
 
-	rc = fs_open(&fd, ALTURIA_FLASH_MP"/config/sysconfig.ini");
+	rc = fs_open(&fd, ALTURIA_FLASH_MP"/config/sysconfig.ini", FS_O_READ);
 	if (rc != 0) {
 		LOG_DBG("error opening config file: %d", rc);
 		return rc;
@@ -200,7 +200,7 @@ int read_flight_config(const char *path)
 	int rc, rc2;
 	struct fs_file_t fd;
 
-	rc = fs_open(&fd, path);
+	rc = fs_open(&fd, path, FS_O_READ);
 	if (rc != 0) {
 		return rc;
 	}

@@ -199,7 +199,7 @@ int dl_start_track(uint8_t tid, const char *names, const char *fmt)
 static int open_log(const char *path)
 {
 	int res;
-	res = fs_open(&fd, path);
+	res = fs_open(&fd, path, FS_O_WRITE | FS_O_CREATE);
 	if (res == 0) {
 		log_open = true;
 		return res;
@@ -290,7 +290,7 @@ static int add_file(uint8_t fid, const char *path)
 		return rc;
 	}
 
-	rc = fs_open(&file, path);
+	rc = fs_open(&file, path, FS_O_READ);
 	if (rc != 0) {
 		LOG_ERR("can not open file");
 		return rc;
