@@ -18,11 +18,7 @@
 #include <zephyr.h>
 
 LOG_MODULE_REGISTER(datalogger, CONFIG_DATALOGGER_LOG_LEVEL);
-__ccm_bss_section K_MEM_POOL_DEFINE(mem_pool,
-				    CONFIG_DATALOGGER_MEM_POOL_MIN_BLOCK_SIZE,
-				    CONFIG_DATALOGGER_MEM_POOL_MAX_BLOCK_SIZE,
-				    CONFIG_DATALOGGER_MEM_POOL_BLOCK_COUNT,
-				    CONFIG_DATALOGGER_MEM_POOL_ALIGN);
+__ccm_bss_section K_HEAP_DEFINE(mem_pool, CONFIG_DATALOGGER_BUFFER_SIZE);
 K_FIFO_DEFINE(fifo);
 
 static struct fs_file_t fd;
@@ -50,7 +46,7 @@ int dl_open_log(const char *path)
 {
 	struct fifo_item *item;
 
-	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	item = k_heap_alloc(&mem_pool, FIFO_ITEM_SIZE, K_NO_WAIT);
 	if (item == NULL) {
 		return -ENOMEM;
 	}
@@ -66,7 +62,7 @@ int dl_close_log()
 {
 	struct fifo_item *item;
 
-	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	item = k_heap_alloc(&mem_pool, FIFO_ITEM_SIZE, K_NO_WAIT);
 	if (item == NULL) {
 		return -ENOMEM;
 	}
@@ -81,13 +77,13 @@ int dl_add_file(uint8_t fid, const char *path)
 	struct fifo_item *item;
 	struct log_data *file_data;
 
-	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	item = k_heap_alloc(&mem_pool, FIFO_ITEM_SIZE, K_NO_WAIT);
 	if (item == NULL) {
 		return -ENOMEM;
 	}
 
-	file_data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
-						     strlen(path) + 1);
+	file_data = k_heap_alloc(&mem_pool, sizeof(struct log_data) +
+			         strlen(path) + 1, K_NO_WAIT);
 
 	if (file_data == NULL) {
 		return -ENOMEM;
@@ -108,13 +104,13 @@ int dl_add_track_format_chunk(uint8_t tid, const char *format)
 {
 	struct fifo_item *item;
 
-	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	item = k_heap_alloc(&mem_pool, FIFO_ITEM_SIZE, K_NO_WAIT);
 	if (item == NULL) {
 		return -ENOMEM;
 	}
 
-	item->data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
-						      strlen(format) + 1);
+	item->data = k_heap_alloc(&mem_pool, sizeof(struct log_data) +
+				  strlen(format) + 1, K_NO_WAIT);
 
 	if (item->data == NULL) {
 		return -ENOMEM;
@@ -132,7 +128,7 @@ int dl_add_track_format_chunk(uint8_t tid, const char *format)
 
 int dl_alloc_track_data_buffer(struct log_data **data, uint8_t tid, size_t size)
 {
-	*data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) + size);
+	*data = k_heap_alloc(&mem_pool, sizeof(struct log_data) + size, K_NO_WAIT);
 
 	if (*data == NULL) {
 		return -ENOMEM;
@@ -148,7 +144,7 @@ int dl_add_track_data(struct log_data *data)
 {
 	struct fifo_item *item;
 
-	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	item = k_heap_alloc(&mem_pool, FIFO_ITEM_SIZE, K_NO_WAIT);
 	if (item == NULL) {
 		return -ENOMEM;
 	}
@@ -164,13 +160,13 @@ int dl_add_track_names_chunk(uint8_t tid, const char *names)
 {
 	struct fifo_item *item;
 
-	item = k_mem_pool_malloc(&mem_pool, FIFO_ITEM_SIZE);
+	item = k_heap_alloc(&mem_pool, FIFO_ITEM_SIZE, K_NO_WAIT);
 	if (item == NULL) {
 		return -ENOMEM;
 	}
 
-	item->data = k_mem_pool_malloc(&mem_pool, sizeof(struct log_data) +
-						      strlen(names) + 1);
+	item->data = k_heap_alloc(&mem_pool, sizeof(struct log_data) +
+				  strlen(names) + 1, K_NO_WAIT);
 
 	if (item->data == NULL) {
 		return -ENOMEM;
