@@ -67,7 +67,7 @@ static void daq_sensor_thread_fnc(void * daq_data, void *arg1, void *arg2)
 	int res = 0;
 	struct sensor_daq_data *data = daq_data;
 
-	struct device *dev = device_get_binding(data->sensor_device_label);
+	const struct device *dev = device_get_binding(data->sensor_device_label);
 
 	if (dev == NULL) {
 		LOG_ERR("unable to get sensor device %s",

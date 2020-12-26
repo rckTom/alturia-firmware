@@ -30,7 +30,7 @@ static const struct beeper_device {
 	DT_PWMS_CHANNEL_BY_IDX(DT_NODELABEL(beeper),0)
 };
 
-static struct device *pwm_dev;
+static const struct device *pwm_dev;
 
 static uint8_t vol = VOLUME;
 

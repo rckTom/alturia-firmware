@@ -23,7 +23,7 @@ static const struct servo_config {
 
 static struct servo_data_config {
 	/* PWM Device */
-	struct device *pwm_dev;
+	const struct device *pwm_dev;
 
 	/* Maximum servo angle */
 	uint32_t max_us;

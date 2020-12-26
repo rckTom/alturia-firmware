@@ -29,7 +29,7 @@ static struct pyro{
 	const char *dev_name;
 	const int pin;
 	const int flags;
-	struct device *dev;
+	const struct device *dev;
 	struct k_delayed_work work;
 } pyro_gpios[] = {DT_FOREACH_CHILD(DT_NODELABEL(pyros),PYRO_INIT_MACRO)};
 
@@ -69,7 +69,7 @@ int pyros_fire(unsigned int pyro)
 
 static int pyros_init()
 {
-	struct device *dev;
+	const struct device *dev;
 	int res;
 
 	for (int i = 0; i < NUM_PYROS; i++) {

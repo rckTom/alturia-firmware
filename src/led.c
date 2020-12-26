@@ -25,7 +25,7 @@ LOG_MODULE_REGISTER(led, CONFIG_LOG_DEFAULT_LEVEL);
 
 K_SEM_DEFINE(led_lock, 1, 1);
 
-static struct device *led_red, *led_green, *led_blue;
+static const struct device *led_red, *led_green, *led_blue;
 static uint32_t current_color = 0;
 
 struct fade_work_item {
@@ -217,7 +217,7 @@ int led_set_color_hsv(const struct color_hsv *hsv)
 	return led_set_color_rgb(hsv_to_rgb(hsv));
 }
 
-int init(struct device *dev)
+int init(const struct device *dev)
 {
 	int ret;
 

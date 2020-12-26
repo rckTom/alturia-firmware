@@ -77,7 +77,7 @@ static const struct {
 
 static int init_gpios(void)
 {
-	struct device *dev;
+	const struct device *dev;
 	uint8_t n;
 	int res;
 
@@ -123,7 +123,7 @@ static int init_usb(void)
 	return rc;
 }
 
-int init_peripherals(struct device *dev)
+int init_peripherals(const struct device *dev)
 {
 	int res;
 
