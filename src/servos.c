@@ -1,6 +1,7 @@
 #include "servos.h"
 
 #include <zephyr.h>
+#include <stdint.h>
 #include <devicetree.h>
 #include <init.h>
 #include <drivers/pwm.h>

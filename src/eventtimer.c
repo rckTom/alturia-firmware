@@ -1,4 +1,5 @@
 #include "events.h"
+#include "execution_engine.h"
 #include "util.h"
 #include <init.h>
 #include <logging/log.h>
@@ -7,7 +8,7 @@
 LOG_MODULE_REGISTER(eventtimer, CONFIG_LOG_DEFAULT_LEVEL);
 
 struct event_timer {
-	struct event *evt;
+	struct system_evt *evt;
 	struct k_timer timer;
 };
 
@@ -57,29 +58,20 @@ int event_timer_stop(uint8_t timer_number)
 	return 0;
 }
 
-int setup_event_timers()
+int setup_event_timers(const struct conf_desc *ctx)
 {
-	struct event *evt = event_get(EVT_TIMER_EXPR);
+	int num_timers = ctx->num_timer;
+	struct timer_evt *timer = conf_timer(ctx);
 
-	if (evt == NULL) {
-		return -EINVAL;
-	}
+	for (int i = 0; i <= num_timers; i++) {
+		timer += i;
 
-	while (1) {
-		timer_event_data_t *data = evt->param;
-
-		if (data->timer_number >= ARRAY_SIZE(event_timers)) {
+		if (timer->timer_num >= ARRAY_SIZE(event_timers)) {
 			LOG_ERR("timer number to large");
 			return -EINVAL;
 		}
 
-		event_timers[data->timer_number].evt = evt;
-
-		if (evt->next == NULL) {
-			break;
-		}
-
-		evt = evt->next;
+		event_timers[timer->timer_num].evt = &timer->evt;
 	}
 
 	return 0;

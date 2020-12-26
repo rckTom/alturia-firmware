@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.13.1)
 
 set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
-set(BOARD alturia)
+set(BOARD alturia_v1_2)
 set(BOARD_FLASH_RUNNER jlink)
 set(BOARD_DEBUG_RUNNER jlink)
 set(DTS_ROOT ${CMAKE_CURRENT_LIST_DIR})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 
@@ -14,7 +15,10 @@ set_property(TARGET app PROPERTY C_STANDARD 11)
 target_include_directories(app PRIVATE lib/inih/
 				       lib/cmsis/CMSIS/DSP/Include
 				       src/generated/
-				       src/filter/)
+				       src/filter/
+				       src/
+				       src/configuration
+					   src/execution_engine/)
 
 function(cached_symbolic_codegen)
 	cmake_parse_arguments(
@@ -103,9 +107,8 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/math_ex.c
 			   src/servos.c
 			   src/numeric.c
-			   src/events.c
 			   src/conditions.c
 			   src/flightstate.c
-			   src/actions.c
+			   src/execution_engine/execution_engine.c
 			   src/eventtimer.c)
 
