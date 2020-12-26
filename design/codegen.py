@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import sympy as sp
 import sympy_helpers as sph
 from sympy.utilities import codegen
-from sympy.printing.ccode import C99CodePrinter, float32, real, ccode
+from sympy.printing.c import C99CodePrinter, float32, real, ccode
 from sympy.matrices.expressions.matexpr import MatrixElement
 
 def subs_single_elements(routine, element_type):
