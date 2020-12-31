@@ -14,5 +14,7 @@
 #define ALTURIA__SYSINIT__H
 
 int init_fs(void);
+int init_usb(void);
+int init_peripherals(void);
 
 #endif

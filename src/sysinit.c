@@ -106,7 +106,7 @@ static int init_gpios(void)
 	return res;
 }
 
-static int init_usb(void)
+int init_usb(void)
 {
 	int rc = usb_enable(NULL);
 
