@@ -59,12 +59,6 @@ static const struct {
 	.gpio_flags = GPIO_OUTPUT,
 	.initial_state = true,
     },
-    {
-	.gpio_controller = DT_GPIO_LABEL(DT_ALIAS(norflash), hold_gpios),
-	.gpio_pin = DT_GPIO_PIN(DT_ALIAS(norflash), hold_gpios),
-	.gpio_flags = GPIO_OUTPUT,
-	.initial_state = true,
-    },
 #ifndef CONFIG_BOARD_ALTURIA_V1_2
     {
 	.gpio_controller = DT_GPIO_LABEL(DT_ALIAS(led0), gpios),
