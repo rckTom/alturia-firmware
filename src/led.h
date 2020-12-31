@@ -1,6 +1,8 @@
 #ifndef ALTURIA__LED__H
 #define ALTURIA__LED__H
 
+#include <stdint.h>
+
 struct color_hsv {
 	float h, s, v;
 };

@@ -255,7 +255,6 @@ int init(const struct device *dev)
 	};
 
 	led_set_color_rgb(0x00FF0000);
-	led_fade_to_hsv(&hsv, 0.3);
 	return 0;
 
 err:
