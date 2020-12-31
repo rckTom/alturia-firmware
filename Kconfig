@@ -10,28 +10,11 @@ menu "Datalogger"
 	config DATALOGGER_STACK_SIZE
 		int "Stack size for datalogger thread"
 		default 1024
-	menu "Datalogger Mempool"
-		config DATALOGGER_MEM_POOL_MIN_BLOCK_SIZE
-			int "Minimum block size"
-			default 4
-			help
-			  Minimum block size for datalogger mem pool in bytes
-		config DATALOGGER_MEM_POOL_MAX_BLOCK_SIZE
-			int "Maximum block size"
-			default 256
-			help
-			  Maximum block size for datalogger mem pool in bytes
-		config DATALOGGER_MEM_POOL_BLOCK_COUNT
-			int "Block count"
-			default 4
-			help
-			  Number of blocks available
-		config DATALOGGER_MEM_POOL_ALIGN
-			int "Alignment"
-			default 4
-			help
-			  Mem pool data alignment in bytes
-	endmenu
+	config DATALOGGER_BUFFER_SIZE
+		int "Buffer size in bytes"
+		default 1024
+		help
+			Buffer size for internal datalogger memory allocations		  
 endmenu
 
 menu "Pyros"
