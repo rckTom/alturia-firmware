@@ -115,8 +115,8 @@ int daq_sync()
 	return rc;
 }
 
-//K_THREAD_DEFINE(DAQ_PRES, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
-//		&sensor_daq[0], NULL, NULL, CONFIG_DAQ_PRIO - 1, 0, 0);
+K_THREAD_DEFINE(DAQ_PRES, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
+		&sensor_daq[0], NULL, NULL, CONFIG_DAQ_PRIO - 1, 0, 0);
 /* K_THREAD_DEFINE(DAQ_ACC, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
 		&sensor_daq[1], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);
 K_THREAD_DEFINE(DAQ_GYR, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,

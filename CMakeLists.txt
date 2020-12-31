@@ -96,10 +96,11 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/util.c
 			   src/sysinit.c
 			   src/alturia.c
-                           src/beeper.c
-                           src/main.c
+               		   src/beeper.c
+               		   src/main.c
+			   src/led.c
 			   src/configuration.c
-			   src/datalogger.c
+			   #src/datalogger.c
 			   src/is_atmosphere.c
 			   src/pyros.c
 			   src/daq.c
