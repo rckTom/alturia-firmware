@@ -64,7 +64,7 @@ static const struct {
 	.gpio_controller = DT_GPIO_LABEL(DT_ALIAS(led0), gpios),
 	.gpio_pin = DT_GPIO_LABEL(DT_ALIAS(led0), gpios),
 	.gpio_flags = GPIO_OUTPUT,
-	.initial_state = true,
+	.initial_state = false,
     }
 #endif
 };
@@ -221,4 +221,4 @@ int init_fs(void)
 	return rc;
 }
 
-SYS_INIT(init_peripherals, POST_KERNEL, 0);
+SYS_INIT(init_peripherals, APPLICATION, 0);
