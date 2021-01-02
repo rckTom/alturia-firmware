@@ -254,7 +254,6 @@ int init(const struct device *dev)
 	    .v = 1,
 	};
 
-	led_set_color_rgb(0x00FF0000);
 	return 0;
 
 err:
