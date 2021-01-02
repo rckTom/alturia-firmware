@@ -15,56 +15,50 @@
 #include <logging/log.h>
 #include <string.h>
 #include <stdio.h>
-#include "sysinit.h"
-#include "alturia.h"
-#include "beeper.h"
-#include "configuration.h"
-#include "datalogger.h"
-#include "arm_math.h"
-#include "is_atmosphere.h"
-#include "daq.h"
-#include "util.h"
-#include "kalman_filter.h"
-#include "drivers/uart.h"
-#include "transformations_impl.h"
-#include "math_ex.h"
-#include "drivers/pwm.h"
-#include "servos.h"
+#include <usb/usb_device.h>
 #include "execution_engine.h"
-#include "led.h"
 #include "sysinit.h"
+#include <fs/fs.h>
 
 LOG_MODULE_DECLARE(alturia);
 
 void main(void)
 {
-
-	int rc;
-	char flight_cfg_path[32] = ALTURIA_FLASH_MP;
-
-	struct uart_config conf;
-	conf.baudrate = 1000000;
-	conf.data_bits = 8;
-	conf.flow_ctrl = UART_CFG_FLOW_CTRL_NONE;
-	conf.parity = UART_CFG_PARITY_NONE;
-	conf.stop_bits = UART_CFG_STOP_BITS_1;
-
-	beeper_set_volume(10);
-	
-	rc = init_peripherals();
+	struct conf_desc *conf = NULL;
+	int rc = init_fs();
 	if (rc != 0) {
-		LOG_ERR("Unable to initialize gpios");
-		k_oops();
+		LOG_ERR( "Unable to initialize file system");
+		return;
+	}
+
+	//read execution engine context
+	struct fs_dirent dirstat;
+	rc = fs_stat("/lfs/config/config.bin", &dirstat);
+	if (rc!= 0) {
+		LOG_INF("unable to stat file");
+		goto error;
 	}
 	
-	struct color_hsv white = {
-		.h = 120,
-		.s = 1.0,
-		.v = 1.0
-	};
-	led_fade_to_hsv(&white, 0.3);
+	struct fs_file_t fid;
+	rc = fs_open(&fid, "/lfs/config/config.bin", FS_O_READ);
+	if (rc != 0) {
+		LOG_ERR("unable to open file");
+		goto error;
+	}
 
+	conf = k_malloc(dirstat.size);
+	if (conf == NULL) {
+		LOG_ERR("unable to allocate enough memory for config");
+		goto error;
+	}
+
+	LOG_INF("file size: %d", dirstat.size);
+	rc = fs_read(&fid, conf, dirstat.size);
+	event_loop(conf);
+
+error:
+	k_free(conf);
 	while(1) {
-		k_sleep(K_SECONDS(10));
+		k_sleep(K_MSEC(1000));
 	}
 }
