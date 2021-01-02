@@ -96,20 +96,18 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/util.c
 			   src/sysinit.c
 			   src/alturia.c
-               		   src/beeper.c
+			   src/beeper.c
                		   src/main.c
 			   src/led.c
 			   src/configuration.c
-			   #src/datalogger.c
+			   src/datalogger.c
 			   src/is_atmosphere.c
 			   src/pyros.c
 			   src/daq.c
 			   src/filter/kalman_filter.c
 			   src/math_ex.c
 			   src/servos.c
-			   src/numeric.c
-			   src/conditions.c
-			   src/flightstate.c
 			   src/execution_engine/execution_engine.c
-			   src/eventtimer.c)
+			   src/eventtimer.c
+			   )
 
