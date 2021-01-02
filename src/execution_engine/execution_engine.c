@@ -269,8 +269,25 @@ void action_call(const struct conf_desc *ctx, const struct action *act)
 
 	action_functions[act->type](ctx, action_data);
 }
+
+
+void event_call_actions(const struct system_evt *evt)
+{
+	unsigned int start = evt->action_start;
+	unsigned int end = start + evt->action_num;
+
+	for (; start < end; start++) {
+		struct action *act = get_action(context, start);
+
+		if (act != NULL) {
+			action_call(context, act);
+		}
+	}
+}
+
 void event_trigger(enum system_evt_type type)
 {
+	struct system_evt *evt = NULL;
 	switch (type) {
 		case APOGEE_EVT:
 		break;
@@ -285,20 +302,17 @@ void event_trigger(enum system_evt_type type)
 		case IGNITION_EVT:
 		break;
 		case BOOT_EVT:
+			evt = conf_boot(context);
 		break;
 	}
-}
 
-void event_call_actions(const struct system_evt *evt)
-{
-	for (int i = 0; i <= evt->action_num; i++) {
-		struct action *act = get_action(context, i);
-
-		if (act != NULL) {
-			action_call(context, act);
-		}
+	if (evt == NULL) {
+		return;
 	}
+
+	event_call_actions(evt);
 }
+
 
 void event_call_actions_async(struct system_evt *evt)
 {
