@@ -37,7 +37,7 @@ int event_timer_start(uint8_t timer_number, uint32_t count, bool cyclic)
 	struct event_timer *evt_timer = event_timers + timer_number;
 
 	if (k_timer_remaining_get(&evt_timer->timer) != 0) {
-		LOG_WRN("Timer already running");
+		LOG_WRN("Timer %d already running", timer_number);
 		return -EINVAL;
 	}
 
@@ -63,7 +63,7 @@ int setup_event_timers(const struct conf_desc *ctx)
 	int num_timers = ctx->num_timer;
 	struct timer_evt *timer = conf_timer(ctx);
 
-	for (int i = 0; i <= num_timers; i++) {
+	for (int i = 0; i < num_timers; i++) {
 		timer += i;
 
 		if (timer->timer_num >= ARRAY_SIZE(event_timers)) {
