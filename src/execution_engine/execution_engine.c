@@ -334,10 +334,15 @@ static void async_event_thread()
 
 }
 
+static void timer_callback(int timer_num) {
+	struct timer_evt *evt = get_timer(context, timer_num);
+	event_call_actions_async(&evt->evt);
+}
+
 void event_loop(const struct conf_desc *ctx)
 {
 	context = ctx;
-	setup_event_timers(ctx);
+	event_timer_set_callback(timer_callback);
 	event_trigger(BOOT_EVT);
 
 	while(1) {

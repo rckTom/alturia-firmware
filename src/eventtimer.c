@@ -8,10 +8,10 @@
 LOG_MODULE_REGISTER(eventtimer, CONFIG_LOG_DEFAULT_LEVEL);
 
 struct event_timer {
-	struct system_evt *evt;
 	struct k_timer timer;
 };
 
+void (*clbk)(int) = NULL;
 struct event_timer event_timers[16];
 
 static void event_timer_expr(struct k_timer *timer)
@@ -19,12 +19,10 @@ static void event_timer_expr(struct k_timer *timer)
 	struct event_timer *evt_timer =
 	    CONTAINER_OF(timer, struct event_timer, timer);
 
-	if (evt_timer->evt == NULL) {
-		LOG_ERR("Event timer expired but no reference to event found");
-		return;
+	if (clbk) {
+		int idx = evt_timer - event_timers;
+		clbk(idx);
 	}
-
-	event_call_actions_async(evt_timer->evt);
 }
 
 int event_timer_start(uint8_t timer_number, uint32_t count, bool cyclic)
@@ -58,23 +56,9 @@ int event_timer_stop(uint8_t timer_number)
 	return 0;
 }
 
-int setup_event_timers(const struct conf_desc *ctx)
+void event_timer_set_callback(void (*callback) (int))
 {
-	int num_timers = ctx->num_timer;
-	struct timer_evt *timer = conf_timer(ctx);
-
-	for (int i = 0; i < num_timers; i++) {
-		timer += i;
-
-		if (timer->timer_num >= ARRAY_SIZE(event_timers)) {
-			LOG_ERR("timer number to large");
-			return -EINVAL;
-		}
-
-		event_timers[timer->timer_num].evt = &timer->evt;
-	}
-
-	return 0;
+	clbk = callback;
 }
 
 static int event_timer_init()
