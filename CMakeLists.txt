@@ -6,7 +6,7 @@ set(BOARD_FLASH_RUNNER jlink)
 set(BOARD_DEBUG_RUNNER jlink)
 set(DTS_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
+set(ZEPHYR_EXTRA_MODULES /home/thomas/Tools/zephyrproject/modules/lib/lua)
 include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 
 
@@ -18,7 +18,8 @@ target_include_directories(app PRIVATE lib/inih/
 				       src/filter/
 				       src/
 				       src/configuration
-					   src/execution_engine/)
+				       src/execution_engine/
+				       src/lua_execution_engine/)
 
 function(cached_symbolic_codegen)
 	cmake_parse_arguments(
@@ -109,5 +110,8 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/servos.c
 			   src/execution_engine/execution_engine.c
 			   src/eventtimer.c
-			   )
+			   src/lua_execution_engine/lua_execution_engine.c
+			   src/lua_execution_engine/lua_ledlib.c
+			   src/lua_execution_engine/lua_timerlib.c
+			   src/lua_execution_engine/lua_servolib.c)
 
