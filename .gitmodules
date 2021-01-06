@@ -1,3 +1,6 @@
 [submodule "lib/inih"]
 	path = lib/inih
 	url = git@github.com:benhoyt/inih.git
+[submodule "lib/zephyr-lua"]
+	path = lib/zephyr-lua
+	url = https://github.com/rckTom/zephyr-lua.git

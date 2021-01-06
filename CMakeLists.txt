@@ -6,7 +6,7 @@ set(BOARD_FLASH_RUNNER jlink)
 set(BOARD_DEBUG_RUNNER jlink)
 set(DTS_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(ZEPHYR_EXTRA_MODULES /home/thomas/Tools/zephyrproject/modules/lib/lua)
+set(ZEPHYR_EXTRA_MODULES ${CMAKE_CURRENT_LIST_DIR}/lib/zephyr-lua)
 include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 
 
