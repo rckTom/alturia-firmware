@@ -4,6 +4,7 @@
 #include "lualib.h"
 #include "eventtimer.h"
 #include <logging/log.h>
+#include "lua_execution_engine.h"
 
 LOG_MODULE_REGISTER(lua_libtimer, CONFIG_LOG_DEFAULT_LEVEL);
 
@@ -12,7 +13,6 @@ LOG_MODULE_REGISTER(lua_libtimer, CONFIG_LOG_DEFAULT_LEVEL);
  * arg2: period (int)
  * arg3: cyclic (bool)
  */
-static lua_State *state;
 
 static int callback_refs[CONFIG_EVENT_TIMERS_NUMBER];
 
@@ -93,13 +93,22 @@ static int timer_expire(lua_State *L)
     return 0;
 }
 
-static void execute_callback(int timer_number) {
-    lua_pushcfunction(state, timer_expire);
-    lua_pushinteger(state, timer_number);
-    if (lua_pcall(state, 1, 0, 0)) {
-        LOG_ERR("%s", log_strdup(lua_tostring(state, -1)));
-        lua_pop(state, 1);
+static void execute_callback_impl(lua_State *L, void *user_data) {
+    int timer_number = *(int *)user_data;
+    lua_pushcfunction(L, timer_expire);
+    lua_pushinteger(L, timer_number);
+    if (lua_pcall(L, 1, 0, 0)) {
+        LOG_ERR("%s", log_strdup(lua_tostring(L, -1)));
+        lua_pop(L, 1);
     }
+}
+
+static void execute_callback(int timer_number)
+{
+    struct lua_work_item *item;
+    item = get_lua_work_item(execute_callback_impl, sizeof(int));
+    *(int*)item->data = timer_number;
+    lua_engine_enque_work(item);
 }
 
 static const luaL_Reg libfuncs[] = {
@@ -111,7 +120,6 @@ static const luaL_Reg libfuncs[] = {
 
 int luaopen_timerlib(lua_State *L)
 {
-    state = L;
     luaL_newlib(L, libfuncs);
     event_timer_set_callback(execute_callback);
     return 1;

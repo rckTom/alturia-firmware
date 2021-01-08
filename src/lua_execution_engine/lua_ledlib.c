@@ -5,7 +5,7 @@
 #include "lua_ledlib.h"
 #include "led.h"
 
-int lua_set_led_color(lua_State *L)
+static int lua_set_led_color_rgb(lua_State *L)
 {
 	int isnum; 
 	uint32_t color = lua_tointegerx(L, 1, &isnum);
@@ -17,8 +17,37 @@ int lua_set_led_color(lua_State *L)
 	return 0;
 }
 
+static int lua_set_led_color_hsv(lua_State *L)
+{
+	struct color_hsv c;
+	int isnum;
+
+	c.h = lua_tonumberx(L, -3, &isnum);
+	if (!isnum) {
+		goto error;
+	}
+
+	c.s = lua_tonumberx(L, -2, &isnum);
+	if (!isnum) {
+		goto error;
+	}
+
+	c.v = lua_tonumberx(L, -1, &isnum);
+	if (!isnum) {
+		goto error;
+	}
+
+	led_set_color_hsv(&c);
+	lua_pop(L, 3);
+	return 0;
+
+error:
+	return luaL_error(L, "argument error");
+}
+
 static const luaL_Reg libfuncs[] = {
-	{"set_rgb", lua_set_led_color},
+	{"set_rgb", lua_set_led_color_rgb},
+	{"set_hsv", lua_set_led_color_hsv},
 	{NULL, NULL}
 };
 
