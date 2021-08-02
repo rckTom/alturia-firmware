@@ -35,7 +35,7 @@ static const struct sensor_daq_data {
 		.channel = SENSOR_CHAN_PRESS,
 		.sval = &press_sample
 	},
-/* 	{
+	{
 		.sensor_device_label = DT_LABEL(DT_ALIAS(acc_sensor)),
 		.channel = SENSOR_CHAN_ACCEL_XYZ,
 		.sval = acc_sample,
@@ -44,7 +44,7 @@ static const struct sensor_daq_data {
 		.sensor_device_label = DT_LABEL(DT_ALIAS(gyro_sensor)),
 		.channel = SENSOR_CHAN_GYRO_XYZ,
 		.sval = gyr_sample,
-	}, */
+	},
 };
 
 #define NUM_SENSOR_DAQ ARRAY_SIZE(sensor_daq)
@@ -100,8 +100,13 @@ static void daq_sensor_thread_fnc(void * daq_data, void *arg1, void *arg2)
 
 int daq_start()
 {
-	k_timer_start(&sample_timer, K_NO_WAIT, K_MSEC(1000));
+	k_timer_start(&sample_timer, K_NO_WAIT, K_MSEC(10));
 	return 0;
+}
+
+void daq_stop()
+{
+	k_timer_stop(&sample_timer);
 }
 
 int daq_sync()
@@ -116,9 +121,9 @@ int daq_sync()
 }
 
 K_THREAD_DEFINE(DAQ_PRES, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
-		&sensor_daq[0], NULL, NULL, CONFIG_DAQ_PRIO - 1, 0, 0);
-/* K_THREAD_DEFINE(DAQ_ACC, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
-		&sensor_daq[1], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);
+		&sensor_daq[0], NULL, NULL, -3, 0, 0);
+K_THREAD_DEFINE(DAQ_ACC, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
+		&sensor_daq[1], NULL, NULL, -3, 0, 0);
 K_THREAD_DEFINE(DAQ_GYR, CONFIG_SENSOR_DAQ_STACK_SIZE, daq_sensor_thread_fnc,
-		&sensor_daq[2], NULL, NULL, CONFIG_DAQ_PRIO, 0, 0);
- */
+		&sensor_daq[2], NULL, NULL, -3, 0, 0);
+
