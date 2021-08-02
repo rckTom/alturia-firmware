@@ -6,7 +6,10 @@ This repository contains the firmware of the Alturia rocket flight computer.
 
 - Zephyr-RTOS latest master
 - Zephyr-SDK
-- Python 3 and sympy for code generation
+- Following python packages:
+	* sympy
+	* dill
+- uncristify
 
 ## Getting started
 
