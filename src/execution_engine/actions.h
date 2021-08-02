@@ -14,6 +14,7 @@ enum action_type {
 	BEEP_ACT = 4,
 	TIMER_START_ACT = 5,
 	TIMER_STOP_ACT = 6,
+	LED_SET_ACT = 7,
 	END_ACT
 };
 
@@ -54,5 +55,8 @@ struct timer_stop_action {
 	uint8_t timer_number;
 } __attribute__((packed));
 
+struct led_set_action {
+	value_ref_t color;
+} __attribute__((packed));
 
 #endif

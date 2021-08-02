@@ -24,6 +24,8 @@
 #define conf_beep_action(conf_desc) (void *)((char*)conf_servo_read_actions(conf_desc) + conf_desc->num_servo_read_actions * sizeof(struct servo_read_action))
 #define conf_timer_start_action(conf_desc) (void *)((char*)conf_beep_action(conf_desc) + conf_desc->num_beep_actions * sizeof(struct beep_action))
 #define conf_timer_stop_action(conf_desc) (void *)((char*)conf_timer_start_action(conf_desc) + conf_desc->num_timer_start_actions * sizeof(struct timer_start_action))
+#define conf_led_set_action(conf_desc) (void *)((char *)conf_timer_stop_action(conf_desc) + conf_desc->num_timer_stop_actions * sizeof(struct timer_stop_action))
+
 
 struct conf_desc {
 	uint32_t revision;
@@ -37,6 +39,7 @@ struct conf_desc {
 	uint32_t num_beep_actions;
 	uint32_t num_timer_start_actions;
 	uint32_t num_timer_stop_actions;
+	uint32_t num_led_set_actions;
 
     uint8_t num_timer;
 	uint8_t num_burnout;
@@ -59,6 +62,6 @@ struct pyro_read_action *get_pyro_read_action(const struct conf_desc *ctx, unsig
 struct servo_read_action *get_servo_read_action(const struct conf_desc *ctx, unsigned int idx);
 struct servo_set_action *get_servo_set_action(const struct conf_desc *ctx, unsigned int idx);
 struct beep_action *get_beep_action(const struct conf_desc *ctx, unsigned int idx);
-
+struct led_set_action *get_led_set_action(const struct conf_desc *ctx, unsigned int idx);
 #endif
 
