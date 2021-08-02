@@ -4,6 +4,7 @@
 #include "lua_ledlib.h"
 #include "lua_timerlib.h"
 #include "lua_servolib.h"
+#include "lua_alturialib.h"
 #include "stdio.h"
 #include <zephyr.h>
 #include <linker/linker-defs.h>
@@ -17,13 +18,14 @@ K_FIFO_DEFINE(lua_work_fifo);
 /* put dyanmic lua memory into ccm */
 static char __ccm_noinit_section luamem[0xFFFF];
 static char lua_read_buf[32];
-struct sys_heap lua_heap;
-lua_State *state;
+static struct sys_heap lua_heap;
+static lua_State *state;
 
 static const luaL_Reg lua_alturia_libs[] = {
 	{"timer", luaopen_timerlib},
 	{"led", luaopen_ledlib},
 	{"servo", luaopen_servolib},
+	{"alturia", luaopen_alturialib},
 	{NULL, NULL}
 };
 
@@ -71,11 +73,11 @@ static void init_State(lua_State *L)
 
 static void dofile_impl(lua_State *L, void *data) {
 	char *filename = data;
-
-	struct fs_file_t zfp;
+	struct fs_file_t zfp = {0};
 	int rc = fs_open(&zfp, filename, FS_O_READ);
 	if (rc != 0) {
 		LOG_ERR("can not open file %s", log_strdup(filename));
+		LOG_ERR("error code %d", rc);
 		return;
 	}
 	lua_load(L, lua_reader, &zfp, filename, NULL);
@@ -95,6 +97,7 @@ int lua_engine_dofile(const char* filename)
 	item = get_lua_work_item(dofile_impl, fsize + 1);
 	memcpy(item->data, filename, fsize + 1);
 	lua_engine_enque_work(item);
+	return 0;
 }
 
 void lua_engine_init()
@@ -136,5 +139,5 @@ static void work_handler()
 	}
 }
 
-K_THREAD_DEFINE(lua_work_handler, 512, work_handler, NULL, NULL, NULL, 0, 0, 0);
+K_THREAD_DEFINE(lua_work_handler, 4096, work_handler, NULL, NULL, NULL, 0, 0, 0);
 
