@@ -1,5 +1,4 @@
 #include "events.h"
-#include "execution_engine.h"
 #include "util.h"
 #include <init.h>
 #include <logging/log.h>
@@ -35,7 +34,7 @@ int event_timer_start(uint8_t timer_number, uint32_t count, bool cyclic)
 	struct event_timer *evt_timer = event_timers + timer_number;
 
 	if (k_timer_remaining_get(&evt_timer->timer) != 0) {
-		LOG_WRN("Timer %d already running", timer_number);
+		LOG_WRN("Timer %d already running. Remaining %d", timer_number, k_timer_remaining_get(&evt_timer->timer));
 		return -EINVAL;
 	}
 
