@@ -18,7 +18,7 @@
 #include <zephyr.h>
 
 LOG_MODULE_REGISTER(datalogger, CONFIG_DATALOGGER_LOG_LEVEL);
-__ccm_bss_section K_HEAP_DEFINE(mem_pool, CONFIG_DATALOGGER_BUFFER_SIZE);
+K_HEAP_DEFINE(mem_pool, CONFIG_DATALOGGER_BUFFER_SIZE);
 K_FIFO_DEFINE(fifo);
 
 static struct fs_file_t fd;
@@ -138,6 +138,11 @@ int dl_alloc_track_data_buffer(struct log_data **data, uint8_t tid, size_t size)
 	(*data)->data_size = size;
 
 	return 0;
+}
+
+void dl_free_track_data_buffer(struct log_data *data)
+{
+	k_heap_free(&mem_pool, data);
 }
 
 int dl_add_track_data(struct log_data *data)
@@ -332,7 +337,7 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 			data = item->data;
 
 			res = add_file(data->id, data->data);
-			k_free(data);
+			k_heap_free(&mem_pool, data);
 
 			if (res != 0) {
 				/* TODO: What to do with errors */
@@ -343,7 +348,7 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 
 			res = add_track_data(data->id, data->data,
 					     data->data_size);
-			k_free(data);
+			k_heap_free(&mem_pool, data);
 
 			if (res != 0) {}
 		} else if (item->cmd == LOG_TRACK_FORMAT) {
@@ -351,7 +356,7 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 			data = item->data;
 			LOG_DBG("format: %s", log_strdup(data->data));
 			res = add_track_format_chunk(data->id, data->data);
-			k_free(data);
+			k_heap_free(&mem_pool, data);
 
 			if (res != 0) {}
 		} else if (item->cmd == LOG_TRACK_NAMES) {
@@ -359,7 +364,7 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 			data = item->data;
 
 			res = add_track_names_chunk(data->id, data->data);
-			k_free(data);
+			k_heap_free(&mem_pool, data);
 
 			if (res != 0) {}
 		} else if (item->cmd == OPEN_LOG) {
@@ -373,9 +378,7 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 		}
 
 
-
-		k_free(item);
-		LOG_INF("cmd %d toke %d us", cmd, k_cyc_to_us_near32(k_cycle_get_32() - s));
+		k_heap_free(&mem_pool, item);
 	}
 }
 

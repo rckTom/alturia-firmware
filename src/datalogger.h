@@ -57,6 +57,9 @@ int dl_close_log();
  */
 int dl_alloc_track_data_buffer(struct log_data **data, uint8_t tid, size_t size);
 
+void dl_free_track_data_buffer(struct log_data *data);
+
+
 /**
  * dl_add_track_data() - Submit log_data element to datalogger
  * @log_data: log_data allocated with dl_alloc_track_data_buffer()
