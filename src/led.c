@@ -220,9 +220,9 @@ int init(const struct device *dev)
 {
 	int ret;
 
-	led_red = device_get_binding(DT_PWMS_LABEL(DT_ALIAS(red_led)));
-	led_green = device_get_binding(DT_PWMS_LABEL(DT_ALIAS(green_led)));
-	led_blue = device_get_binding(DT_PWMS_LABEL(DT_ALIAS(blue_led)));
+	led_red = device_get_binding(DT_LABEL(DT_PWMS_CTLR(DT_ALIAS(red_led))));
+	led_green = device_get_binding(DT_LABEL(DT_PWMS_CTLR(DT_ALIAS(green_led))));
+	led_blue = device_get_binding(DT_LABEL(DT_PWMS_CTLR(DT_ALIAS(blue_led))));
 
 	if (!led_red || !led_green || !led_blue) {
 		goto err;

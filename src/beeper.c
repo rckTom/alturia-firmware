@@ -26,8 +26,8 @@ static const struct beeper_device {
 	const char *pwm_controller;
 	int pwm_channel;
 } beeper_device = {
-	DT_PWMS_LABEL_BY_IDX(DT_NODELABEL(beeper),0),
-	DT_PWMS_CHANNEL_BY_IDX(DT_NODELABEL(beeper),0)
+	DT_LABEL(DT_PWMS_CTLR_BY_IDX(DT_NODELABEL(beeper), 0)),
+	DT_PWMS_CHANNEL_BY_IDX(DT_NODELABEL(beeper), 0)
 };
 
 static const struct device *pwm_dev;

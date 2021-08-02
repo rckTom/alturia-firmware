@@ -10,7 +10,7 @@
 LOG_MODULE_REGISTER(servos, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define SERVO_INIT_MACRO(node_id) \
-	{DT_PWMS_LABEL(node_id), \
+	{DT_LABEL(DT_PWMS_CTLR(node_id)), \
 	DT_PWMS_CHANNEL(node_id), \
 	DT_PWMS_PERIOD(node_id)},
 
