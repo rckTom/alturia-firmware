@@ -183,6 +183,7 @@
 
 &adc1 {
 	status = "okay";
+	pinctrl-0 = <&adc1_in0_pa0 &adc1_in10_pc0 &adc1_in11_pc1 &adc1_in12_pc2 &adc1_in13_pc3>;
 };
 
 &usbotg_fs {
