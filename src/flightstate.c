@@ -1,41 +1,5 @@
 #include "flightstate.h"
-
-static int burnout_count;
-static long mission_start_time;
-static mission_state_t mission_state;
-
-
-#define VAR(name, type) [name] = type,
-static const numeric_type_t flight_state_var_num_type[] = {
-	FLIGHT_STATE_VARIABLES
-};
-#undef VAR
-
-numeric_t flightstate_get_var(flight_state_var_t var)
-{
-	numeric_t res;
-	res.type = flight_state_var_num_type[var];
-
-	switch (var) {
-		case FS_VAR_SYSTEM_TIME:
-			res.asLong = k_uptime_get();
-			break;
-		case FS_VAR_BURNOUT_NUM:
-			res.asInt = burnout_count;
-			break;
-		case FS_VAR_MISSION_TIME:
-			res.asLong = k_uptime_get() - mission_start_time;
-			break;
-		case FS_VAR_FLIGHT_STATE:
-			res.asInt = mission_state;
-			break;
-		/* ToDo
-		 * Implementation for remaining flight state variables
-		 */
-	}
-
-	return res;
-}
+#include "edge_detector.h"
 
 void flightstate_set_burnout_count(int val)
 {
@@ -49,4 +13,40 @@ int flightstate_get_burnout_count()
 
 void flightstate_set_mission() {
 	mission_start_time = k_uptime_get();
+}
+
+void flightstate_update() {
+	//statemachine tracking flightstate
+	
+
+	if( inflight) {
+		//check triggers
+	}
+
+
+	if (flightstate == STATE_COAST) {
+		if(edge_detector_update(ingnition_detector, k_uptime_get()) {
+			//emit ignition signal
+			//change flightstate to boost
+			//increate ignition count
+		}
+	}
+
+	if (flightstate == STATE_BOOST) {
+		if(edge_detector_update(coast_detector, time)) {
+			//emit burnout signal
+			//increate burnout count
+			//set flightstate to coast
+		}
+	}
+
+	if (flightstate == COAST) {
+		//check for apogee
+		//if apogee set to descent
+	}
+
+	if (flightstate == DESCENT) {
+		check for landing
+
+	}
 }
