@@ -80,3 +80,8 @@ int check_free_space(void)
 
 	return 0;
 }
+
+void fatal_error()
+{
+	k_panic();
+}

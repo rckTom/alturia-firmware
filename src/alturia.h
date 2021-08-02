@@ -26,5 +26,6 @@ void __attribute__((noreturn)) panic(void);
 void start_delay(int delay);
 int next_datalog_path(char *path, size_t n);
 int check_free_space(void);
+void fatal_error(void);
 
 #endif
