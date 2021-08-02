@@ -34,10 +34,10 @@ static const struct device *pwm_dev;
 
 static uint8_t vol = VOLUME;
 
-struct k_delayed_work work;
+struct k_work_delayable work;
 
 struct beep_sequenz_data {
-    struct k_delayed_work work;
+    struct k_work_delayable work;
     uint32_t count;
     uint32_t pitch;
     int32_t delay;
@@ -47,8 +47,7 @@ static void beep_work_handler(struct k_work *item)
 {
     int res;
 
-    struct k_delayed_work *dw =
-        CONTAINER_OF(item, struct k_delayed_work, work);
+    struct k_work_delayable *dw = k_work_delayable_from_work(item);
     struct beep_sequenz_data *data =
         CONTAINER_OF(dw, struct beep_sequenz_data, work);
 
@@ -66,7 +65,7 @@ static void beep_work_handler(struct k_work *item)
 
     data->count--;
     if (data->count > 0) {
-        k_delayed_work_submit(dw, K_MSEC(data->delay));
+	k_work_reschedule(dw, K_MSEC(data->delay));
         return;
     }
 
@@ -104,8 +103,8 @@ int beepn(int32_t duration, int32_t count, int32_t pitch)
         beep_sequenz.delay = duration;
         beep_sequenz.pitch = pitch;
 
-        k_delayed_work_init(&beep_sequenz.work, beep_work_handler);
-        k_work_submit(&(beep_sequenz.work.work));
+        k_work_init_delayable(&beep_sequenz.work, beep_work_handler);
+        k_work_schedule(&(beep_sequenz.work), K_NO_WAIT);
         return 0;
     }
     return -EBUSY;

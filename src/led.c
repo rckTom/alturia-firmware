@@ -29,7 +29,7 @@ static const struct device *led_red, *led_green, *led_blue;
 static uint32_t current_color = 0;
 
 struct fade_work_item {
-	struct k_delayed_work work;
+	struct k_work_delayable work;
 	float t;
 	float duration;
 	struct color_hsv start;
@@ -38,8 +38,7 @@ struct fade_work_item {
 
 static void fade_work_handler(struct k_work *item)
 {
-	struct k_delayed_work *dw =
-	    CONTAINER_OF(item, struct k_delayed_work, work);
+	struct k_work_delayable *dw = k_work_delayable_from_work(item);
 	struct fade_work_item *fi =
 	    CONTAINER_OF(dw, struct fade_work_item, work);
 
@@ -65,7 +64,7 @@ static void fade_work_handler(struct k_work *item)
 	led_set_color_hsv(&color);
 
 	fi->t += 0.05;
-	k_delayed_work_submit(dw, K_MSEC(50));
+	k_work_reschedule(dw, K_MSEC(50));
 }
 
 static inline void rgb_to_components(uint32_t color, uint8_t *r, uint8_t *g,
@@ -174,8 +173,8 @@ int led_fade_to_hsv(const struct color_hsv *hsv, float duration)
 	fade_work.duration = duration;
 	fade_work.t = 0.0;
 
-	k_delayed_work_init(&fade_work.work, fade_work_handler);
-	k_work_submit(&fade_work.work.work);
+	k_work_init_delayable(&fade_work.work, fade_work_handler);
+	k_work_schedule(&fade_work.work, K_NO_WAIT);
 	return 0;
 }
 

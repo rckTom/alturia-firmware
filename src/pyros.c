@@ -30,15 +30,14 @@ static struct pyro{
 	const int pin;
 	const int flags;
 	const struct device *dev;
-	struct k_delayed_work work;
+	struct k_work_delayable work;
 } pyro_gpios[] = {DT_FOREACH_CHILD(DT_NODELABEL(pyros),PYRO_INIT_MACRO)};
 
 
 #define NUM_PYROS ARRAY_SIZE(pyro_gpios)
 
 void pyro_work_handler(struct k_work *work) {
-	struct k_delayed_work *delayed_work = CONTAINER_OF(work,
-						struct k_delayed_work, work);
+	struct k_work_delayable *delayed_work = k_work_delayable_from_work(work);
 	struct pyro *pyro_data = CONTAINER_OF(delayed_work, struct pyro, work);
 	LOG_INF("set pyro low");
 	if(gpio_pin_set(pyro_data->dev, pyro_data->pin, 0) != 0) {
@@ -61,8 +60,7 @@ int pyros_fire(unsigned int pyro)
 		LOG_ERR("unable to set pyro pin");
 	}
 
-	res = k_delayed_work_submit(&pyro_gpios[pyro].work,
-				    K_MSEC(CONFIG_PYROS_ON_TIME));
+	res = k_work_schedule(&pyro_gpios[pyro].work, K_MSEC(CONFIG_PYROS_ON_TIME));
 
 	return res;
 }
@@ -96,7 +94,7 @@ static int pyros_init()
 		}
 
 		pyro_gpios[i].dev = dev;
-		k_delayed_work_init(&pyro_gpios[i].work, pyro_work_handler);
+		k_work_init_delayable(&pyro_gpios[i].work, pyro_work_handler);
 	}
 
 	return 0;
