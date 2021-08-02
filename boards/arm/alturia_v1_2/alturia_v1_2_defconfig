@@ -10,8 +10,6 @@ CONFIG_PINMUX=y
 
 # Pheripheral configuration
 CONFIG_SPI=y
-CONFIG_SPI_1=y
-CONFIG_SPI_2=y
 CONFIG_PWM=y
 CONFIG_SERIAL=y
 
