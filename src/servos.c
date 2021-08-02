@@ -31,9 +31,23 @@ static struct servo_data_config {
 
 	/* Minimum servo angle */
 	uint32_t min_us;
+
+	/* Current setpoint */
+	float setpoint;
 } servo_data[ARRAY_SIZE(servo_config)];
 
 #define NUM_SERVOS ARRAY_SIZE(servo_config)
+
+int servo_get_setpoint(uint8_t servo, float *setpoint)
+{
+	if (servo >= NUM_SERVOS) {
+		return -ENODEV;
+	}
+
+	*setpoint = servo_data[servo].setpoint;
+
+	return 0;
+}
 
 int servo_set_max_us(uint8_t servo, uint32_t max_us)
 {
@@ -57,13 +71,15 @@ int servo_set_min_us(uint8_t servo, uint32_t min_us)
 
 int servo_set_us(int servo, uint32_t us)
 {
-	const struct servo_data_config *data = servo_data + servo;
+	struct servo_data_config *data = servo_data + servo;
 
 	if (us > data->max_us) {
-		us =data->max_us;
+		us = data->max_us;
 	} else if (us < data->min_us) {
 		us = data->min_us;
 	}
+
+	data->setpoint = 2/(data->max_us-data->min_us)*us-1;
 
 	return pwm_pin_set_usec(data->pwm_dev,
 				servo_config[servo].pwm_channel,
@@ -97,6 +113,7 @@ static int servo_init()
 
 		servo_data[i].max_us = 2000;
 		servo_data[i].min_us = 1000;
+		servo_data[i].setpoint = 0;
 	}
 
 	return 0;

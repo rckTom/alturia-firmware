@@ -3,6 +3,7 @@
 
 #include <zephyr.h>
 
+int servo_get_setpoint(uint8_t servo, float *setpoint);
 int servo_set_max_us(uint8_t servo, uint32_t max_us);
 int servo_set_min_us(uint8_t servo, uint32_t min_us);
 int servo_set_max_rate(int servo, uint32_t max_rate);
