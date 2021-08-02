@@ -98,20 +98,22 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/sysinit.c
 			   src/alturia.c
 			   src/beeper.c
-               		   src/main.c
+			   src/pil.c
+			   src/main.c
 			   src/led.c
 			   src/configuration.c
 			   src/datalogger.c
 			   src/is_atmosphere.c
 			   src/pyros.c
 			   src/daq.c
+			   src/daq_sensor.c
 			   src/filter/kalman_filter.c
 			   src/math_ex.c
 			   src/servos.c
-			   src/execution_engine/execution_engine.c
 			   src/eventtimer.c
 			   src/lua_execution_engine/lua_execution_engine.c
 			   src/lua_execution_engine/lua_ledlib.c
 			   src/lua_execution_engine/lua_timerlib.c
-			   src/lua_execution_engine/lua_servolib.c)
+			   src/lua_execution_engine/lua_servolib.c
+			   src/lua_execution_engine/lua_alturialib.c)
 
