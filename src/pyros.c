@@ -67,6 +67,11 @@ int pyros_fire(unsigned int pyro)
 	return res;
 }
 
+int pyros_get_fire_state(unsigned int pyro)
+{
+	return gpio_pin_get(pyro_gpios[pyro].dev, pyro_gpios[pyro].pin);
+}
+
 static int pyros_init()
 {
 	const struct device *dev;
