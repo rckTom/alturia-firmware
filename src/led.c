@@ -248,12 +248,6 @@ int init(const struct device *dev)
 		goto err;
 	}
 
-	struct color_hsv hsv = {
-	    .h = 290,
-	    .s = 1,
-	    .v = 1,
-	};
-
 	return 0;
 
 err:
