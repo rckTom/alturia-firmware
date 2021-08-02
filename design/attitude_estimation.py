@@ -16,7 +16,7 @@ def skewrep(vec):
                       [ vec[1], -vec[0],       0, vec[2]],
                       [-vec[0], -vec[1], -vec[2],      0]])
 
-def main(args):
+def qnext():
     # Attitude is represented as a quaternion
     omega_WM_M = sp.MatrixSymbol('omega_WM_M', 3, 1)
     q = sp.MatrixSymbol('q',4,1)
@@ -25,11 +25,19 @@ def main(args):
     dt = sp.Symbol('dt')
     S = skewrep(omega_WM_M) * dt
     theta = sp.sqrt(S[0,3]**2 + S[1,3]**2 + S[2,3]**2)
-    q_next = q + 0.5 * (2 * (sp.cos(theta/2)-1) * sp.eye(S.shape[0]) + 2 / theta * sp.sin(theta/2) * S) * q
+    q_next = q + sp.Rational(1,2) * (2 * (sp.cos(theta/2)-1) * sp.eye(S.shape[0]) + 2 / theta * sp.sin(theta/2) * S) * q
 
     q_next, formats = sph.subsMatrixSymbols(q_next)
     q_next = q_next.doit()
     q_next = sph.subsMatrixElements(q_next, formats)
+
+    # normalize quaternion
+    q_next = q_next/sp.sqrt(q_next[0]**2 + q_next[1]**2+q_next[2]**2+q_next[3]**2)
+    q_next_sym = sp.MatrixSymbol("q_next", *q_next.shape)
+    return q_next
+
+def main(args):
+    q_next = qnext()
 
     q_next_sym = sp.MatrixSymbol("q_next", *q_next.shape)
 
