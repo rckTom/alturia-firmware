@@ -4,7 +4,6 @@
 #include "lua_ledlib.h"
 #include "lua_timerlib.h"
 #include "lua_servolib.h"
-#include "lua_alturialib.h"
 #include "stdio.h"
 #include <zephyr.h>
 #include <linker/linker-defs.h>
@@ -25,9 +24,38 @@ static const luaL_Reg lua_alturia_libs[] = {
 	{"timer", luaopen_timerlib},
 	{"led", luaopen_ledlib},
 	{"servo", luaopen_servolib},
-	{"alturia", luaopen_alturialib},
 	{NULL, NULL}
 };
+
+static int lua_print(lua_State* L) {
+    int nargs = lua_gettop(L);
+
+    for (int i=1; i <= nargs; i++) {
+        if (lua_isstring(L, i)) {
+            /* Pop the next arg using lua_tostring(L, i) and do your print */
+		const char *str = lua_tostring(L,i);
+		LOG_INF("%s", log_strdup(str));
+        }
+        else {
+        /* Do something with non-strings if you like */
+        }
+    }
+
+    return 0;
+}
+
+static const struct luaL_Reg printlib [] = {
+  {"print", lua_print},
+  {NULL, NULL} /* end of array */
+};
+
+static int register_global(lua_State *L)
+{
+  lua_getglobal(L, "_G");
+  luaL_setfuncs(L, printlib, 0);  // for Lua versions 5.2 or greater
+  lua_pop(L, 1);
+  return 0;
+}
 
 void *lc_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
 {
@@ -39,7 +67,7 @@ void *lc_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
 	}
 
 	void *p = sys_heap_realloc(&lua_heap, ptr, nsize);
-	sys_heap_dump(&lua_heap);
+	//sys_heap_dump(&lua_heap);
 	return p;
 }
 
@@ -83,10 +111,12 @@ static void dofile_impl(lua_State *L, void *data) {
 	lua_load(L, lua_reader, &zfp, filename, NULL);
 
 	if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-		LOG_ERR("Error runnig lua script %s: %s",
-				log_strdup(filename),
-				log_strdup(lua_tostring(L, -1)));
-	    lua_pop(L, 1);
+		luaL_where(L, 1);
+		LOG_ERR("Error runnig lua script %s: %s: %s",
+				lua_tostring(L, -1),
+				filename,
+				lua_tostring(L, -2));
+	    lua_settop(L, 0);
 	}
 }
 
@@ -105,6 +135,7 @@ void lua_engine_init()
 	state = create_state();
 	luaL_openlibs(state);
 	init_State(state);
+	register_global(state);
 }
 
 struct lua_work_item *get_lua_work_item(lua_fcn_handler fcn, size_t user_data_size)
@@ -114,7 +145,10 @@ struct lua_work_item *get_lua_work_item(lua_fcn_handler fcn, size_t user_data_si
 		return NULL;
 	}
 
-	wi->data = k_malloc(user_data_size);
+	if (user_data_size > 0) {
+		wi->data = k_malloc(user_data_size);
+	}
+
 	if (!wi->data) {
 		k_free(wi);
 		return NULL;
@@ -134,7 +168,6 @@ static void work_handler()
 	while(true) {
 		item = k_fifo_get(&lua_work_fifo, K_FOREVER);
 		item->fcn(state, item->data);
-		k_free(item->data);
 		k_free(item);
 	}
 }

@@ -95,6 +95,7 @@ static int timer_expire(lua_State *L)
 
 static void execute_callback_impl(lua_State *L, void *user_data) {
     int timer_number = *(int *)user_data;
+    k_free(user_data);
     lua_pushcfunction(L, timer_expire);
     lua_pushinteger(L, timer_number);
     if (lua_pcall(L, 1, 0, 0)) {
