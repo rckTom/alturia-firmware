@@ -184,7 +184,7 @@
 		compatible = "jedec,spi-nor";
 		reg = <0>;
 		label="mt25ql";
-		spi-max-frequency = <1000000>;
+		spi-max-frequency = <12000000>;
 		jedec-id = [20 BA 20];
 		size = <134217728>;
 		hold-gpios = <&gpioa 4 0>;
@@ -198,7 +198,7 @@
 		#size-cells = <1>;
 		storage_partition: partition@0 {
 			label = "storage";
-			reg = <0x00000 0x1000000>;
+			reg = <0x00000 0x3D09000>;
 		};
 	};
 };
