@@ -6,6 +6,7 @@
 
 typedef enum mission_state {
 	STATE_STARTUP,
+	STATE_SAFE,
 	STATE_PAD_IDLE,
 	STATE_PAD_READY,
 	STATE_BOOST,
@@ -17,5 +18,6 @@ typedef enum mission_state {
 
 int flightstate_get_burnout_count();
 void flightstate_set_burnout_count(int val);
+void flightstate_update();
 
 #endif
