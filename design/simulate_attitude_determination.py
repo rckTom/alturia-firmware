@@ -9,7 +9,7 @@ np.seterr("raise")
 qnext = ae.qnext()
 qnext_f = sp.lambdify(list(qnext.atoms(sp.Symbol, sp.MatrixSymbol)), qnext)
 
-data = pd.read_csv("./fligthdata/alturia/240seconds_still.csv")
+data = pd.read_csv("./fligthdata/alturia/flickflack.csv")
 data.set_index('time')
 
 q = np.zeros(qnext.shape)

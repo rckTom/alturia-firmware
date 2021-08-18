@@ -85,8 +85,6 @@ def main(args):
         with open(out_name, "w") as f:
             f.write(element[1])
 
-
-
 if __name__ == "__main__":
     parser = ArgumentParser(description="Generate code for sympy objects")
     parser.add_argument("--input", dest='input', required=True, type=str,

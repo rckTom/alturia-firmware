@@ -33,7 +33,6 @@ def qnext():
 
     # normalize quaternion
     q_next = q_next/sp.sqrt(q_next[0]**2 + q_next[1]**2+q_next[2]**2+q_next[3]**2)
-    q_next_sym = sp.MatrixSymbol("q_next", *q_next.shape)
     return q_next
 
 def main(args):
