@@ -1,18 +1,16 @@
 #include "edge_detector.h"
 
-void edge_detector_init(struct edge_detector *dat, condition_fcn cond,
-                        void *user_data, int64_t min_hold_time)
+void edge_detector_init(struct edge_detector *dat, condition_fcn cond, int64_t min_hold_time)
 {
     dat->min_hold_time = min_hold_time;
     dat->cond = cond;
     dat->last_edge_time = -1;
-    dat->user_data = user_data;
     dat->last_state = false;
 }
 
-bool edge_detector_update(struct edge_detector *dat, float value, int64_t time)
+bool edge_detector_update(struct edge_detector *dat,float value, void * user_data, int64_t time)
 {
-    bool state = dat->cond(value, dat, dat->user_data);
+    bool state = dat->cond(value, dat, user_data);
 
     if (!state) {
         goto out;
@@ -31,14 +29,23 @@ out:
     return false;
 }
 
-bool edge_detector_cond_gt(float signal_value, void *user_data)
+void edge_detector_reset(struct edge_detector *dat)
 {
-    float *threshold = user_data;
+    dat->last_state = false;
+    dat->last_edge_time = -1;
+}
+
+bool edge_detector_cond_gt(float signal_value, struct edge_detector *dat, float *threshold)
+{
     return signal_value >= *threshold;
 }
 
-bool edge_detector_cond_st(float signal_value, void *user_data)
+bool edge_detector_cond_st(float signal_value, struct edge_detector *dat, float *threshold)
 {
-    float *threshold = user_data;
     return signal_value <= *threshold;
+}
+
+bool edge_detector_cond_window(float value, struct edge_detector *dat, struct cond_window_data *data)
+{
+    return (value <= data->target + data->window_width && value >= data->target - data->window_width);
 }
