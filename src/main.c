@@ -23,26 +23,39 @@
 #include "lauxlib.h"
 #include "lua_execution_engine.h"
 #include "daq.h"
-#include "datalogger.h"
-#include "util.h"
-#include "is_atmosphere.h"
-#include "kalman_filter.h"
+#include "rocket/signal_processing.h"
+#include "rocket/flightstate.h"
+#include "signals.h"
+#include "events2.h"
+
 LOG_MODULE_DECLARE(alturia);
 
-struct databuf  {
-	int64_t t; 
-	float pressure, ax, ay, az, gx, gy, gz;
-} __packed;
+extern struct event2 event_boot;
 
 void main(void)
 {
-	struct conf_desc *conf = NULL;
 	int rc = init_fs();
 	if (rc != 0) {
 		LOG_ERR( "Unable to initialize file system");
 		return;
 	}
+
+	daq_set_api_provider(sensor_daq_get_api_provider());
+	daq_set_sample_interval(K_MSEC(10));
+	daq_start();
+
 	lua_engine_init();
 	lua_engine_dofile("/lfs/user/test.lua");
-	configure_pil();
+
+	signal_processing_init();
+	k_sleep(K_SECONDS(1));
+	event2_fire(&event_boot);
+
+	while(true) {
+		// main event loop. This gets syncronized to daq frequency in signal_processing()
+		signal_processing_main();
+		flightstate_update();
+		//logging();
+	}
+	//configure_pil();
 }

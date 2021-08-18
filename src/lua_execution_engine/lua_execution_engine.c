@@ -4,6 +4,8 @@
 #include "lua_ledlib.h"
 #include "lua_timerlib.h"
 #include "lua_servolib.h"
+#include "lua_signallib.h"
+#include "lua_eventlib.h"
 #include "stdio.h"
 #include <zephyr.h>
 #include <linker/linker-defs.h>
@@ -24,6 +26,8 @@ static const luaL_Reg lua_alturia_libs[] = {
 	{"timer", luaopen_timerlib},
 	{"led", luaopen_ledlib},
 	{"servo", luaopen_servolib},
+	{"signal", luaopen_signallib},
+	{"event", luaopen_eventlib},
 	{NULL, NULL}
 };
 
