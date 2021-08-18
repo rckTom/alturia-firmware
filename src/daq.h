@@ -15,12 +15,6 @@
 
 #include "drivers/sensor.h"
 
-void configure_pil();
-
-extern struct sensor_value acc_sample[3];
-extern struct sensor_value gyr_sample[3];
-extern struct sensor_value press_sample;
-
 enum daq_channel {
     DAQ_CHANNEL_PRESSURE,
     DAQ_CHANNEL_ACC,
@@ -47,20 +41,23 @@ struct daq_api {
     int (*get_state)(void);
     int (*start)(void);
     int (*stop)(void);
-    void (*set_decimator)(enum daq_channel, uint8_t decimator);
+    void (*set_decimator)(enum daq_channel channel, uint8_t decimator);
     void (*set_sample_interval)(k_timeout_t interval);
-    void (*get_sample)(struct daq_sample *sample);
-    void (*get_new_samples)(struct daq_sample *sample);
+    int (*get_sample)(struct daq_sample *sample);
     uint32_t (*get_update_mask)(void);
+    int (*sync)(void);
 };
 
 int daq_sync();
 int daq_start();
-
+int daq_stop();
+void daq_set_sample_interval(k_timeout_t period);
 void daq_get_sample(struct daq_sample *sample);
 uint32_t daq_get_update_mask();
 
 /* set a different daq provider */
 int daq_set_api_provider(struct daq_api *daq);
+
+struct daq_api *sensor_daq_get_api_provider(void);
 
 #endif /* ALTURIA__DAQ__H */

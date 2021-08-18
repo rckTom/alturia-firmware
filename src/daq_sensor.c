@@ -1,27 +1,26 @@
 #include "daq.h"
 #include "zephyr.h"
+#include "logging/log.h"
 #include "alturia.h"
 #include "util.h"
+#include "math_ex.h"
+#include "timing/timing.h"
 
-#define STACK_SIZE 256
+#define STACK_SIZE 1024
 
-static K_THREAD_STACK_DEFINE(daq_acc_stack, STACK_SIZE);
-static K_THREAD_STACK_DEFINE(daq_gyro_stack, STACK_SIZE);
-static K_THREAD_STACK_DEFINE(daq_press_stack, STACK_SIZE);
-static K_THREAD_STACK_DEFINE(daq_adc_stack, STACK_SIZE);
+LOG_MODULE_DECLARE(DAQ, CONFIG_DAQ_LOG_LEVEL);
+
+static K_THREAD_STACK_DEFINE(daq_sample_stack, STACK_SIZE);
 
 K_MUTEX_DEFINE(condvar_lock);
-K_MUTEX_DEFINE(sample_data_lock);
+K_MUTEX_DEFINE(new_sample_lock);
 
-static struct k_thread daq_acc_thread;
-static struct k_thread daq_gyro_thread;
-static struct k_thread daq_press_thread;
-static struct k_thread daq_adc_thread;
+static struct k_thread daq_sample_thread;
 
 static uint8_t decimators[DAQ_CHANNEL_END] = {1};
-static float samples[DAQ_CHANNEL_END] = {0.0f};
 static struct k_timer sample_timer;
 static struct k_condvar sample_timer_sync_condvar;
+static struct k_condvar new_sample_condvar;
 static struct k_work work;
 
 uint32_t update_mask = 0;
@@ -32,6 +31,7 @@ static struct sensor_value acc_h[2] = {0};
 
 struct sensor_thread_data
 {
+    const struct device *dev;
     const char* dev_name;
     enum sensor_channel channel;
     enum daq_channel daq_channel;
@@ -83,76 +83,84 @@ static void sample_timer_callback(struct k_timer *timer)
 {
     k_work_submit(&work);
 
-    if (K_TIMEOUT_EQ(new_sample_interval, K_NO_WAIT)) {
+    if (!K_TIMEOUT_EQ(new_sample_interval, K_NO_WAIT)) {
+        LOG_DBG("update sample rate to %d ms", k_ticks_to_ms_ceil32(new_sample_interval.ticks));
         k_timer_start(timer, new_sample_interval, new_sample_interval);
         current_sample_interval = new_sample_interval;
-        new_sample_interval = K_MSEC(0);
+        new_sample_interval = K_NO_WAIT;
     }
 }
 
 static void sample_start(struct k_work *item)
 {
     ARG_UNUSED(item);
-    k_mutex_lock(&condvar_lock, K_NO_WAIT);
+    if (k_mutex_lock(&condvar_lock, K_NO_WAIT) != 0) {
+        LOG_DBG("unable to lock mutex in sample triggger callback");
+        return;
+    }
     update_mask = 0;
-    k_condvar_broadcast(&sample_timer_sync_condvar);
-    k_mutex_unlock(&condvar_lock);
+    if (k_mutex_unlock(&condvar_lock) != 0) {
+        LOG_DBG("unable to release mutex in sample trigger callback");
+    }
 }
 
-static void sensor_sample_thread(const struct sensor_thread_data *data)
+static void multi_sensor_sample_thread(struct sensor_thread_data *data, int len)
 {
-    const struct device *dev;
-    uint8_t decimator_count = 0;
-    struct sensor_value sval;
+    int rc = 0;
 
-    dev = device_get_binding(data->dev_name);
-    
-    if (dev == NULL) {
-        fatal_error();
+    for(int i = 0; i < len; i++) {
+        struct sensor_thread_data *sensor_data = data + i;
+        sensor_data->dev = device_get_binding(sensor_data->dev_name);
+        if (sensor_data->dev == NULL) {
+            LOG_ERR("unable to get device %s. Aborting sample thread", sensor_data->dev_name);
+            return;
+        }
     }
 
     while(true) {
         // wait for sample timer signal
         if (k_mutex_lock(&condvar_lock, K_FOREVER) != 0) {
+            LOG_DBG("unable to block trigger mutex");
             break;
         }
 
         k_condvar_wait(&sample_timer_sync_condvar, &condvar_lock, K_FOREVER);
 
         if (k_mutex_unlock(&condvar_lock) != 0) {
+            LOG_DBG("unable to unlock trigger mutex");
             break;
         }
-        
-        //skip sample if neccessary
-        decimator_count++;
 
-        if (decimator_count < decimators[data->daq_channel]) {
+        for(int i = 0; i < len; i++) {
+            struct sensor_thread_data *sensor_data = data + i;
+            sensor_sample_fetch(sensor_data->dev);
+            sensor_channel_get(sensor_data->dev, sensor_data->channel, sensor_data->data_storage);
+            update_mask |= (1 << sensor_data->daq_channel);
+        }
+
+        rc = k_mutex_lock(&new_sample_lock, K_NO_WAIT);
+        if (rc != 0) {
+            LOG_WRN("sample overrun");
             continue;
         }
 
-        decimator_count = 0;
+        k_condvar_broadcast(&new_sample_condvar);
 
-        //read sensor data
-        sensor_sample_fetch_chan(dev, data->channel);
-        sensor_channel_get(dev, data->channel, data->data_storage);
-        
-        //mark sample as updated
-        update_mask |= (1 << data->daq_channel);
-    }
+        k_mutex_unlock(&new_sample_lock);
+    }    
 }
 
 static void adc_sample_thread()
 {
     const struct device *dev = device_get_binding("ADC_1");
+    while(true) {
+        k_sleep(K_SECONDS(10));
+    }
 }
 
 static int get_samples(struct daq_sample *sample)
 {
-    if (k_mutex_lock(&sample_data_lock, current_sample_interval) != 0) {
-        LOG_ERR("unable to obtain lock on sample data");
-        return -1;
-    }
-
+    k_sched_lock();
     sample->acc_x = sensor_value_to_float(acc);
     sample->acc_y = sensor_value_to_float(acc + 1);
     sample->acc_z = sensor_value_to_float(acc + 2);
@@ -162,32 +170,8 @@ static int get_samples(struct daq_sample *sample)
     sample->pressure = sensor_value_to_float(&press);
     sample->acc_hg_x = sensor_value_to_float(acc_h);
     sample->acc_hg_y = sensor_value_to_float(acc_h + 1);
-
-    k_mutex_unlock(&sample_unlock_data);
-}
-
-static void get_new_samples(struct daq_sample *sample)
-{
-    if (update_mask & DAQ_CHANNEL_ACC) {
-        sample->acc_x = sensor_value_to_float(acc);
-        sample->acc_y = sensor_value_to_float(acc + 1);
-        sample->acc_z = sensor_value_to_float(acc + 2);
-    }
-
-    if (update_mask & DAQ_CHANNEL_PRESSURE) {
-        sample->pressure = sensor_value_to_float(&press);
-    }
-
-    if (update_mask & DAQ_CHANNEL_GYR) {
-        sample->gyro_x = sensor_value_to_float(gyro);
-        sample->gyro_y = sensor_value_to_float(gyro + 1);
-        sample->gyro_z = sensor_value_to_float(gyro + 2);
-    }
-
-    if (update_mask & DAQ_CHANNEL_ACC_HIGH) {
-        sample->acc_hg_x = sensor_value_to_float(acc_h);
-        sample->acc_hg_y = sensor_value_to_float(acc_h + 1);
-    }
+    k_sched_unlock();
+    return 0;
 }
 
 static uint32_t get_update_mask()
@@ -202,51 +186,64 @@ static int get_state()
 
 static int start()
 {
+    LOG_DBG("start daq_sensor");
+    k_condvar_init(&new_sample_condvar);
+    k_condvar_init(&sample_timer_sync_condvar);
     k_work_init(&work, sample_start);
     k_timer_init(&sample_timer, sample_timer_callback, NULL);
+    k_mutex_init(&condvar_lock);
+    k_mutex_init(&new_sample_lock);
 
     // start threads
-    k_thread_create(&daq_press_thread, daq_press_stack,
-                    K_THREAD_STACK_SIZEOF(daq_press_stack),
-                    sensor_sample_thread,
-                    sensor_thread_data, NULL, NULL,
-                    -1, 0, K_NO_WAIT);
-    k_thread_create(&daq_acc_thread, daq_acc_stack,
-                    K_THREAD_STACK_SIZEOF(daq_acc_stack),
-                    sensor_sample_thread,
-                    sensor_thread_data + 1, NULL, NULL,
-                    -1, 0, K_NO_WAIT);
-    k_thread_create(&daq_gyro_thread, daq_gyro_stack,
-                    K_THREAD_STACK_SIZEOF(daq_gyro_stack),
-                    sensor_sample_thread,
-                    sensor_thread_data + 2, NULL, NULL,
-                    -1, 0, K_NO_WAIT);
-    k_thread_create(&daq_adc_thread, daq_adc_stack,
-                    K_THREAD_STACK_SIZEOF(daq_adc_stack),
-                    adc_sample_thread,
-                    NULL, NULL, NULL,
-                    -1, 0, K_NO_WAIT);
-    
+    k_tid_t tid = k_thread_create(&daq_sample_thread, daq_sample_stack, K_THREAD_STACK_SIZEOF(daq_sample_stack),
+                    (k_thread_entry_t) multi_sensor_sample_thread,
+                    sensor_thread_data,
+                    (void *) 3, 
+                    NULL,
+                    -1,
+                    0,
+                    K_NO_WAIT);
+    k_thread_name_set(tid, "daq_sensor");
+
     //start sample timer
-    k_timer_start(&sample_timer, K_MSEC(0), K_MSEC(0));
+    k_timer_start(&sample_timer, K_MSEC(100), K_MSEC(0));
     return 0;
 }
 
 static int stop()
 {
     k_timer_stop(&sample_timer);
+    return 0;
 }
 
-static void sync()
+static int sync()
+{
+    int res;
+	res = k_mutex_lock(&new_sample_lock, K_FOREVER);
+
+    if(res != 0) {
+        LOG_ERR("unable to lock sync mutex");
+        return res;
+    }
+
+    res = k_condvar_wait(&new_sample_condvar, &new_sample_lock, K_FOREVER);
+    if(res != 0) {
+        return res;
+    }
+
+    res = k_mutex_unlock(&new_sample_lock);
+
+    return res;
+}
 
 static struct daq_api api = {
     .get_state = get_state,
     .start = start,
     .stop = stop,
+    .sync = sync,
     .set_decimator = set_decimator,
     .set_sample_interval = set_sample_interval,
     .get_sample = get_samples,
-    .get_new_samples = get_new_samples,
     .get_update_mask = get_update_mask
 };
 
