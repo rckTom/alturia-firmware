@@ -19,19 +19,19 @@ void constant_altitude_kal_pre(float xcor, float Pcor, float v_sys, float *xpre,
 	constant_altitude_kalman_impl_predict(&Pcor, v_sys, &xcor, Ppre, xpre);
 }
 
-void altitude_kal_pre(arm_matrix_instance_f32 *xcor,
-		      arm_matrix_instance_f32 *Pcor, float dt,
-		      float v_sys_pressure, arm_matrix_instance_f32 *xpre,
-		      arm_matrix_instance_f32 *Ppre)
+void altitude_kal_pre(mat *xcor,
+		      mat *Pcor, float dt,
+		      float v_sys_pressure, mat *xpre,
+		      mat *Ppre)
 {
 	altitude_kalman_impl_predict(Pcor->pData, dt, v_sys_pressure,
 				     xcor->pData, Ppre->pData, xpre->pData);
 }
 
-void altitude_kal_cor(arm_matrix_instance_f32 *xpre,
-		      arm_matrix_instance_f32 *Ppre, float v_meas_altitude,
-		      float altitude, arm_matrix_instance_f32 *xcor,
-		      arm_matrix_instance_f32 *Pcor)
+void altitude_kal_cor(mat *xpre,
+		      mat *Ppre, float v_meas_altitude,
+		      float altitude, mat *xcor,
+		      mat *Pcor)
 {
 	altitude_kalman_impl_correct(Ppre->pData, v_meas_altitude, xpre->pData,
 				     &altitude, Pcor->pData, xcor->pData);
