@@ -1,9 +1,10 @@
 menu "Alturia"
 
 menu "Datalogger"
-	config DATALOGGER_LOG_LEVEL
-		int "Datalogger log level"
-		default 3
+	module := DATALOGGER
+	module-str := Datalogger
+	rsource "Kconfig.loglevel"
+	
 	config DATALOGGER_THREAD_PRIORITY
 		int "Datalogger thread priority"
 		default 0
@@ -14,7 +15,7 @@ menu "Datalogger"
 		int "Buffer size in bytes"
 		default 1024
 		help
-			Buffer size for internal datalogger memory allocations		  
+			Buffer size for internal datalogger memory allocations
 endmenu
 
 menu "Pyros"
@@ -27,9 +28,9 @@ menu "Pyros"
 endmenu
 
 menu "DAQ"
-	config DAQ_LOG_LEVEL
-		int "Log level"
-		default 3
+	module := DAQ
+	module-str := DAQ
+	rsource "Kconfig.loglevel"
 
 	config DAQ_PRIO
 		int "Priority of daq thread"
