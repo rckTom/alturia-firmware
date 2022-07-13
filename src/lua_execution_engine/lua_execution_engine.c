@@ -6,12 +6,14 @@
 #include "lua_servolib.h"
 #include "lua_signallib.h"
 #include "lua_eventlib.h"
+#include "lua_pyrolib.h"
 #include "stdio.h"
 #include <zephyr.h>
 #include <linker/linker-defs.h>
 #include <fs/fs.h>
 #include <logging/log.h>
 #include "lua_execution_engine.h"
+#include <ctype.h>
 
 LOG_MODULE_REGISTER(lua, CONFIG_LOG_DEFAULT_LEVEL);
 K_FIFO_DEFINE(lua_work_fifo);
@@ -28,8 +30,22 @@ static const luaL_Reg lua_alturia_libs[] = {
 	{"servo", luaopen_servolib},
 	{"signal", luaopen_signallib},
 	{"event", luaopen_eventlib},
+	{"pyro", luaopen_pyrolib},
 	{NULL, NULL}
 };
+
+void lua_push_global_identifier(lua_State *L, const char *id)
+{
+    char name[32] = {0};
+    strcpy(name, id);
+
+    //Make upper case
+    for(char *c = name; *c != 0; c++) {
+      *c = toupper(*c);
+    }
+
+    lua_pushstring(L, name);
+}
 
 static int lua_print(lua_State* L) {
     int nargs = lua_gettop(L);
@@ -38,7 +54,7 @@ static int lua_print(lua_State* L) {
         if (lua_isstring(L, i)) {
             /* Pop the next arg using lua_tostring(L, i) and do your print */
 		const char *str = lua_tostring(L,i);
-		LOG_INF("%s", log_strdup(str));
+		LOG_INF("%s", str);
         }
         else {
         /* Do something with non-strings if you like */
@@ -108,7 +124,7 @@ static void dofile_impl(lua_State *L, void *data) {
 	struct fs_file_t zfp = {0};
 	int rc = fs_open(&zfp, filename, FS_O_READ);
 	if (rc != 0) {
-		LOG_ERR("can not open file %s", log_strdup(filename));
+		LOG_ERR("can not open file %s", filename);
 		LOG_ERR("error code %d", rc);
 		return;
 	}
@@ -176,5 +192,5 @@ static void work_handler()
 	}
 }
 
-K_THREAD_DEFINE(lua_work_handler, 4096, work_handler, NULL, NULL, NULL, 0, 0, 0);
+K_THREAD_DEFINE(lua_work_handler, 4096, work_handler, NULL, NULL, NULL, CONFIG_LUA_WORKER_PRIO, 0, 0);
 

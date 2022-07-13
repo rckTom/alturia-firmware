@@ -16,5 +16,5 @@ struct lua_work_item *get_lua_work_item(lua_fcn_handler fcn, size_t user_data_si
 void lua_engine_enque_work(struct lua_work_item *item);
 int lua_engine_dofile(const char *filename);
 void lua_engine_init();
-
+void lua_push_global_identifier(lua_State *L, const char *id);
 #endif
