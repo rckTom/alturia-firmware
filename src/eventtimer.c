@@ -1,4 +1,3 @@
-#include "events.h"
 #include "util.h"
 #include <init.h>
 #include <logging/log.h>
