@@ -7,11 +7,13 @@
 #include "signals.h"
 #include "generic.h"
 #include "kalman_filter.h"
+#include "events2.h"
 
 LOG_MODULE_DECLARE(alturia, 4);
 
+DEFINE_EVENT(event_processing_ready);
+
 static struct daq_sample sample;
-static enum signal_processing_state state = SIGNAL_PROCESSING_INACTIVE;
 
 static const uint32_t offset_samples = 100;
 static uint32_t offset_sample_counter = 0;
@@ -24,13 +26,22 @@ STATIC_MATRIX(a_raw, 3, 1);
 STATIC_MATRIX(omega_raw, 3, 1);
 STATIC_MATRIX(v_w, 3, 1);
 
-
 /* Parameters for basic kalman filter */
 STATIC_MATRIX(xpre_kalman_basic, 2, 1);
 STATIC_MATRIX(Ppre_kalman_basic, 2, 2);
 STATIC_MATRIX(xcor_kalman_basic, 2, 1);
 STATIC_MATRIX(Pcor_kalman_basic, 2, 2);
 
+DEFINE_SIGNAL(signal_pressure, INIT_GENERIC(type_float32, &sample.pressure));
+DEFINE_SIGNAL(signal_h_raw, INIT_GENERIC(type_float32, &altitude_raw));
+DEFINE_SIGNAL(signal_h, INIT_GENERIC(type_float32, &altitude_filterd));
+DEFINE_SIGNAL(signal_v_w, INIT_GENERIC(type_matrix, &v_w));
+DEFINE_SIGNAL(signal_a_raw, INIT_GENERIC(type_matrix, &a_raw));
+DEFINE_SIGNAL(signal_kalman_basic, INIT_GENERIC(type_matrix, &xcor_kalman_basic));
+DEFINE_SIGNAL(signal_omega_raw, INIT_GENERIC(type_matrix, &omega_raw));
+DEFINE_SIGNAL(signal_h_offset, INIT_GENERIC(type_float32, &offset_altitude));
+
+static enum signal_processing_state state = SIGNAL_PROCESSING_INACTIVE;
 
 float32_t incremental_average(float32_t average, float32_t count, float32_t value)
 {
@@ -42,7 +53,7 @@ static bool sample_offsets()
     offset_sample_counter++;
     offset_altitude = incremental_average(offset_altitude, offset_sample_counter, altitude_raw);
 
-    if (offset_sample_counter == offset_samples) {
+    if (offset_sample_counter >= offset_samples) {
         return true;
     }
 
@@ -56,18 +67,17 @@ enum signal_processing_state signal_processing_get_state()
 
 void signal_processing_init()
 {
-    signal_insert("pressure", generic_ptr_from_float32(&sample.pressure));
-    signal_insert("h_raw", generic_ptr_from_float32(&altitude_raw));
-    signal_insert("h", generic_ptr_from_float32(&altitude_filterd));
-    signal_insert("v_w", generic_ptr_from_matrix(&v_w));
-    signal_insert("a_raw", generic_ptr_from_matrix(&a_raw));
-    signal_insert("x_kalman_basic", generic_ptr_from_matrix(&xcor_kalman_basic));
-    signal_insert("omega_raw", generic_ptr_from_matrix(&omega_raw));
-
     mat_identity(&Pcor_kalman_basic);
+    mat_identity(&Ppre_kalman_basic);
     mat_zero(&v_w);
+
+    mat_set(xcor_kalman_basic, 0, 0, altitude_raw);
+    mat_set(xcor_kalman_basic, 1, 0, 0.0f);
+
     offset_sample_counter = 0;
     state = SIGNAL_PROCESSING_STARTING;
+
+    //event2_register_callback(&event_liftoff, on_liftoff);
 }
 
 int signal_processing_main() {
@@ -95,34 +105,36 @@ int signal_processing_main() {
     mat_set(omega_raw, 0, 0, sample.gyro_x);
     mat_set(omega_raw, 1, 0, sample.gyro_y);
     mat_set(omega_raw, 2, 0, sample.gyro_z);
-
+    
     if (state == SIGNAL_PROCESSING_STARTING) {
 
         if(sample_offsets()) {
-            state == SIGNAL_PROCESSING_ACTIVE;
-            altitude_raw -= offset_altitude;
-            mat_set(xcor_kalman_basic, 0, 0, altitude_raw);
-            mat_set(xcor_kalman_basic, 1, 0, 0.0f);
-        }
+            state = SIGNAL_PROCESSING_ACTIVE;
+            event2_fire(&event_processing_ready);
 
+            mat_set(xcor_kalman_basic, 0, 0, altitude_raw-offset_altitude);
+            mat_set(xcor_kalman_basic, 1, 0, 0.0f);
+
+        }
         goto out_release_sched_lock;
     } else if (state == SIGNAL_PROCESSING_ACTIVE) {
         //build state vector for kalman filter
+        altitude_raw -= offset_altitude;
 
         altitude_kal_pre(&xcor_kalman_basic,
                          &Pcor_kalman_basic,
-                         dt, 0,
+                         dt, 0.35f,
                          &xpre_kalman_basic,
                          &Ppre_kalman_basic);
         altitude_kal_cor(&xpre_kalman_basic,
                          &Ppre_kalman_basic,
-                         0, altitude_raw,
+                         0.005f, altitude_raw,
                          &xcor_kalman_basic,
                          &Pcor_kalman_basic);
         altitude_filterd = mat_get(xcor_kalman_basic, 0, 0);
-        mat_set(v_w, 2, 1, mat_get(xcor_kalman_basic, 1, 0));
+        mat_set(v_w, 2, 0, mat_get(xcor_kalman_basic, 1, 0));
     }
-
+    //LOG_INF("%f", altitude_filterd);
 out_release_sched_lock:
     k_sched_unlock();
 out_final:

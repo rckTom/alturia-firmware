@@ -16,6 +16,15 @@
 #include "stdlib.h"
 #include "generic.h"
 
+#define DEFINE_SIGNAL(signal_name, ptr) \
+         STRUCT_SECTION_ITERABLE(signal, signal_name) = {\
+                 .name = #signal_name,\
+                 .value = ptr, \
+         } 
+
+#define DECLARE_SIGNAL(name) \
+    extern struct signal name;
+
 struct signal{
     const char* name;
     struct generic_ptr value;
