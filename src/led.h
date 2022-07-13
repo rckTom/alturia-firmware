@@ -9,6 +9,7 @@ struct color_hsv {
 
 int led_set_color_rgb(uint32_t color);
 int led_set_color_hsv(const struct color_hsv *hsv);
+int led_blink(uint32_t on_time, uint32_t off_time);
 int led_fade_to_hsv(const struct color_hsv *hsv, float duration);
 
 #endif

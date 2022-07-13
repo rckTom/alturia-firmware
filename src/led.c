@@ -216,6 +216,11 @@ int led_set_color_hsv(const struct color_hsv *hsv)
 	return led_set_color_rgb(hsv_to_rgb(hsv));
 }
 
+int led_blink(uint32_t on_time, uint32_t off_time)
+{
+	return 0;
+}
+
 int init(const struct device *dev)
 {
 	int ret;
