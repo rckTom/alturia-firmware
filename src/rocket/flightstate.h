@@ -16,8 +16,11 @@ typedef enum mission_state {
 	STATE_ERROR,
 } mission_state_t;
 
+mission_state_t flightstate_get_state();
+bool flightstate_inflight();
 int flightstate_get_burnout_count();
 void flightstate_set_burnout_count(int val);
 void flightstate_update();
+void flightstate_init();
 
 #endif
