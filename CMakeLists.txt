@@ -21,7 +21,6 @@ target_include_directories(app PRIVATE lib/inih/
 				       src/configuration
 				       src/execution_engine/
 				       src/lua_execution_engine/)
-target_compile_options(app PRIVATE -save-temps)
 
 function(cached_symbolic_codegen)
 	cmake_parse_arguments(
@@ -103,11 +102,10 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/sysinit.c
 			   src/alturia.c
 			   src/beeper.c
-			   src/pil.c
+			   #src/pil.c
 			   src/main.c
 			   src/led.c
 			   src/events2.c
-			   src/configuration.c
 			   src/datalogger.c
 			   src/is_atmosphere.c
 			   src/pyros.c
@@ -119,13 +117,14 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/servos.c
 			   src/eventtimer.c
 			   src/edge_detector.c
-			   src/sdbm.c
 			   src/lua_execution_engine/lua_execution_engine.c
 			   src/lua_execution_engine/lua_ledlib.c
 			   src/lua_execution_engine/lua_timerlib.c
 			   src/lua_execution_engine/lua_servolib.c
 			   src/lua_execution_engine/lua_signallib.c
 			   src/lua_execution_engine/lua_eventlib.c
+			   src/lua_execution_engine/lua_pyrolib.c
 			   src/rocket/signal_processing.c
-			   src/rocket/flightstate.c)
+			   src/rocket/flightstate.c
+			   src/rocket/data_logging.c)
 
