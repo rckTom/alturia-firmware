@@ -8,32 +8,34 @@ DEFINE_EVENT(event_timer_expire);
 
 void event2_register_callback(event_t *event, event2_callback_t callback)
 {
-    struct event2_callback_node *node = &event->root;
-    
-    while (node->next != NULL) {
-        node = node->next;
-    }
+    struct event2_callback_node *new_node = malloc(sizeof(struct event2_callback_node));
+    struct event2_callback_node *node = event->root;
 
-    if (node != &event->root)
-    {
-        node->next = malloc(sizeof(struct event2_callback_node));
-        node = node->next;
-    }
-
-    if(node == NULL) {
+    if (new_node == NULL) {
         LOG_ERR("unable to allocate memory for callback node");
         return;
     }
 
-    node->next = NULL;
-    node->callback = callback;
+    new_node->callback = callback;
+    new_node->next = NULL;
+
+    if (event->root == NULL) {
+        event->root = new_node;
+        return;
+    }
+
+    while (node->next != NULL) {
+        node = node->next;
+    }
+
+    node->next = new_node;
 }
 
 void event2_fire(event_t *event)
 {
-    struct event2_callback_node *node = &event->root;
+    struct event2_callback_node *node = event->root;
 
-    while(node->callback) {
+    while(1) {
         node->callback(event);
         node = node->next;
 
