@@ -10,6 +10,7 @@
 #include "events.h"
 #include "zephyr.h"
 #include "events2.h"
+#include <ctype.h>
 
 
 LOG_MODULE_REGISTER(lua_libevent, 3);
@@ -41,14 +42,15 @@ static void dumpstack (lua_State *L) {
 }
 
 
-static int execute_callback_impl(lua_State *L, void * user_data)
+static void execute_callback_impl(lua_State *L, void * user_data)
 {
+    struct event2 *evt = user_data;
     lua_rawgeti(L, LUA_REGISTRYINDEX, callback_table_ref);
     lua_pushlightuserdata(L, user_data);
     
     if (lua_gettable(L, -2) == LUA_TNIL) {
         lua_settop(L, 0);
-        return 0;
+        return;
     }
 
     int callback_count = lua_rawlen(L, -1);
@@ -66,14 +68,19 @@ static int execute_callback_impl(lua_State *L, void * user_data)
 
         /* call callback */
         lua_pushlightuserdata(L, user_data);
-        lua_call(L, 1, 0);
+        if(lua_pcall(L, 1, 0, 0) != 0) {
+            luaL_where(L, 1);
+            LOG_ERR("Error runnig lua callback for event %s: %s: %s",
+                    evt->evt_name,
+                    lua_tostring(L, -1),
+                    lua_tostring(L, -2));
+        }
 
         //dicard return values
         lua_settop(L, top);
     }
 
     lua_settop(L, 0);
-    return 0;
 }
 
 static void push_event_identifier(lua_State *L, const char *name)
@@ -89,8 +96,7 @@ static void push_event_identifier(lua_State *L, const char *name)
     lua_pushstring(L, evt_name);
 }
 
-static void register_event(lua_State *L, const event_t *event)
-{
+static void register_event(lua_State *L, event_t *event) {
     lua_getglobal(L, "event");
 
     dumpstack(L);
@@ -174,7 +180,7 @@ int luaopen_eventlib(lua_State *L)
     extern struct event2 _event2_list_end[];
 
     for(struct event2 *iterator = _event2_list_start; iterator != _event2_list_end; iterator++) {
-      push_event_identifier(L, iterator->evt_name);
+      lua_push_global_identifier(L, iterator->evt_name);
       lua_pushlightuserdata(L, iterator);
       lua_settable(L, -3);
     }
