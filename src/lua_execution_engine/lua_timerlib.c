@@ -99,7 +99,7 @@ static void execute_callback_impl(lua_State *L, void *user_data) {
     lua_pushcfunction(L, timer_expire);
     lua_pushinteger(L, timer_number);
     if (lua_pcall(L, 1, 0, 0)) {
-        LOG_ERR("%s", log_strdup(lua_tostring(L, -1)));
+        LOG_ERR("%s", lua_tostring(L, -1));
         lua_pop(L, 1);
     }
 }

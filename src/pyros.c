@@ -42,7 +42,7 @@ void pyro_work_handler(struct k_work *work) {
 	LOG_INF("set pyro low");
 	if(gpio_pin_set(pyro_data->dev, pyro_data->pin, 0) != 0) {
 		LOG_ERR("pyro pin write error. device: %s, pin: %d, flags %d",
-			log_strdup(pyro_data->dev_name), pyro_data->pin,
+			pyro_data->dev_name, pyro_data->pin,
 			pyro_data->flags);
 	}
 }
@@ -55,6 +55,7 @@ int pyros_fire(unsigned int pyro)
 		LOG_ERR("No pyro with index %d available. Can not fire", pyro);
 		return -ENODEV;
 	}
+	LOG_INF("Fire pyro %d", pyro);
 	res = gpio_pin_set(pyro_gpios[pyro].dev, pyro_gpios[pyro].pin, true);
 	if (res != 0) {
 		LOG_ERR("unable to set pyro pin");
@@ -88,7 +89,7 @@ static int pyros_init()
 		if (res != 0) {
 			LOG_ERR("Unable to initialize pyro on %s pin %d with"
 			        "flags %d. Error code %d",
-				log_strdup(pyro_gpios[i].dev_name),
+				pyro_gpios[i].dev_name,
 				pyro_gpios[i].pin, pyro_gpios[i].flags, res);
 			return -EINVAL;
 		}
