@@ -37,10 +37,16 @@ enum consumer_cmd {
 struct fifo_item {
 	void *fifo_reserved;
 	enum consumer_cmd cmd;
+	bool free_data;
 	struct log_data *data;
 };
 
 #define FIFO_ITEM_SIZE sizeof(struct fifo_item)
+
+#define INIT_FIFO_ITEM(item, command, data_ptr, freeData) { \
+	item->cmd = command;\
+	item->data = data_ptr;\
+	item->free_data = freeData; }\
 
 int dl_open_log(const char *path)
 {
@@ -51,9 +57,9 @@ int dl_open_log(const char *path)
 		return -ENOMEM;
 	}
 
-	strncpy(current_path, path, ARRAY_SIZE(current_path));
+	INIT_FIFO_ITEM(item, OPEN_LOG, NULL, true);
 
-	item->cmd = OPEN_LOG;
+	strncpy(current_path, path, ARRAY_SIZE(current_path));
 	k_fifo_put(&fifo, item);
 	return 0;
 }
@@ -67,6 +73,7 @@ int dl_close_log()
 		return -ENOMEM;
 	}
 
+	INIT_FIFO_ITEM(item, CLOSE_LOG, NULL, true);
 	item->cmd = CLOSE_LOG;
 	k_fifo_put(&fifo, item);
 	return 0;
@@ -89,12 +96,12 @@ int dl_add_file(uint8_t fid, const char *path)
 		return -ENOMEM;
 	}
 
+
 	file_data->id = fid;
 	file_data->data_size = strlen(path) + 1;
 	strncpy(file_data->data, path, file_data->data_size);
 
-	item->cmd = LOG_FILE;
-	item->data = file_data;
+	INIT_FIFO_ITEM(item, LOG_FILE, file_data, true);
 
 	k_fifo_put(&fifo, item);
 	return 0;
@@ -109,6 +116,8 @@ int dl_add_track_format_chunk(uint8_t tid, const char *format)
 		return -ENOMEM;
 	}
 
+	INIT_FIFO_ITEM(item, LOG_TRACK_FORMAT, NULL, true);
+	
 	item->data = k_heap_alloc(&mem_pool, sizeof(struct log_data) +
 				  strlen(format) + 1, K_NO_WAIT);
 
@@ -119,8 +128,6 @@ int dl_add_track_format_chunk(uint8_t tid, const char *format)
 	item->data->data_size = strlen(format) + 1;
 	strncpy(item->data->data, format, item->data->data_size);
 	item->data->id = tid;
-
-	item->cmd = LOG_TRACK_FORMAT;
 
 	k_fifo_put(&fifo, item);
 	return 0;
@@ -205,6 +212,7 @@ static int open_log(const char *path)
 		log_open = true;
 		return res;
 	}
+
 	log_open = false;
 	return res;
 }
@@ -229,8 +237,9 @@ static int add_track_format_chunk(uint8_t tid, const char *format)
 	if (rc != l) {
 		return -EIO;
 	}
-
-	return 0;
+	
+	rc = fs_sync(&fd);
+	return rc;
 }
 
 static int add_track_names_chunk(uint8_t tid, const char *names)
@@ -248,7 +257,8 @@ static int add_track_names_chunk(uint8_t tid, const char *names)
 		return -EIO;
 	}
 
-	return 0;
+	rc = fs_sync(&fd);
+	return rc;
 }
 
 static int add_track_data(uint8_t tid, void *data, size_t length)
@@ -264,7 +274,9 @@ static int add_track_data(uint8_t tid, void *data, size_t length)
 	if (rc != length) {
 		return -EIO;
 	}
-	return 0;
+
+	//rc = fs_sync(&fd);
+	return rc;
 }
 
 static int add_file(uint8_t fid, const char *path)
@@ -321,14 +333,13 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 {
 	struct fifo_item *item;
 	int res;
-
+	uint32_t max_cylce = 0;
 	while (1) {
 		item = k_fifo_get(&fifo, K_FOREVER);
 		if (item == NULL) {
 			continue;
 		}
 		uint32_t s = k_cycle_get_32();
-		enum consumer_cmd cmd = item->cmd;
 		LOG_DBG("received new data item");
 		LOG_DBG("cmd %d", item->cmd);
 
@@ -354,7 +365,7 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 		} else if (item->cmd == LOG_TRACK_FORMAT) {
 			struct log_data *data;
 			data = item->data;
-			LOG_DBG("format: %s", log_strdup(data->data));
+			LOG_DBG("format: %s", data->data);
 			res = add_track_format_chunk(data->id, data->data);
 			k_heap_free(&mem_pool, data);
 
@@ -369,15 +380,19 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 			if (res != 0) {}
 		} else if (item->cmd == OPEN_LOG) {
 			LOG_DBG("open log file with filename %s",
-				log_strdup(current_path));
+				current_path);
 			res = open_log(current_path);
 		} else if (item->cmd == CLOSE_LOG) {
 			res = close_log();
 		} else {
 			LOG_ERR("cmd not known");
 		}
-
-
+		uint32_t c = k_cycle_get_32() - s;
+		if(c > max_cylce) {
+			max_cylce = c;
+			
+		}
+		
 		k_heap_free(&mem_pool, item);
 	}
 }
