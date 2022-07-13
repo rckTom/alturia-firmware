@@ -29,83 +29,6 @@ LOG_MODULE_DECLARE(alturia);
  * Pheripherals
  */
 
-static const struct {
-	const char *gpio_controller;
-	const uint32_t gpio_pin;
-	const int gpio_flags;
-	const bool initial_state;
-} gpios[] = {
-    {
-	.gpio_controller = DT_SPI_DEV_CS_GPIOS_LABEL(DT_ALIAS(pressure_sensor)),
-	.gpio_pin = DT_SPI_DEV_CS_GPIOS_PIN(DT_ALIAS(pressure_sensor)),
-	.gpio_flags = GPIO_OUTPUT,
-	.initial_state = true,
-    },
-    {
-	.gpio_controller = DT_SPI_DEV_CS_GPIOS_LABEL(DT_ALIAS(gyro_sensor)),
-	.gpio_pin = DT_SPI_DEV_CS_GPIOS_PIN(DT_ALIAS(gyro_sensor)),
-	.gpio_flags = GPIO_OUTPUT,
-	.initial_state = true,
-    },
-    {
-	.gpio_controller = DT_SPI_DEV_CS_GPIOS_LABEL(DT_ALIAS(acc_sensor)),
-	.gpio_pin = DT_SPI_DEV_CS_GPIOS_PIN(DT_ALIAS(acc_sensor)),
-	.gpio_flags = GPIO_OUTPUT,
-	.initial_state = true,
-    },
-    {
-	.gpio_controller = DT_SPI_DEV_CS_GPIOS_LABEL(DT_ALIAS(highg_sensor)),
-	.gpio_pin = DT_SPI_DEV_CS_GPIOS_PIN(DT_ALIAS(highg_sensor)),
-	.gpio_flags = GPIO_OUTPUT,
-	.initial_state = true,
-    },
-#ifndef CONFIG_BOARD_ALTURIA_V1_2
-    {
-	.gpio_controller = DT_GPIO_LABEL(DT_ALIAS(led0), gpios),
-	.gpio_pin = DT_GPIO_LABEL(DT_ALIAS(led0), gpios),
-	.gpio_flags = GPIO_OUTPUT,
-	.initial_state = false,
-    }
-#endif
-};
-
-static int init_gpios(void)
-{
-	const struct device *dev;
-	uint8_t n;
-	int res;
-
-	for (n = 0; n < ARRAY_SIZE(gpios); n++) {
-		dev = device_get_binding(gpios[n].gpio_controller);
-
-		if (!dev) {
-			LOG_ERR("could not get device %s",
-				log_strdup(gpios[n].gpio_controller));
-			k_oops();
-		}
-
-		res = gpio_pin_configure(dev, gpios[n].gpio_pin,
-					 gpios[n].gpio_flags);
-		if (res != 0) {
-			LOG_ERR("could not configure pin");
-			k_oops();
-		}
-
-		if (gpios[n].gpio_flags & GPIO_INPUT) {
-			continue;
-		}
-
-		res = gpio_pin_set(dev, gpios[n].gpio_pin,
-				   gpios[n].initial_state);
-		if (res != 0) {
-			LOG_ERR("could not set initial state");
-			k_oops();
-		}
-	}
-
-	return res;
-}
-
 int init_usb(void)
 {
 	int rc = usb_enable(NULL);
@@ -121,12 +44,6 @@ int init_peripherals(const struct device *dev)
 {
 	int res;
 
-	res = init_gpios();
-	if (res != 0) {
-		LOG_ERR("unable to initialize gpios");
-		k_oops();
-	}
-
 	res = init_usb();
 	return res;
 }
@@ -139,6 +56,7 @@ FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(storage);
 static struct fs_mount_t lfs_storage_mnt = {
     .type = FS_LITTLEFS,
     .fs_data = &storage,
+    .storage_dev = (void *)FLASH_AREA_ID(storage),
     .mnt_point = ALTURIA_FLASH_MP,
 };
 
@@ -169,11 +87,11 @@ static int make_dir_structure()
 		rc = fs_stat(dirs[i].path, &entry);
 		if (rc == -ENOENT) {
 			LOG_INF("Create directory %s",
-				log_strdup(dirs[i].path));
+				dirs[i].path);
 			rc = fs_mkdir(dirs[i].path);
 			if (rc != 0) {
 				LOG_ERR("unable to create directory %s",
-					log_strdup(dirs[i].path));
+					dirs[i].path);
 				break;
 			}
 		} else if (rc != 0) {
@@ -188,8 +106,7 @@ static int make_dir_structure()
 int init_fs(void)
 {
 	struct fs_mount_t *mp = &lfs_storage_mnt;
-	unsigned int id =
-	    DT_FIXED_PARTITION_ID(DT_NODE_BY_FIXED_PARTITION_LABEL(storage));
+	unsigned int id = (uintptr_t)mp->storage_dev;
 	const struct flash_area *pfa;
 	int rc;
 
@@ -209,7 +126,7 @@ int init_fs(void)
 	rc = fs_mount(mp);
 	if (rc < 0) {
 		LOG_ERR("Unable to mount id %u at %s: %d", id,
-			log_strdup(mp->mnt_point), rc);
+			mp->mnt_point, rc);
 		return rc;
 	}
 
