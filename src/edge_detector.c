@@ -35,17 +35,18 @@ void edge_detector_reset(struct edge_detector *dat)
     dat->last_edge_time = -1;
 }
 
-bool edge_detector_cond_gt(float signal_value, struct edge_detector *dat, float *threshold)
+bool edge_detector_cond_gt(float signal_value, struct edge_detector *dat, void *threshold)
 {
-    return signal_value >= *threshold;
+    return signal_value >= *(float *)threshold;
 }
 
-bool edge_detector_cond_st(float signal_value, struct edge_detector *dat, float *threshold)
+bool edge_detector_cond_st(float signal_value, struct edge_detector *dat, void *threshold)
 {
-    return signal_value <= *threshold;
+    return signal_value <= *(float *)threshold;
 }
 
-bool edge_detector_cond_window(float value, struct edge_detector *dat, struct cond_window_data *data)
+bool edge_detector_cond_window(float value, struct edge_detector *dat, void *vdata)
 {
+    struct cond_window_data *data = (struct cond_window_data *) vdata;
     return (value <= data->target + data->window_width && value >= data->target - data->window_width);
 }

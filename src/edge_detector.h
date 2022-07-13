@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+struct edge_detector;
 typedef bool (*condition_fcn) (float signal_value, struct edge_detector *trig, void *user_data);
 
 struct edge_detector {
@@ -22,8 +23,8 @@ void edge_detector_init(struct edge_detector *dat, condition_fcn cond, int64_t m
 bool edge_detector_update(struct edge_detector *dat, float value, void *user_data, int64_t time);
 void edge_detector_reset(struct edge_detector *dat);
 
-bool edge_detector_cond_gt(float signal_value, struct edge_detector *dat,  float *threshold);
-bool edge_detector_cond_st(float signal_value, struct edge_detector *dat, float *threshold);
-bool edge_detector_cond_window(float value, struct edge_detector *dat, struct cond_window_data *data);
+bool edge_detector_cond_gt(float signal_value, struct edge_detector *dat,  void *threshold);
+bool edge_detector_cond_st(float signal_value, struct edge_detector *dat, void *threshold);
+bool edge_detector_cond_window(float value, struct edge_detector *dat, void *data);
 
 #endif
