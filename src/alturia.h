@@ -17,6 +17,10 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/device.h>
 
+#if DT_NODE_EXISTS(DT_NODELABEL(beeper))
+    #define ALTURIA_HAS_BEEPER
+#endif
+
 #define ALTURIA_FLASH_MP                    "/lfs"
 #define ALTURIA_MINIMUM_FREE_SPACE	    1024*3
 

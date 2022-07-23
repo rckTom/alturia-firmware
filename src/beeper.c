@@ -19,23 +19,14 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/init.h>
 
+#ifdef ALTURIA_HAS_BEEPER
 LOG_MODULE_REGISTER(beeper, CONFIG_LOG_DEFAULT_LEVEL);
 K_SEM_DEFINE(lock,1,1);
 
-static const struct beeper_device {
-	const char *pwm_controller;
-	int pwm_channel;
-} beeper_device = {
-	DT_LABEL(DT_PWMS_CTLR_BY_IDX(DT_NODELABEL(beeper), 0)),
-	DT_PWMS_CHANNEL_BY_IDX(DT_NODELABEL(beeper), 0)
-};
-
-static const struct device *pwm_dev;
+static const struct pwm_dt_spec beeper_spec = PWM_DT_SPEC_GET(DT_NODELABEL(beeper));
 
 static uint8_t vol = VOLUME;
-
 struct k_work_delayable work;
-
 struct beep_sequenz_data {
     struct k_work_delayable work;
     uint32_t count;
@@ -52,11 +43,9 @@ static void beep_work_handler(struct k_work *item)
         CONTAINER_OF(dw, struct beep_sequenz_data, work);
 
     if (data->count % 2) {
-        res = pwm_pin_set_usec(pwm_dev, beeper_device.pwm_channel, data->pitch, 0,
-			       PWM_POLARITY_NORMAL);
+        res = pwm_set_dt(&beeper_spec, data->pitch, 0);
     } else {
-        res = pwm_pin_set_usec(pwm_dev, beeper_device.pwm_channel, data->pitch,
-			       ((data->pitch/2)*vol)/100, PWM_POLARITY_NORMAL);
+        res = pwm_set_dt(&beeper_spec, data->pitch, ((data->pitch/2)*vol)/100);
     }
 
     if (res){
@@ -81,8 +70,7 @@ int beep(int32_t duration, int32_t pitch)
 
 static int beep_cmd(int32_t pitch)
 {
-	return pwm_pin_set_usec(pwm_dev, beeper_device.pwm_channel, pitch,
-				((pitch/2)*vol)/100, PWM_POLARITY_NORMAL);
+    return pwm_set_dt(&beeper_spec, pitch, ((pitch/2)*vol)/100);
 }
 
 int beep_on(int32_t pitch)
@@ -122,9 +110,8 @@ int beeper_set_volume(uint8_t volume)
 
 static int beeper_init()
 {
-	pwm_dev = device_get_binding(beeper_device.pwm_controller);
-	if (pwm_dev == NULL) {
-		LOG_ERR("unable to get device");
+	if (device_is_ready(beeper_spec.dev)) {
+		LOG_ERR("Beeper device is not ready");
 		return -ENODEV;
 	}
 
@@ -132,3 +119,4 @@ static int beeper_init()
 }
 
 SYS_INIT(beeper_init, APPLICATION, 0);
+#endif

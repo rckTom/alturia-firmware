@@ -14,6 +14,9 @@
 #define ALTURIA__BEEPER__H
 
 #include <stdint.h>
+#include "alturia.h"
+
+#ifdef ALTURIA_HAS_BEEPER
 
 #define VOLUME 100 /* 0 to 100 */
 
@@ -23,4 +26,5 @@ int beep(int32_t duration, int32_t pitch);
 int beepn(int32_t duration, int32_t count, int32_t pitch);
 int beeper_set_volume(uint8_t volume);
 
+#endif
 #endif
