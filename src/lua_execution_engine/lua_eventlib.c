@@ -3,11 +3,11 @@
 
 #include "lua_eventlib.h"
 #include "lua_execution_engine.h"
-#include "logging/log.h"
+#include <zephyr/logging/log.h>
 #include "lua.h"
 #include "lauxlib.h"
 #include "string.h"
-#include "zephyr.h"
+#include <zephyr/zephyr.h>
 #include "events2.h"
 #include <ctype.h>
 

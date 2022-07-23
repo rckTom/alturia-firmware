@@ -11,11 +11,11 @@
  */
 
 #include "datalogger.h"
-#include <devicetree.h>
-#include <fs/fs.h>
-#include <logging/log.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/fs/fs.h>
+#include <zephyr/logging/log.h>
 #include <string.h>
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 
 LOG_MODULE_REGISTER(datalogger, CONFIG_DATALOGGER_LOG_LEVEL);
 K_HEAP_DEFINE(mem_pool, CONFIG_DATALOGGER_BUFFER_SIZE);

@@ -1,5 +1,5 @@
 #include "events2.h"
-#include "logging/log.h"
+#include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(event2, 3);
 

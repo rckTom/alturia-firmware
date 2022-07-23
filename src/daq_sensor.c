@@ -1,10 +1,10 @@
 #include "daq.h"
-#include "zephyr.h"
-#include "logging/log.h"
+#include <zephyr/zephyr.h>
+#include <zephyr/logging/log.h>
 #include "alturia.h"
 #include "util.h"
 #include "math_ex.h"
-#include "timing/timing.h"
+#include <zephyr/timing/timing.h>
 
 #define STACK_SIZE 1024
 

@@ -13,7 +13,7 @@
 #ifndef ALTURIA__DAQ__H
 #define ALTURIA__DAQ__H
 
-#include "drivers/sensor.h"
+#include <zephyr/drivers/sensor.h>
 
 enum daq_channel {
     DAQ_CHANNEL_PRESSURE,

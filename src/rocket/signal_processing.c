@@ -3,7 +3,7 @@
 #include "arm_math.h"
 #include "is_atmosphere.h"
 #include "rocket/signal_processing.h"
-#include "logging/log.h"
+#include <zephyr/logging/log.h>
 #include "signals.h"
 #include "generic.h"
 #include "kalman_filter.h"

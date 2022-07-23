@@ -11,10 +11,11 @@
  */
 
 #include "util.h"
-#include <fs/fs.h>
+#include <zephyr/fs/fs.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <zephyr/logging/log.h>
 
 char* z_fgets(char* s, int n, struct fs_file_t *file)
 {

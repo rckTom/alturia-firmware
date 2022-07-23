@@ -12,9 +12,9 @@
 
 #include "alturia.h"
 #include "beeper.h"
-#include <logging/log_ctrl.h>
-#include <logging/log.h>
-#include <fs/fs.h>
+#include <zephyr/logging/log_ctrl.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/fs/fs.h>
 #include "string.h"
 
 LOG_MODULE_REGISTER(alturia, CONFIG_LOG_DEFAULT_LEVEL);

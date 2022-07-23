@@ -1,11 +1,11 @@
 #include "lua_signallib.h"
 #include "lua_execution_engine.h"
-#include "logging/log.h"
+#include <zephyr/logging/log.h>
 #include "signals.h"
 #include "generic.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "zephyr.h"
+#include <zephyr/zephyr.h>
 
 LOG_MODULE_REGISTER(lua_libsignal, CONFIG_LOG_DEFAULT_LEVEL);
 

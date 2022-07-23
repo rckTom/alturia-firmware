@@ -13,7 +13,7 @@
 #include "is_atmosphere.h"
 #include "constants.h"
 #include <math.h>
-#include <init.h>
+#include <zephyr/init.h>
 
 struct layer {
 	float h_base, p_base, t_base, t_lapse_rate;

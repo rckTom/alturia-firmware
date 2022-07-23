@@ -1,7 +1,7 @@
 #include "util.h"
-#include <init.h>
-#include <logging/log.h>
-#include <zephyr.h>
+#include <zephyr/init.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/zephyr.h>
 
 LOG_MODULE_REGISTER(eventtimer, CONFIG_LOG_DEFAULT_LEVEL);
 

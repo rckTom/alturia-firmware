@@ -10,8 +10,8 @@
  * the COPYING file in the top-level directory.
  */
 
-#include <zephyr.h>
-#include "logging/log.h"
+#include <zephyr/zephyr.h>
+#include <zephyr/logging/log.h>
 #include "daq.h"
 
 LOG_MODULE_REGISTER(DAQ, CONFIG_DAQ_LOG_LEVEL);

@@ -5,11 +5,11 @@
  */
 
 #include <kernel.h>
-#include <device.h>
-#include <init.h>
-#include <drivers/pinmux.h>
+#include <zephyr/device.h>
+#include <zephyr/init.h>
+#include <zephyr/drivers/pinmux.h>
 #include <sys/sys_io.h>
-#include <devicetree.h>
+#include <zephyr/devicetree.h>
 #include <pinmux/stm32/pinmux_stm32.h>
 
 /* pin assignments for STM32F3DISCOVERY board */

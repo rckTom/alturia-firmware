@@ -12,11 +12,11 @@
 
 #include "pyros.h"
 #include "alturia.h"
-#include <zephyr.h>
-#include <device.h>
-#include <logging/log.h>
-#include <devicetree.h>
-#include <init.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/init.h>
 
 LOG_MODULE_REGISTER(pyros, CONFIG_LOG_DEFAULT_LEVEL);
 

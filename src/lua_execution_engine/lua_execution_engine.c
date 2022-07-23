@@ -8,10 +8,10 @@
 #include "lua_eventlib.h"
 #include "lua_pyrolib.h"
 #include "stdio.h"
-#include <zephyr.h>
-#include <linker/linker-defs.h>
-#include <fs/fs.h>
-#include <logging/log.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/linker/linker-defs.h>
+#include <zephyr/fs/fs.h>
+#include <zephyr/logging/log.h>
 #include "lua_execution_engine.h"
 #include <ctype.h>
 

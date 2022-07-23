@@ -4,7 +4,7 @@
 #include "math_ex.h"
 #include "signals.h"
 #include "events2.h"
-#include "logging/log.h"
+#include <zephyr/logging/log.h>
 #include "led.h"
 
 LOG_MODULE_DECLARE(alturia, 3);

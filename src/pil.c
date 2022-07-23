@@ -1,7 +1,7 @@
 #include "daq.h"
-#include "drivers/uart.h"
-#include "logging/log.h"
-#include "zephyr.h"
+#include <zephyr/drivers/uart.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/zephyr.h>
 #include "sys/ring_buffer.h"
 #include "pyros.h"
 #include "servos.h"

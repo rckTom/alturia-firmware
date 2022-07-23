@@ -1,7 +1,7 @@
 #ifndef ALTURIA_FLIGHT_STATE_H
 #define ALTURIA_FLIGHT_STATE_H
 
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #include "numeric.h"
 
 typedef enum mission_state {

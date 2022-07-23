@@ -11,13 +11,13 @@
  */
 
 #include "led.h"
-#include <device.h>
-#include <devicetree.h>
-#include <drivers/pwm.h>
-#include <init.h>
-#include <logging/log.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/pwm.h>
+#include <zephyr/init.h>
+#include <zephyr/logging/log.h>
 #include <math.h>
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 
 LOG_MODULE_REGISTER(led, CONFIG_LOG_DEFAULT_LEVEL);
 

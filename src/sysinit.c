@@ -11,15 +11,15 @@
  */
 
 #include "alturia.h"
-#include <device.h>
-#include <devicetree.h>
-#include <fs/fs.h>
-#include <fs/littlefs.h>
-#include <logging/log.h>
-#include <logging/log_ctrl.h>
-#include <storage/flash_map.h>
-#include <usb/usb_device.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/fs/fs.h>
+#include <zephyr/fs/littlefs.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
+#include <zephyr/storage/flash_map.h>
+#include <zephyr/usb/usb_device.h>
+#include <zephyr/zephyr.h>
 
 #define CONFIG_APP_WIPE_STORAGE 0
 

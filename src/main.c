@@ -11,13 +11,13 @@
  */
 
 #define _DEFAULT_SOURCE 1
-#include <zephyr.h>
-#include <logging/log.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/logging/log.h>
 #include <string.h>
 #include <stdio.h>
-#include <usb/usb_device.h>
+#include <zephyr/usb/usb_device.h>
 #include "sysinit.h"
-#include <fs/fs.h>
+#include <zephyr/fs/fs.h>
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"

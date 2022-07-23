@@ -1,11 +1,11 @@
 #include "servos.h"
 
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #include <stdint.h>
-#include <devicetree.h>
-#include <init.h>
-#include <drivers/pwm.h>
-#include <logging/log.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/init.h>
+#include <zephyr/drivers/pwm.h>
+#include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(servos, CONFIG_LOG_DEFAULT_LEVEL);
 

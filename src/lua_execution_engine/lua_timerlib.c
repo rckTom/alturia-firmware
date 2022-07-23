@@ -1,9 +1,9 @@
 #include "lua.h"
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #include "lauxlib.h"
 #include "lualib.h"
 #include "eventtimer.h"
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 #include "lua_execution_engine.h"
 
 LOG_MODULE_REGISTER(lua_libtimer, CONFIG_LOG_DEFAULT_LEVEL);

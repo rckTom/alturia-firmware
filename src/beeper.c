@@ -12,12 +12,12 @@
 
 #include "beeper.h"
 #include <stdint.h>
-#include <drivers/pwm.h>
-#include <device.h>
-#include <devicetree.h>
+#include <zephyr/drivers/pwm.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
 #include "alturia.h"
-#include <logging/log.h>
-#include <init.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/init.h>
 
 LOG_MODULE_REGISTER(beeper, CONFIG_LOG_DEFAULT_LEVEL);
 K_SEM_DEFINE(lock,1,1);
