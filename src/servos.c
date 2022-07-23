@@ -9,23 +9,12 @@
 
 LOG_MODULE_REGISTER(servos, CONFIG_LOG_DEFAULT_LEVEL);
 
-#define SERVO_INIT_MACRO(node_id) \
-	{DT_LABEL(DT_PWMS_CTLR(node_id)), \
-	DT_PWMS_CHANNEL(node_id), \
-	DT_PWMS_PERIOD(node_id)},
-
-static const struct servo_config {
-	const char *pwm_controller;
-	int pwm_channel;
-	int period;
-} servo_config[] = {
+#define SERVO_INIT_MACRO(node_id) PWM_DT_SPEC_GET(node_id),
+static const struct pwm_dt_spec servo_config[] = {
 	DT_FOREACH_CHILD(DT_NODELABEL(servos),SERVO_INIT_MACRO)
 };
 
 static struct servo_data_config {
-	/* PWM Device */
-	const struct device *pwm_dev;
-
 	/* Maximum servo angle */
 	uint32_t max_us;
 
@@ -81,10 +70,7 @@ int servo_set_us(int servo, uint32_t us)
 
 	data->setpoint = 2/(data->max_us-data->min_us)*us-1;
 
-	return pwm_pin_set_usec(data->pwm_dev,
-				servo_config[servo].pwm_channel,
-				servo_config[servo].period/1000,
-				us, 0);
+	return pwm_set_pulse_dt(&servo_config[servo], us);
 }
 
 int servo_set_angle(int servo, uint8_t angle)
@@ -103,11 +89,8 @@ int servo_set_angle(int servo, uint8_t angle)
 static int servo_init()
 {
 	for(int i = 0; i < NUM_SERVOS; i++) {
-		servo_data[i].pwm_dev = device_get_binding(
-						servo_config[i].pwm_controller);
-
-		if (servo_data[i].pwm_dev == NULL) {
-			LOG_ERR("PWM Device not found");
+		if (!device_is_ready(servo_config[i].dev)) {
+			LOG_ERR("PWM Device not ready");
 			return -ENODEV;
 		}
 
