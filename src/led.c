@@ -25,7 +25,10 @@ LOG_MODULE_REGISTER(led, CONFIG_LOG_DEFAULT_LEVEL);
 
 K_SEM_DEFINE(led_lock, 1, 1);
 
-static const struct device *led_red, *led_green, *led_blue;
+static const struct pwm_dt_spec led_red_spec = PWM_DT_SPEC_GET(DT_ALIAS(red_led));
+static const struct pwm_dt_spec led_green_spec = PWM_DT_SPEC_GET(DT_ALIAS(green_led));
+static const struct pwm_dt_spec led_blue_spec = PWM_DT_SPEC_GET(DT_ALIAS(blue_led));
+
 static uint32_t current_color = 0;
 
 struct fade_work_item {
@@ -186,21 +189,17 @@ int led_set_color_rgb(uint32_t color)
 
 	rgb_to_pwm(color, &r, &g, &b);
 
-	ret = pwm_pin_set_nsec(led_red, DT_PWMS_CHANNEL(DT_ALIAS(red_led)), 1e6,
-			       r, DT_PWMS_FLAGS(DT_ALIAS(red_led)));
-
+	ret = pwm_set_pulse_dt(&led_red_spec, r);
 	if (ret != 0) {
 		goto err;
 	}
-	ret = pwm_pin_set_nsec(led_green, DT_PWMS_CHANNEL(DT_ALIAS(green_led)),
-			       1e6, g, DT_PWMS_FLAGS(DT_ALIAS(green_led)));
 
+	ret = pwm_set_pulse_dt(&led_green_spec, g);
 	if (ret != 0) {
 		goto err;
 	}
-	ret = pwm_pin_set_nsec(led_blue, DT_PWMS_CHANNEL(DT_ALIAS(blue_led)),
-			       1e6, b, DT_PWMS_FLAGS(DT_ALIAS(blue_led)));
 
+	ret = pwm_set_pulse_dt(&led_blue_spec, b);
 	if (ret != 0) {
 		goto err;
 	}
@@ -225,29 +224,23 @@ int init(const struct device *dev)
 {
 	int ret;
 
-	led_red = device_get_binding(DT_LABEL(DT_PWMS_CTLR(DT_ALIAS(red_led))));
-	led_green = device_get_binding(DT_LABEL(DT_PWMS_CTLR(DT_ALIAS(green_led))));
-	led_blue = device_get_binding(DT_LABEL(DT_PWMS_CTLR(DT_ALIAS(blue_led))));
-
-	if (!led_red || !led_green || !led_blue) {
+	if (!device_is_ready(led_red_spec.dev) ||
+		!device_is_ready(led_green_spec.dev) ||
+		!device_is_ready(led_blue_spec.dev)) {
 		goto err;
 	}
 
-	ret = pwm_pin_set_usec(led_red, DT_PWMS_CHANNEL(DT_ALIAS(red_led)),
-			       1000, 0, DT_PWMS_FLAGS(DT_ALIAS(red_led)));
-
+	ret = pwm_set_pulse_dt(&led_red_spec, 0);
 	if (ret != 0) {
 		goto err;
 	}
 
-	ret = pwm_pin_set_nsec(led_green, DT_PWMS_CHANNEL(DT_ALIAS(green_led)),
-			       1000000, 0, DT_PWMS_FLAGS(DT_ALIAS(green_led)));
+	ret = pwm_set_pulse_dt(&led_green_spec, 0);
 	if (ret != 0) {
 		goto err;
 	}
 
-	ret = pwm_pin_set_usec(led_blue, DT_PWMS_CHANNEL(DT_ALIAS(blue_led)),
-			       1000, 0, DT_PWMS_FLAGS(DT_ALIAS(blue_led)));
+	ret = pwm_set_pulse_dt(&led_blue_spec, 0);
 	if (ret != 0) {
 		goto err;
 	}
