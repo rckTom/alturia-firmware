@@ -132,5 +132,6 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/rocket/signal_processing.c
 			   src/rocket/flightstate.c
 			   src/rocket/data_logging.c
-			   src/pwm_rgb_led.c)
+			   src/pwm_rgb_led.c
+			   src/filter/pt1.c)
 
