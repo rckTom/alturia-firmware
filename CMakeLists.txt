@@ -94,6 +94,10 @@ symbolic_codegen(TARGET app
 	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/attitude_estimation.py
 	PREFIX attitude_estimation_impl)
 
+symbolic_codegen(TARGET app
+	SYMBOLIC_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/design/mahony_filter.py
+	PREFIX mahohny_attitude_estimation_impl)
+
 zephyr_linker_sources(DATA_SECTIONS iterables.ld)
 
 target_sources(app PRIVATE lib/inih/ini.c
@@ -113,6 +117,7 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/daq_sensor.c
 			   src/generic.c
 			   src/filter/kalman_filter.c
+			   src/filter/attitude_estimation.c
 			   src/math_ex.c
 			   src/servos.c
 			   src/eventtimer.c
