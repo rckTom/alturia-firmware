@@ -43,27 +43,36 @@ static volatile k_timeout_t new_sample_interval = K_NO_WAIT;
 static volatile k_timeout_t current_sample_interval = K_NO_WAIT;
 
 static struct sensor_thread_data sensor_thread_data[] = {
+    #if DT_NODE_EXISTS(DT_ALIAS(pressure_sensor))
     {
+        .dev = DEVICE_DT_GET(DT_ALIAS(pressure_sensor)),
         .dev_name = DT_LABEL(DT_ALIAS(pressure_sensor)),
         .channel = SENSOR_CHAN_PRESS,
         .daq_channel = DAQ_CHANNEL_PRESSURE,
         .channel_size = 1,
         .data_storage = &press,
     },
+    #endif
+    #if DT_NODE_EXISTS(DT_ALIAS(acc_sensor))
     {
+        .dev = DEVICE_DT_GET(DT_ALIAS(acc_sensor)),
         .dev_name = DT_LABEL(DT_ALIAS(acc_sensor)),
         .channel = SENSOR_CHAN_ACCEL_XYZ,
         .daq_channel = DAQ_CHANNEL_ACC,
         .channel_size = 3,
         .data_storage = acc,
     },
+    #endif
+    #if DT_NODE_EXISTS(DT_ALIAS(gyro_sensor))
     {
+        .dev = DEVICE_DT_GET(DT_ALIAS(gyro_sensor)),
         .dev_name = DT_LABEL(DT_ALIAS(gyro_sensor)),
         .channel = SENSOR_CHAN_GYRO_XYZ,
         .daq_channel = DAQ_CHANNEL_ACC,
         .data_storage = gyro,
         .channel_size = 3,
     }
+    #endif
 };
 
 
@@ -98,6 +107,9 @@ static void sample_start(struct k_work *item)
         LOG_DBG("unable to lock mutex in sample triggger callback");
         return;
     }
+
+    k_condvar_broadcast(&sample_timer_sync_condvar);
+
     update_mask = 0;
     if (k_mutex_unlock(&condvar_lock) != 0) {
         LOG_DBG("unable to release mutex in sample trigger callback");
@@ -110,9 +122,13 @@ static void multi_sensor_sample_thread(struct sensor_thread_data *data, int len)
 
     for(int i = 0; i < len; i++) {
         struct sensor_thread_data *sensor_data = data + i;
-        sensor_data->dev = device_get_binding(sensor_data->dev_name);
         if (sensor_data->dev == NULL) {
             LOG_ERR("unable to get device %s. Aborting sample thread", sensor_data->dev_name);
+            return;
+        }
+
+        if (!device_is_ready(sensor_data->dev)) {
+            LOG_ERR("sensor device %s is not ready. Aborting sample thread", sensor_data->dev_name);
             return;
         }
     }
@@ -153,6 +169,7 @@ static void multi_sensor_sample_thread(struct sensor_thread_data *data, int len)
 static void adc_sample_thread()
 {
     const struct device *dev = device_get_binding("ADC_1");
+    (void) dev;
     while(true) {
         k_sleep(K_SECONDS(10));
     }
@@ -198,7 +215,7 @@ static int start()
     k_tid_t tid = k_thread_create(&daq_sample_thread, daq_sample_stack, K_THREAD_STACK_SIZEOF(daq_sample_stack),
                     (k_thread_entry_t) multi_sensor_sample_thread,
                     sensor_thread_data,
-                    (void *) 3, 
+                    (void *) ARRAY_SIZE(sensor_thread_data),
                     NULL,
                     -1,
                     0,
