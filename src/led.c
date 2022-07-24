@@ -11,23 +11,20 @@
  */
 
 #include "led.h"
+#include <math.h>
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
+#include <zephyr/drivers/led.h>
 #include <zephyr/drivers/pwm.h>
 #include <zephyr/init.h>
 #include <zephyr/logging/log.h>
-#include <math.h>
 #include <zephyr/zephyr.h>
 
 LOG_MODULE_REGISTER(led, CONFIG_LOG_DEFAULT_LEVEL);
 
-#define PERIOD 1e6 /* Period in nano seconds */
-
 K_SEM_DEFINE(led_lock, 1, 1);
 
-static const struct pwm_dt_spec led_red_spec = PWM_DT_SPEC_GET(DT_ALIAS(red_led));
-static const struct pwm_dt_spec led_green_spec = PWM_DT_SPEC_GET(DT_ALIAS(green_led));
-static const struct pwm_dt_spec led_blue_spec = PWM_DT_SPEC_GET(DT_ALIAS(blue_led));
+static const struct device *dev = DEVICE_DT_GET(DT_ALIAS(led));
 
 static uint32_t current_color = 0;
 
@@ -76,14 +73,6 @@ static inline void rgb_to_components(uint32_t color, uint8_t *r, uint8_t *g,
 	*r = (color & 0x00FF0000) >> 16;
 	*g = (color & 0x0000FF00) >> 8;
 	*b = (color & 0x000000FF);
-}
-
-static inline void rgb_to_pwm(uint32_t color, uint32_t *r, uint32_t *g,
-			      uint32_t *b)
-{
-	*r = ((color & 0x00FF0000) >> 16) * PERIOD / 0xFF;
-	*g = ((color & 0x0000FF00) >> 8) * PERIOD / 0xFF;
-	*b = (color & 0x000000FF) * PERIOD / 0xFF;
 }
 
 static void rgb_to_hsv(uint32_t rgb, struct color_hsv *hsv)
@@ -183,31 +172,21 @@ int led_fade_to_hsv(const struct color_hsv *hsv, float duration)
 
 int led_set_color_rgb(uint32_t color)
 {
-	int ret;
-	uint32_t r, g, b;
 	current_color = color;
 
-	rgb_to_pwm(color, &r, &g, &b);
+	union rgb_color {
+		uint32_t color;
+		struct {
+			uint8_t _reserved;
+			uint8_t r;
+			uint8_t g;
+			uint8_t b;
+		} rgb;
+	} c;
 
-	ret = pwm_set_pulse_dt(&led_red_spec, r);
-	if (ret != 0) {
-		goto err;
-	}
+	c.color = color;
 
-	ret = pwm_set_pulse_dt(&led_green_spec, g);
-	if (ret != 0) {
-		goto err;
-	}
-
-	ret = pwm_set_pulse_dt(&led_blue_spec, b);
-	if (ret != 0) {
-		goto err;
-	}
-
-	return 0;
-err:
-	LOG_ERR("unable to set rgb led color");
-	return ret;
+	return led_set_color(dev, 0, 3, &c.rgb.r);
 }
 
 int led_set_color_hsv(const struct color_hsv *hsv)
@@ -215,37 +194,13 @@ int led_set_color_hsv(const struct color_hsv *hsv)
 	return led_set_color_rgb(hsv_to_rgb(hsv));
 }
 
-int led_blink(uint32_t on_time, uint32_t off_time)
+int init(const struct device *d)
 {
-	return 0;
-}
-
-int init(const struct device *dev)
-{
-	int ret;
-
-	if (!device_is_ready(led_red_spec.dev) ||
-		!device_is_ready(led_green_spec.dev) ||
-		!device_is_ready(led_blue_spec.dev)) {
+	if (!device_is_ready(dev)) {
 		goto err;
 	}
 
-	ret = pwm_set_pulse_dt(&led_red_spec, 0);
-	if (ret != 0) {
-		goto err;
-	}
-
-	ret = pwm_set_pulse_dt(&led_green_spec, 0);
-	if (ret != 0) {
-		goto err;
-	}
-
-	ret = pwm_set_pulse_dt(&led_blue_spec, 0);
-	if (ret != 0) {
-		goto err;
-	}
-
-	return 0;
+	return led_off(dev, 0);
 
 err:
 	LOG_ERR("unable to initiaize led subsystem");

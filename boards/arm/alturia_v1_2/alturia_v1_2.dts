@@ -20,25 +20,17 @@
 		gyro-sensor = &bmi088_gyr;
 		highg-sensor = &ais2120sx;
 		norflash = &mt25ql;
-		red-led = &red_led;
-		green-led = &green_led;
-		blue-led = &blue_led;
+		led = &rgb_led;
 	};
 
-	pwmleds: pwmleds {
-		compatible = "pwm-leds";
+	rgb_led: rgb_led {
+		compatible = "rgb_pwm_led";
 
-		red_led: red_led {
-			pwms = <&pwm3 1 100000 PWM_POLARITY_INVERTED >;
-		};
+		pwms = <&pwm3 1 100000 PWM_POLARITY_INVERTED>,
+			   <&pwm3 2 100000 PWM_POLARITY_INVERTED>,
+			   <&pwm3 3 100000 PWM_POLARITY_INVERTED>;
 
-		green_led: green_led {
-			pwms = <&pwm3 2 100000 PWM_POLARITY_INVERTED>;
-		};
-
-		blue_led: blue_led {
-			pwms = <&pwm3 3 100000 PWM_POLARITY_INVERTED>;
-		};
+		pwm-names = "r", "g", "b";
 	};
 
 	pyros: pyros {

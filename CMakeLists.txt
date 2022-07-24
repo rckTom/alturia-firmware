@@ -126,5 +126,6 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/lua_execution_engine/lua_pyrolib.c
 			   src/rocket/signal_processing.c
 			   src/rocket/flightstate.c
-			   src/rocket/data_logging.c)
+			   src/rocket/data_logging.c
+			   src/pwm_rgb_led.c)
 

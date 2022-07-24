@@ -16,31 +16,6 @@ LOG_MODULE_REGISTER(lua_libevent, 3);
 
 static int callback_table_ref;
 
-static void dumpstack (lua_State *L) {
-  int top=lua_gettop(L);
-  for (int i=1; i <= top; i++) {
-    LOG_INF("%d\t%s\t", i, luaL_typename(L,i));
-    switch (lua_type(L, i)) {
-      case LUA_TNUMBER:
-        LOG_INF("%g\n",lua_tonumber(L,i));
-        break;
-      case LUA_TSTRING:
-        LOG_INF("%s\n",lua_tostring(L,i));
-        break;
-      case LUA_TBOOLEAN:
-        LOG_INF("%s\n", (lua_toboolean(L, i) ? "true" : "false"));
-        break;
-      case LUA_TNIL:
-        LOG_INF("%s\n", "nil");
-        break;
-      default:
-        LOG_INF("%p\n",lua_topointer(L,i));
-        break;
-    }
-  }
-}
-
-
 static void execute_callback_impl(lua_State *L, void * user_data)
 {
     struct event2 *evt = user_data;
@@ -80,38 +55,6 @@ static void execute_callback_impl(lua_State *L, void * user_data)
     }
 
     lua_settop(L, 0);
-}
-
-static void push_event_identifier(lua_State *L, const char *name)
-{
-    char evt_name[32] = {0};
-    strcpy(evt_name, name);
-
-    //Make upper case
-    for(char *c = evt_name; *c != 0; c++) {
-      *c = toupper(*c);
-    }
-
-    lua_pushstring(L, evt_name);
-}
-
-static void register_event(lua_State *L, event_t *event) {
-    lua_getglobal(L, "event");
-
-    dumpstack(L);
-
-    if (!lua_istable(L, -1)) {
-      lua_pop(L, 1);
-      LOG_ERR("not a event type");
-      return;
-    }
-
-    push_event_identifier(L, event->evt_name);
-    lua_pushlightuserdata(L, event);
-    lua_settable(L, -3);
-
-    //cleanup stack
-    lua_pop(L, 1);
 }
 
 static void execute_callback(struct event2 *evt)

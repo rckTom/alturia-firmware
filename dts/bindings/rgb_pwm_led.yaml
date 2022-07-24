@@ -1,0 +1,10 @@
+compatible: "rgb_pwm_led"
+
+description: "Device tree node representing a single rgb led driven by three pwm pins"
+
+properties:
+  pwms:
+    type: phandle-array
+    required: true
+  pwm-names:
+    type: string-array
