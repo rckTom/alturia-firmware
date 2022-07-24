@@ -5,6 +5,7 @@
 #include "signals.h"
 #include "events2.h"
 #include <zephyr/logging/log.h>
+#include <zephyr/smf.h>
 #include "led.h"
 
 LOG_MODULE_DECLARE(alturia, 3);
@@ -21,11 +22,15 @@ DECLARE_SIGNAL(signal_h);
 DECLARE_SIGNAL(signal_v_w);
 DECLARE_SIGNAL(signal_a_raw);
 
+struct state_machine_ctx {
+	struct smf_ctx ctx;
+	int64_t t;
+} smf_context;
+
 const float32_t zero = 0.0f;
 const float32_t ignition_acceleration_threshold = 2.0f;
 const float32_t liftoff_height = 3.0f;
 
-static mission_state_t state;
 unsigned int burnout_count, ignition_count;
 uint64_t mission_start_time;
 
@@ -34,33 +39,139 @@ struct edge_detector detector_ignition;
 struct edge_detector detector_apogee;
 struct edge_detector detector_landing;
 struct edge_detector detector_height_liftoff;
-
 struct cond_window_data landing_window_data = {
 	.target = 0.0f,
 	.window_width =5.0f
 };
 
-static struct generic_ptr altitude, vertical_velocity, acceleration;
+/* Forward declaration of state table */
+static const struct smf_state states[];
 
-/* Ignition:
- * Acceleration larger than 2g for more than 100 ms
- */
+static bool acc_ignition_detector(int64_t t) {
+	if(edge_detector_update(&detector_ignition, mat_get((*(signal_a_raw.value.value_ptr.type_matrix)), 2, 0), (void *)&ignition_acceleration_threshold, t)) {
+		edge_detector_reset(&detector_ignition);
+		return true;
+	}
+	return false;
+}
 
-/* Apogee:
- * Speed goes negative during coast and when speed is smaller < 300 m/s
+/*
+ * Startup State
  */
+static void startup_run(void *ctx)
+{
+	if (signal_processing_get_state() == SIGNAL_PROCESSING_ON_GROUND) {
+		smf_set_state(SMF_CTX(ctx), &states[STATE_PAD_IDLE]);
+	}
+}
 
-/* Burnout:
- * Acceleration goes negative during boost
+/*
+ * State Pad Idle
  */
+static void pad_idle_run(void *ctx)
+{
+	smf_set_state(SMF_CTX(ctx), &states[STATE_PAD_READY]);
+}
+
+static void pad_idle_entry(void *ctx){
+	event2_fire(&event_pad_idle);
+}
+static void pad_idle_exit(void *ctx) {}
+
+/*
+ * State Pad Ready
+ */
+static void pad_ready_run(void *ctx) {
+	struct state_machine_ctx *udata = (struct state_machine_ctx *)ctx;
+
+	/* Try to detect liftoff based on pressure height or acceleration*/
+	if (edge_detector_update(&detector_height_liftoff, *signal_h.value.value_ptr.type_float32, (void *)&liftoff_height, udata->t) ||
+	    acc_ignition_detector(udata->t)) {
+		smf_set_state(SMF_CTX(ctx), &states[STATE_BOOST]);
+	}
+}
+static void pad_ready_entry(void *ctx) {
+	event2_fire(&event_pad_ready);
+}
+
+/*
+ * State Boost
+ */
+static void boost_run(void *ctx) {
+	struct state_machine_ctx *udata = (struct state_machine_ctx *)ctx;
+
+	if(edge_detector_update(&detector_burnout, mat_get((*(signal_a_raw.value.value_ptr.type_matrix)), 2, 0), (void *)&zero, udata->t)) {
+		edge_detector_reset(&detector_burnout);
+		smf_set_state(SMF_CTX(ctx), &states[STATE_COAST]);
+	}
+}
+static void boost_entry(void *ctx) {
+	ignition_count++;
+	event2_fire(&event_ignition);
+	if (ignition_count == 1) {
+		event2_fire(&event_liftoff);
+	}
+}
+static void boost_exit(void *ctx) {
+	burnout_count++;
+	event2_fire(&event_burnout);
+}
+
+/*
+ * State Coast
+ */
+static void coast_run(void *ctx){
+	struct state_machine_ctx *udata = (struct state_machine_ctx *)ctx;
+
+	/* Try to detect apogee */
+	float32_t v_vertical = mat_get((*(signal_v_w.value.value_ptr.type_matrix)), 2, 0);
+	if(v_vertical < 300.f && edge_detector_update(&detector_apogee, v_vertical, (void *)&zero, udata->t)) {
+		event2_fire(&event_apogee);
+		smf_set_state(SMF_CTX(ctx), &states[STATE_DESCENDING]);
+		return;
+	}
+
+	/* Try to detect another boost */
+	if (acc_ignition_detector(udata->t)) {
+		smf_set_state(SMF_CTX(ctx), &states[STATE_BOOST]);
+	}
+
+}
+
+/*
+ * State Descending
+ */
+static void descending_run(void *ctx) {
+	struct state_machine_ctx *udata = (struct state_machine_ctx *)ctx;
+	if (edge_detector_update(&detector_landing, mat_get((*(signal_v_w.value.value_ptr.type_matrix)), 2, 0), &landing_window_data, udata->t)){
+		event2_fire(&event_touchdown);
+		smf_set_state(ctx, &states[STATE_LANDED]);
+	}
+}
+
+/*
+ * State Landed
+ */
+static void landed_run(void *ctx) {}
+
+static const struct smf_state states[] = {
+	[STATE_STARTUP] = SMF_CREATE_STATE(NULL, startup_run, NULL),
+	[STATE_PAD_IDLE] = SMF_CREATE_STATE(pad_idle_entry, pad_idle_run, pad_idle_exit),
+	[STATE_PAD_READY] = SMF_CREATE_STATE(pad_ready_entry, pad_ready_run, NULL),
+	[STATE_BOOST] = SMF_CREATE_STATE(boost_entry, boost_run, boost_exit),
+	[STATE_COAST] = SMF_CREATE_STATE(NULL, coast_run, NULL),
+	[STATE_DESCENDING] = SMF_CREATE_STATE(NULL, descending_run, NULL),
+	[STATE_LANDED] = SMF_CREATE_STATE(NULL, landed_run, NULL),
+};
 
 mission_state_t flightstate_get_state()
 {
-	return state;
+	return (mission_state_t)(smf_context.ctx.current - states);
 }
 
 bool flightstate_inflight()
 {
+	mission_state_t state = flightstate_get_state();
 	return (state == STATE_BOOST) ||
 		   (state == STATE_COAST) ||
 		   (state == STATE_DESCENDING); 
@@ -76,12 +187,15 @@ int flightstate_get_burnout_count()
 	return burnout_count;
 }
 
+int flightstate_get_ignition_count() {
+	return ignition_count;
+}
+
 void flightstate_set_mission() {
 	mission_start_time = k_uptime_get();
 }
 
 void flightstate_init() {
-	state = STATE_STARTUP;
 	edge_detector_init(&detector_apogee, edge_detector_cond_st, 0);
 	edge_detector_init(&detector_burnout, edge_detector_cond_st, 0);
 	edge_detector_init(&detector_ignition, edge_detector_cond_gt, 50);
@@ -99,76 +213,11 @@ void flightstate_init() {
 	if (signal_h.value.type != type_float32) {
 		LOG_ERR("expected float type for signal h");
 	}
+
+	smf_set_initial(SMF_CTX(&smf_context), &states[STATE_STARTUP]);
 }
 
 void flightstate_update() {
-	int t = k_uptime_get();
-	//statemachine tracking flightstate
-	if(state == STATE_STARTUP) {
-		if (signal_processing_get_state() == SIGNAL_PROCESSING_ACTIVE) {
-			state = STATE_PAD_IDLE;
-			event2_fire(&event_pad_idle);
-			return;
-		}
-	}
-	
-	if(state == STATE_PAD_IDLE) {
-		event2_fire(&event_pad_ready);
-		state = STATE_PAD_READY;
-		return;
-	}
-
-	/* When rocket is in pad ready state, try to detect liftoff based on pressure height */
-	if (state == STATE_PAD_READY) {
-		if (edge_detector_update(&detector_height_liftoff, *signal_h.value.value_ptr.type_float32, (void *)&liftoff_height, t)) {
-			state = STATE_BOOST;
-			event2_fire(&event_ignition);
-			event2_fire(&event_liftoff);
-			return;
-		}
-	}
-
-	/* When rocket is in coast phase or in pad ready state, try to detect ignition */
-	if (state == STATE_PAD_READY || state == STATE_COAST) {
-		if(edge_detector_update(&detector_ignition, mat_get((*(signal_a_raw.value.value_ptr.type_matrix)), 2, 0), (void *)&ignition_acceleration_threshold, t)) {
-			edge_detector_reset(&detector_ignition);
-			state = STATE_BOOST;
-			ignition_count++;
-			event2_fire(&event_ignition);
-			if (ignition_count == 1) {
-				event2_fire(&event_liftoff);
-			}
-			return;
-		}
-	}
-
-	/* When rocket is in Boost state, try to detect burnout based on acceleration */
-	if (state == STATE_BOOST) {
-		if(edge_detector_update(&detector_burnout, mat_get((*(signal_a_raw.value.value_ptr.type_matrix)), 2, 0), (void *)&zero, t)) {
-			edge_detector_reset(&detector_burnout);
-			state = STATE_COAST;
-			burnout_count++;
-			event2_fire(&event_burnout);
-			return;
-		}
-	}
-
-	/* If rocket is in coast state and velocity is smaller than 300 m/s, try to detect apogee based on vertical velocity (positive to negative) */
-	if (state == STATE_COAST) {
-		float32_t v_vertical = mat_get((*(signal_v_w.value.value_ptr.type_matrix)), 2, 0);
-		if(v_vertical < 300.f && edge_detector_update(&detector_apogee, v_vertical, (void *)&zero, t)) {
-			state = STATE_DESCENDING;
-			event2_fire(&event_apogee);
-			return;
-		}
-	}
-
-	/* If rocket is in descending state, try to detect landing based on velocity */
-	if (state == STATE_DESCENDING) {
-		if (edge_detector_update(&detector_landing, mat_get((*(signal_v_w.value.value_ptr.type_matrix)), 2, 0), &landing_window_data, t)){
-			event2_fire(&event_touchdown);
-			state = STATE_LANDED;
-			return;
-		}
-	}
+	smf_context.t = k_uptime_get();
+	smf_run_state(SMF_CTX(&smf_context));
 }
