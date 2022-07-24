@@ -17,6 +17,8 @@
 #include <string.h>
 #include <zephyr/zephyr.h>
 
+#ifdef CONFIG_FILE_SYSTEM
+
 LOG_MODULE_REGISTER(datalogger, CONFIG_DATALOGGER_LOG_LEVEL);
 K_HEAP_DEFINE(mem_pool, CONFIG_DATALOGGER_BUFFER_SIZE);
 K_FIFO_DEFINE(fifo);
@@ -220,6 +222,7 @@ static int open_log(const char *path)
 static int close_log()
 {
 	log_open = false;
+	fs_sync(&fd);
 	return fs_close(&fd);
 }
 
@@ -399,3 +402,6 @@ void datalogger_consumer(void *arg1, void *arg2, void *arg3)
 
 K_THREAD_DEFINE(dl_tid, CONFIG_DATALOGGER_STACK_SIZE, datalogger_consumer, NULL,
 		NULL, NULL, CONFIG_DATALOGGER_THREAD_PRIORITY, 0, 0);
+
+
+#endif
