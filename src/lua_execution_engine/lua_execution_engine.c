@@ -77,6 +77,48 @@ static int register_global(lua_State *L)
   return 0;
 }
 
+static int lua_get_global_table_element(lua_State *L, const char *t, const char *k)
+{
+	if (lua_getglobal(L, t) != LUA_TTABLE) {
+		lua_pop(L, 1);
+		return -1;
+	}
+
+	lua_pushstring(L, k);
+	if (lua_gettable(L, -1) == LUA_TNIL) {
+		lua_pop(L, 2);
+		return -1;
+	}
+
+	return 0;
+}
+
+float lua_read_global_float_field(const char * table_name, const char * field_name) {
+	if (lua_get_global_table_element(state, table_name, field_name) != 0) {
+		return 0.f;
+	}
+
+	float result = lua_tonumber(state, -1);
+	lua_pop(state, 2);
+	return result;
+}
+
+void lua_read_global_string_field(const char * table_name, const char * field_name, char *s, size_t len) {
+	if (lua_get_global_table_element(state, table_name, field_name) != 0) {
+		LOG_ERR("no table");
+		return;
+	}
+	size_t str_len = 0;
+	const char *result = lua_tolstring(state, -1, &str_len);
+
+	if (str_len > len) {
+		str_len = len;
+	}
+
+	strncpy(s, result, str_len);
+	lua_pop(state, 2);
+}
+
 void *lc_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
 {
 	(void)ud; (void)osize; /* not used */

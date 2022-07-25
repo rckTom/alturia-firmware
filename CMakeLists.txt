@@ -108,6 +108,7 @@ target_sources(app PRIVATE lib/inih/ini.c
 			   src/beeper.c
 			   #src/pil.c
 			   src/main.c
+			   src/config.c
 			   src/led.c
 			   src/events2.c
 			   src/datalogger.c
