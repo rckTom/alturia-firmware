@@ -13,9 +13,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(alturia_firmware)
 set_property(TARGET app PROPERTY C_STANDARD 11)
-target_include_directories(app PRIVATE lib/inih/
-				       lib/cmsis/CMSIS/DSP/Include
-				       src/generated/
+target_include_directories(app PRIVATE src/generated/
 				       src/filter/
 				       src/
 				       src/configuration
@@ -100,8 +98,7 @@ symbolic_codegen(TARGET app
 
 zephyr_linker_sources(DATA_SECTIONS iterables.ld)
 
-target_sources(app PRIVATE lib/inih/ini.c
-			   src/util.c
+target_sources(app PRIVATE src/util.c
 			   src/signals.c
 			   src/sysinit.c
 			   src/alturia.c
