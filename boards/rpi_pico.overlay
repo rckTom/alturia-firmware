@@ -1,0 +1,120 @@
+/ {
+	chosen {
+		//zephyr,shell-uart = &cdc_acm_uart0;
+		zephyr,shell-uart = &uart0;
+	};
+
+	aliases {
+		pressure-sensor = &bmp;
+		led = &board_led;
+	};
+
+	board_led: board_led {
+		compatible = "rgb_pwm_led";
+		status = "ok";
+		pwms = <&pwm 3 PWM_MSEC(20) PWM_POLARITY_INVERTED>,
+			   <&pwm 4 PWM_MSEC(20) PWM_POLARITY_INVERTED>,
+			   <&pwm 5 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
+		pwm-names = "r", "g", "b";
+	};
+
+	pyros: pyros {
+		compatible = "pyros";
+		pyro1 {
+			gpios = <&gpio0 5 0>;
+		};
+		pyro2 {
+			gpios = <&gpio0 6 0>;
+		};
+		pyro3 {
+			gpios = <&gpio0 7 0>;
+		};
+		pyro4 {
+			gpios = <&gpio0 8 0>;
+		};
+	};
+};
+
+&pwm {
+	status = "ok";
+	pinctrl-0 = <&pwm_default>;
+	pinctrl-names = "default";
+	divider-int-0 = <255>;
+};
+
+&flash0 {
+	reg = <0x10000000 DT_SIZE_M(2)>;
+
+	partitions {
+		compatible = "fixed-partitionws";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Reserved memory for the second stage bootloader */
+		second_stage_bootloader: partition@0 {
+			label = "second_stage_bootloader";
+			reg = <0x00000000 0x100>;
+			read-only;
+		};
+
+		/*
+		 * Usable flash. Starts at 0x100, after the bootloader. The partition
+		 * size is 2MB minus the 0x100 bytes taken by the bootloader.
+		 */
+		code_partition: partition@100 {
+			label = "code-partition";
+			reg = <0x100 (DT_SIZE_M(2) - 0x100)>;
+			read-only;
+		};
+	};
+};
+
+&uart0 {
+	status = "ok";
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-names = "default";
+};
+
+&i2c0 {
+	status = "ok";
+	pinctrl-0 = <&i2c0_selected>;
+	pinctrl-names = "default";
+	bmp: bmp@76 {
+		compatible = "bosch,bme280";
+		label = "bmp280";
+		status = "ok";
+		reg = <0x76>;
+	};	
+};
+
+&pinctrl {
+	uart0_default: uart0_default {
+		group1 {
+			pinmux = <UART0_TX_P0>;
+		};
+		group2 {
+			pinmux = <UART0_RX_P1>;
+		};
+	};
+
+	i2c0_selected: i2c0_selected {
+		group1 {
+			pinmux = <I2C0_SDA_P20>, <I2C0_SCL_P21>;
+			input-enable;
+			input-schmitt-enable;
+		};
+	};
+
+	pwm_default: pwm_default {
+		group1 {
+			pinmux = <PWM_1B_P3>, <PWM_2A_P4>, <PWM_2B_P5>;
+		};
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "CDC_ACM_0";
+	};
+};

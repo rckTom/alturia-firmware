@@ -6,6 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        board: [alturia_v1_2, rpi_pico]
     steps:
       - uses: actions/cache@v3
         id: zepyhr_workspace_cache
@@ -82,4 +84,4 @@ jobs:
           ZEPHYR_BASE: /home/runner/zephyrproject/zephyr
           ZEPHYR_TOOLCHAIN_VARIANT: zephyr
         run: |
-          west build -b alturia_v1_2
+          west build -b ${{ matrix.board }}
