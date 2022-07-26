@@ -1,3 +1,4 @@
+from pyparsing import quoted_string
 import control
 import os
 import sympy_helpers as sph
@@ -10,35 +11,35 @@ from argparse import ArgumentParser
 import dill
 
 
-def skewrep(vec):
-    return sp.Matrix([[0, 		 vec[2], -vec[1], vec[0]],
-                      [-vec[2], 	  0,  vec[0], vec[1]],
-                      [ vec[1], -vec[0],       0, vec[2]],
-                      [-vec[0], -vec[1], -vec[2],      0]])
+def L(q:sp.Quaternion):
+    return sp.Matrix([[-q.b, q.a, q.d, -q.c],
+                      [-q.c, -q.d, q.a, q.b],
+                      [-q.d, q.c, -q.b, q.a]])
+
+def G(q:sp.Quaternion):
+    return sp.Matrix([[-q.b, q.a, -q.d, q.c],
+                      [-q.c, q.d, q.a, -q.b],
+                      [-q.d, -q.c, q.b, q.a]])
+
+def qdot(omega, q):
+    q = sp.Rational(1,2) * L(q).T * omega
+    return sp.Quaternion(q[0], q[1], q[2], q[3])
 
 def qnext():
-    # Attitude is represented as a quaternion
-    omega_WM_M = sp.MatrixSymbol('omega_WM_M', 3, 1)
-    q = sp.MatrixSymbol('q',4,1)
+    q = sp.MatrixSymbol("q", 4, 1)
+    dt = sp.Symbol("dt")
+    omega = sp.MatrixSymbol("omega_WM_M", 3, 1)
+    q_in = sp.Quaternion(a = q[0], b = q[1], c = q[2], d = q[3])
+    q_next = q_in + qdot(omega, q_in) * dt
+    q_next = q_next.normalize()
+    q_next = sp.Matrix([q_next.a, q_next.b, q_next.c, q_next.d])
 
-    # Solution to the quaternion equation
-    dt = sp.Symbol('dt')
-    S = skewrep(omega_WM_M) * dt
-    theta = sp.sqrt(S[0,3]**2 + S[1,3]**2 + S[2,3]**2)
-    q_next = q + sp.Rational(1,2) * (2 * (sp.cos(theta/2)-1) * sp.eye(S.shape[0]) + 2 / theta * sp.sin(theta/2) * S) * q
-
-    q_next, formats = sph.subsMatrixSymbols(q_next)
-    q_next = q_next.doit()
-    q_next = sph.subsMatrixElements(q_next, formats)
-
-    # normalize quaternion
-    q_next = q_next/sp.sqrt(q_next[0]**2 + q_next[1]**2+q_next[2]**2+q_next[3]**2)
     return q_next
 
 def main(args):
     q_next = qnext()
-
     q_next_sym = sp.MatrixSymbol("q_next", *q_next.shape)
+
 
     out_dict = {"q_next" : [sp.Eq(q_next_sym, q_next)]}
     code = codegen.gen_code(out_dict, args.prefix, "attitude")
