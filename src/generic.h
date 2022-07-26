@@ -24,7 +24,7 @@ struct generic_ptr {
     } type;
     #undef GENERIC
 
-    #define GENERIC(name, ctype) ctype *name;
+    #define GENERIC(name, ctype) ctype *type_##name;
     union {
         GENERICS
     } value_ptr;
@@ -34,5 +34,11 @@ struct generic_ptr {
 #define GENERIC(name, ctype) struct generic_ptr generic_ptr_from_##name(ctype *name);
 GENERICS
 #undef GENERIC
+
+#define INIT_GENERIC(t, ptr) \
+        { \
+            .type = t, \
+            .value_ptr.t = ptr, \
+        }
 
 #endif

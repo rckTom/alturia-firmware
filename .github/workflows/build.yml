@@ -2,7 +2,7 @@ name: Compiles
 on: [push]
 jobs:
   get_default_env:
-    name: Gather default zephyr environment
+    name: Build alturia firmware
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -72,6 +72,11 @@ jobs:
           cd ..
           west update
       
+      - name: Install alturia build dependencies
+        run: |
+          sudo apt install uncrustify
+          pip3 install sympy scipy numpy
+
       - name: Build alturia
         env:
           ZEPHYR_BASE: /home/runner/zephyrproject/zephyr

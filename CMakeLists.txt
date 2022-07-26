@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.13.1)
 
 set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR})
-set(BOARD alturia_v1_2)
-set(BOARD_FLASH_RUNNER jlink)
-set(BOARD_DEBUG_RUNNER jlink)
+
+if(BOARD MATCHES alturia_v1_2)
+	set(BOARD_FLASH_RUNNER jlink)
+	set(BOARD_DEBUG_RUNNER jlink)
+endif()
+
 set(DTS_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(ZEPHYR_EXTRA_MODULES ${CMAKE_CURRENT_LIST_DIR}/lib/zephyr-lua)
@@ -12,6 +15,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 
 project(alturia_firmware)
+
 set_property(TARGET app PROPERTY C_STANDARD 11)
 target_include_directories(app PRIVATE src/generated/
 				       src/filter/
@@ -132,4 +136,3 @@ target_sources(app PRIVATE src/util.c
 			   src/rocket/data_logging.c
 			   src/pwm_rgb_led.c
 			   src/filter/pt1.c)
-

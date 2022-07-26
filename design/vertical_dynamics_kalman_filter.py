@@ -44,12 +44,6 @@ def correct():
 	return ctrl.kalman_correct(C, None, R)
 
 def main(args):
-    #estimation of expaction of y
-    # second order I
-
-
-    #estimation of expaction of delta y
-
     (x_cor, P_cor) = correct()
     (x_pre, P_pre) = predict()
 

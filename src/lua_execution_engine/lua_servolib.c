@@ -1,3 +1,4 @@
+#if CONFIG_SERVOS
 #include "lua_servolib.h"
 #include "lauxlib.h"
 #include "servos.h"
@@ -39,3 +40,4 @@ int luaopen_servolib(lua_State *L)
     luaL_newlib(L, libfuncs);
     return 1;
 }
+#endif

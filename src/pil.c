@@ -188,8 +188,8 @@ void configure_pil()
     }
 
     LOG_INF("dtr set");
-    uart_irq_callback_set(dev, uart_irq);
-    uart_irq_rx_enable(dev);
+    uart_callback_set(dev, uart_irq, NULL);
+    uart_rx_enable(dev);
 
     /* Wait until pil is started by host */
     k_mutex_lock(&pil_data_lock, K_FOREVER);

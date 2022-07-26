@@ -31,8 +31,4 @@ struct signal{
     size_t len;
 };
 
-int signal_insert(const char *name, struct generic_ptr data);
-int signal_update(const char *name, struct generic_ptr data);
-struct generic_ptr signal_get(const char *name);
-
 #endif

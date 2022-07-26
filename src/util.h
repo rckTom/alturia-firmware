@@ -14,8 +14,10 @@
 #define ALTURIA__UTIL__H
 
 #include <zephyr/fs/fs.h>
+#include "stdbool.h"
 #include <zephyr/drivers/sensor.h>
 
+bool file_exists(char *path);
 char* z_fgets(char* s, int n, struct fs_file_t *file);
 float sensor_value_to_float(struct sensor_value *val);
 int get_log_count(const char* dir_path, int *min_log_num,

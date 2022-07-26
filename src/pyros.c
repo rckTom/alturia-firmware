@@ -10,6 +10,7 @@
  * the COPYING file in the top-level directory.
  */
 
+#ifdef CONFIG_PYROS
 #include "pyros.h"
 #include "alturia.h"
 #include <zephyr/zephyr.h>
@@ -102,3 +103,4 @@ static int pyros_init()
 }
 
 SYS_INIT(pyros_init, APPLICATION, 0);
+#endif

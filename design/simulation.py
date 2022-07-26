@@ -5,11 +5,11 @@ import vertical_dynamics_kalman_filter as vdk
 import altitude_kalman_filter as ak
 import matplotlib.pyplot as plt
 
-df = pd.read_excel("./fligthdata/altimax/bluefalcon_bc125_srb_p2.ods", sheet_name="Sheet1", engine="odf")
+df = pd.read_excel("./fligthdata/altimax/tethys.ods", sheet_name="Sheet1", engine="odf")
 
 # lambdify symbolic expressions
-(x_cor, P_cor) = vdk.correct()
-(x_pre, P_pre) = vdk.predict()
+(x_cor, P_cor) = ak.correct()
+(x_pre, P_pre) = ak.predict()
 
 print("x_cor_args:")
 print(x_cor.atoms(sp.Symbol, sp.MatrixSymbol))
@@ -31,10 +31,10 @@ var_a_calc = df["ACCEL [m/s2]"][0:300].var()
 print("Variances: h = {}, a = {}".format(var_h_calc, var_a_calc))
 
 # initialze kalman filter
-variance_acc = var_h_calc
+variance_acc = 0.005
 variance_h = 0
 variance_meas_acc = var_a_calc
-variance_meas_h = 1
+variance_meas_h = var_h_calc
 
 P_pre = np.eye(P_pre.shape[0])
 x_pre = np.zeros(x_pre.shape)
@@ -63,16 +63,16 @@ for step, t in enumerate(df["ZEIT"]):
 	dt = t-last_t
 	last_t = t
 
-	y = np.array([[df["HEIGHT RAW [m]"][step], df["ACCEL [m/s2]"][step]]]).T
+	y = np.array([df["HEIGHT RAW [m]"][step]]).T
 	
 	#correct
-	x_cor = x_cor_f(P_pre = P_pre, x_pre = x_pre, y = y, variance_meas_a = variance_meas_acc, variance_meas_h = variance_meas_h)
-	P_cor = P_cor_f(P_pre = P_pre, variance_meas_a = variance_meas_acc, variance_meas_h = variance_meas_h)
+	x_cor = x_cor_f(P_pre = P_pre, x_pre = x_pre, y = y, var_meas_altitude = variance_meas_h)
+	P_cor = P_cor_f(P_pre = P_pre, var_meas_altitude=variance_meas_h)
 
 	#predict
 	x_pre = x_pre_f(x_cor = x_cor, dt = dt)
-	P_pre = P_pre_f(P_cor = P_cor, dt = dt, variance_acc = variance_acc, variance_h = variance_h)
-	df.at[df.index[step], "a"] = x_pre[2]
+	P_pre = P_pre_f(P_cor = P_cor, dt = dt, var_process_accel = variance_acc)
+	#df.at[df.index[step], "a"] = x_pre[2]
 
 	df.at[df.index[step], "P_pre1"] = P_pre[0][0]
 	df.at[df.index[step], "P_pre2"] = P_pre[1][1]
@@ -84,7 +84,19 @@ for step, t in enumerate(df["ZEIT"]):
 	df.at[df.index[step], "x"] = x_pre[0]
 	df.at[df.index[step], "v"] = x_pre[1]
 
+print(dt)
+vnaive = np.gradient(df["HEIGHT RAW [m]"], 0.002)
+print(vnaive)
+
 fig, axes = plt.subplots(nrows=1, ncols=2)
-df.set_index("ZEIT")[["x", "v", "a", "HEIGHT RAW [m]"]].plot(ax= axes[0])
+df['v_naive'] = vnaive
+df['v_naive_moving_avg_20'] = np.convolve(vnaive, np.ones(20)/20, mode="same")
+print(df.columns)
+ax = df.set_index("ZEIT")[["x", "v_naive", "v", "HEIGHT RAW [m]", "v_naive_moving_avg_20"]].plot(ax= axes[0])
+l = ax.get_children()
+l[0].set_zorder(4)
+l[1].set_zorder(2)
+l[2].set_zorder(3)
+l[3].set_zorder(1)
 df.set_index("ZEIT")[["P_pre1", "P_pre2", "P_pre2", "P_pre3", "P_cor1", "P_cor2", "P_cor3"]].plot(ax= axes[1])
 plt.show()

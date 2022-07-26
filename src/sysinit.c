@@ -13,11 +13,13 @@
 #include "alturia.h"
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
+#ifdef CONFIG_FILE_SYSTEM
 #include <zephyr/fs/fs.h>
 #include <zephyr/fs/littlefs.h>
+#include <zephyr/storage/flash_map.h>
+#endif
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
-#include <zephyr/storage/flash_map.h>
 #include <zephyr/usb/usb_device.h>
 #include <zephyr/zephyr.h>
 
@@ -48,7 +50,8 @@ int init_peripherals(const struct device *dev)
 	return res;
 }
 
-/*
+#if CONFIG_FILE_SYSTEM
+ /*
  * Filesystem stuff
  */
 
@@ -137,5 +140,6 @@ int init_fs(void)
 
 	return rc;
 }
+#endif
 
 SYS_INIT(init_peripherals, APPLICATION, 0);

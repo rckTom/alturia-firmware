@@ -10,6 +10,7 @@
  * the COPYING file in the top-level directory.
  */
 
+#ifdef CONFIG_PYROS
 #ifndef ALTURIA__PYROS__H
 #define ALTURIA__PYROS__H
 
@@ -18,3 +19,4 @@ int pyros_get_fire_state(unsigned int pyro);
 void get_pyro_status(unsigned int pyro);
 
 #endif /* ALTURIA__PYROS__H */
+#endif

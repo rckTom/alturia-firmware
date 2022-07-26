@@ -19,6 +19,14 @@ from argparse import ArgumentParser
 var_process_accel = sp.Symbol('var_process_accel')
 var_meas_altitude = sp.Symbol('var_meas_altitude')
 
+# State vector formulation
+# x = [h, v]
+# h = Altitude
+# v = Accent velocity
+#
+# Measurement vector y
+# y = h
+
 A = sp.Matrix([[0, 1],
                [0, 0]])
 

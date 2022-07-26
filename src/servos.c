@@ -1,3 +1,5 @@
+#if CONFIG_SERVOS
+
 #include "servos.h"
 
 #include <zephyr/zephyr.h>
@@ -103,3 +105,4 @@ static int servo_init()
 }
 
 SYS_INIT(servo_init, APPLICATION, 0);
+#endif

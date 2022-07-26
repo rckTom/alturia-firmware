@@ -1,5 +1,6 @@
 #include "daq.h"
 #include "kalman_filter.h"
+#include "attitude_estimation.h"
 #include "arm_math.h"
 #include "is_atmosphere.h"
 #include "rocket/signal_processing.h"
@@ -8,6 +9,7 @@
 #include "generic.h"
 #include "kalman_filter.h"
 #include "events2.h"
+#include "pt1.h"
 
 LOG_MODULE_DECLARE(alturia, 4);
 
@@ -15,12 +17,12 @@ DEFINE_EVENT(event_processing_ready);
 
 static struct daq_sample sample;
 
+static struct pt1_state altitude_offset_filter;
+
 static const uint32_t offset_samples = 100;
 static uint32_t offset_sample_counter = 0;
 
-static float32_t altitude_raw, altitude_filterd, vertical_speed, offset_altitude;
-static float32_t offsets_gyro[3];
-static float32_t offsets_acceleration[3];
+static float32_t altitude_raw, altitude_filterd, offset_altitude;
 
 STATIC_MATRIX(a_raw, 3, 1);
 STATIC_MATRIX(omega_raw, 3, 1);
@@ -32,6 +34,10 @@ STATIC_MATRIX(Ppre_kalman_basic, 2, 2);
 STATIC_MATRIX(xcor_kalman_basic, 2, 1);
 STATIC_MATRIX(Pcor_kalman_basic, 2, 2);
 
+/* Parameters for attitude estimation */
+STATIC_MATRIX(q, 4, 1);
+STATIC_MATRIX(gyro_bias, 3, 1);
+
 DEFINE_SIGNAL(signal_pressure, INIT_GENERIC(type_float32, &sample.pressure));
 DEFINE_SIGNAL(signal_h_raw, INIT_GENERIC(type_float32, &altitude_raw));
 DEFINE_SIGNAL(signal_h, INIT_GENERIC(type_float32, &altitude_filterd));
@@ -40,8 +46,16 @@ DEFINE_SIGNAL(signal_a_raw, INIT_GENERIC(type_matrix, &a_raw));
 DEFINE_SIGNAL(signal_kalman_basic, INIT_GENERIC(type_matrix, &xcor_kalman_basic));
 DEFINE_SIGNAL(signal_omega_raw, INIT_GENERIC(type_matrix, &omega_raw));
 DEFINE_SIGNAL(signal_h_offset, INIT_GENERIC(type_float32, &offset_altitude));
+DEFINE_SIGNAL(signal_q, INIT_GENERIC(type_matrix, &q));
+
+DECLARE_EVENT(event_liftoff);
+DECLARE_EVENT(event_ignition);
 
 static enum signal_processing_state state = SIGNAL_PROCESSING_INACTIVE;
+
+static void liftoff_callback(struct event2 *evt) {
+    state = SIGNAL_PROCESSING_IN_FLIGHT;
+}
 
 float32_t incremental_average(float32_t average, float32_t count, float32_t value)
 {
@@ -65,18 +79,27 @@ enum signal_processing_state signal_processing_get_state()
     return state;
 }
 
+void signal_processing_set_state(enum signal_processing_state s) {
+    state = s;
+}
+
 void signal_processing_init()
 {
     mat_identity(&Pcor_kalman_basic);
     mat_identity(&Ppre_kalman_basic);
+    mat_zero(&q);
+    mat_zero(&gyro_bias);
     mat_zero(&v_w);
 
-    mat_set(xcor_kalman_basic, 0, 0, altitude_raw);
+    mat_set(q, 0, 0, 1.0f);
+    mat_set(xcor_kalman_basic, 0, 0, 0.0f);
     mat_set(xcor_kalman_basic, 1, 0, 0.0f);
 
     offset_sample_counter = 0;
+    pt1_init(&altitude_offset_filter, 0, 1.0f, 10.0f);
     state = SIGNAL_PROCESSING_STARTING;
 
+    event2_register_callback(&event_liftoff, liftoff_callback);
     //event2_register_callback(&event_liftoff, on_liftoff);
 }
 
@@ -109,32 +132,41 @@ int signal_processing_main() {
     if (state == SIGNAL_PROCESSING_STARTING) {
 
         if(sample_offsets()) {
-            state = SIGNAL_PROCESSING_ACTIVE;
+            state = SIGNAL_PROCESSING_ON_GROUND;
             event2_fire(&event_processing_ready);
 
+            altitude_offset_filter.y_n1 = offset_altitude;
             mat_set(xcor_kalman_basic, 0, 0, altitude_raw-offset_altitude);
             mat_set(xcor_kalman_basic, 1, 0, 0.0f);
+            mat_set(q, 0, 0, 1.0f);
 
         }
         goto out_release_sched_lock;
-    } else if (state == SIGNAL_PROCESSING_ACTIVE) {
+    } else if (state == SIGNAL_PROCESSING_ON_GROUND) {
+        //update altitude offset with very slow pt1 filter
+        offset_altitude = pt1_update(&altitude_offset_filter, altitude_raw, dt);
+
+        //attitude estimation
+        mahony_ahrs(&a_raw, &omega_raw, &gyro_bias, &q, dt, 0.3f, 1.0f);
+        
         //build state vector for kalman filter
         altitude_raw -= offset_altitude;
 
         altitude_kal_pre(&xcor_kalman_basic,
                          &Pcor_kalman_basic,
-                         dt, 0.35f,
+                         dt, 0.005f,
                          &xpre_kalman_basic,
                          &Ppre_kalman_basic);
         altitude_kal_cor(&xpre_kalman_basic,
                          &Ppre_kalman_basic,
-                         0.005f, altitude_raw,
+                         0.35f, altitude_raw,
                          &xcor_kalman_basic,
                          &Pcor_kalman_basic);
         altitude_filterd = mat_get(xcor_kalman_basic, 0, 0);
         mat_set(v_w, 2, 0, mat_get(xcor_kalman_basic, 1, 0));
+    } else if (state == SIGNAL_PROCESSING_IN_FLIGHT) {
+        
     }
-    //LOG_INF("%f", altitude_filterd);
 out_release_sched_lock:
     k_sched_unlock();
 out_final:

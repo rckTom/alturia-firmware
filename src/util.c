@@ -17,6 +17,15 @@
 #include <stdio.h>
 #include <zephyr/logging/log.h>
 
+LOG_MODULE_DECLARE(alturia, 3);
+
+bool file_exists(char *path)
+{
+	struct fs_dirent entry;
+
+	return (fs_stat(path, &entry) == 0);
+}
+
 char* z_fgets(char* s, int n, struct fs_file_t *file)
 {
     int c;
@@ -48,11 +57,12 @@ int get_log_count(const char* dir_path, int *min_log_num, int *max_log_num,
 	*min_log_num = INT_MAX;
 	*max_log_num = 0;
 	*count = 0;
-	struct fs_dir_t dir;
+	struct fs_dir_t dir = {0};
 	int rc;
 
 	rc = fs_opendir(&dir, dir_path);
 	if (rc != 0) {
+		LOG_ERR("can not open dir");
 		return rc;
 	}
 
@@ -61,6 +71,7 @@ int get_log_count(const char* dir_path, int *min_log_num, int *max_log_num,
 		rc = fs_readdir(&dir, &entry);
 
 		if (rc != 0) {
+			LOG_ERR("error read dir");
 			goto out;
 		}
 

@@ -70,3 +70,7 @@ def kalman_sys_export(x_pre, P_pre, x_cor, P_cor, path):
 
 	with open(path, "wb") as f:
 		pickle.dump(eqs, f)
+
+
+def extended_kalman_predict(f, g, x):
+	pass

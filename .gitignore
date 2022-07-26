@@ -1,4 +1,5 @@
 /build
+/.cache
 __pycache__/
 /design/*.pkl
 /src/generated/

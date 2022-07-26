@@ -1,5 +1,4 @@
-if BOARD_ALTURIA
-
 config BOARD
+	string
 	default "ALTURIA_V1_2"
-endif
+	depends on BOARD_ALTURIA_V1_2

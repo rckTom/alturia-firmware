@@ -10,3 +10,14 @@
  * the COPYING file in the top-level directory.
  */
 
+#include "daq.h"
+
+void flightctrl_main()
+{
+	int rc;
+	rc = daq_start();
+
+	while(1) {
+		daq_sync();
+	}
+}

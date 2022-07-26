@@ -18,8 +18,13 @@
 LOG_MODULE_REGISTER(lua, CONFIG_LOG_DEFAULT_LEVEL);
 K_FIFO_DEFINE(lua_work_fifo);
 
+#if CONFIG_BOARD_ALTURIA_V1_2
 /* put dyanmic lua memory into ccm */
 static char __ccm_noinit_section luamem[0xFFFF];
+#else
+static char luamem[0xFFFF];
+#endif
+
 static char lua_read_buf[32];
 static struct sys_heap lua_heap;
 static lua_State *state;
@@ -27,10 +32,14 @@ static lua_State *state;
 static const luaL_Reg lua_alturia_libs[] = {
 	{"timer", luaopen_timerlib},
 	{"led", luaopen_ledlib},
+	#if CONFIG_SERVOS
 	{"servo", luaopen_servolib},
+	#endif
 	{"signal", luaopen_signallib},
 	{"event", luaopen_eventlib},
+	#if CONFIG_PYROS
 	{"pyro", luaopen_pyrolib},
+	#endif
 	{NULL, NULL}
 };
 
@@ -133,6 +142,10 @@ void *lc_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
 	return p;
 }
 
+const char* lua_reader_buffer (lua_State *L, void *data, size_t *size){
+
+}
+
 const char* lua_reader (lua_State *L, void *data, size_t *size){
 	struct fs_file_t *zfp = data;
 	size_t rb = fs_read(zfp, lua_read_buf, ARRAY_SIZE(lua_read_buf));
@@ -144,7 +157,6 @@ const char* lua_reader (lua_State *L, void *data, size_t *size){
 
 	return NULL;
 }
-
 
 static lua_State* create_state()
 {

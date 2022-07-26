@@ -1,3 +1,4 @@
+#if CONFIG_SERVOS
 #ifndef ALUTRIA__LUA_SERVOLIB__H
 #define ALTURIA__LUA_SERVOLIB__H
 
@@ -5,4 +6,5 @@
 
 int luaopen_servolib(lua_State *L);
 
+#endif
 #endif
