@@ -13,7 +13,7 @@ jobs:
         id: zepyhr_workspace_cache
         with:
           path: ~/zephyrproject/
-          key: zephyr_workspace_cache
+          key: zephyr_workspace_cache_v1
       
       - uses: actions/cache@v3
         id: zepyhr_sdk_cache
