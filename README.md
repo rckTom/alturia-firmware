@@ -1,4 +1,5 @@
 # Alturia Firmware
+[![Compiles](https://github.com/rckTom/alturia-firmware/actions/workflows/build.yml/badge.svg)](https://github.com/rckTom/alturia-firmware/actions/workflows/build.yml)
 
 This repository contains the firmware of the Alturia rocket flight computer.
 
@@ -8,8 +9,7 @@ This repository contains the firmware of the Alturia rocket flight computer.
 - Zephyr-SDK
 - Following python packages:
 	* sympy
-	* dill
-- uncristify
+- uncrustify
 
 ## Getting started
 
