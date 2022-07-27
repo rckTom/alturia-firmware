@@ -68,7 +68,9 @@ jobs:
       - name: Zephyr custom branch
         run: |
           cd ~/zephyrproject/zephyr
-          git remote add fork https://github.com/rcktom/zephyr
+          if ! git config remote.fork.url > /dev/null; then
+            git remote add fork https://github.com/rcktom/zephyr
+          fi
           git fetch fork
           git switch wip_bmi088
           cd ..
