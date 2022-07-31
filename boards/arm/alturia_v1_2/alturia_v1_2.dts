@@ -208,7 +208,14 @@
 		label="mt25ql";
 		spi-max-frequency = <12000000>;
 		jedec-id = [20 BA 20];
-		size = <134217728>;
+		size = <536870912>;
+		sfdp-bfp = [
+			e5 20 fb ff  ff ff ff 1f  29 eb 27 6b  27 3b 27 bb
+			ff ff ff ff  ff ff 27 bb  ff ff 29 eb  0c 20 10 d8
+			0f 52 00 00  24 4a 99 00  8b 8e 03 e1  ac 01 27 38
+			7a 75 7a 75  fb bd d5 5c  4a 0f 82 ff  81 bd 3d 36
+			];
+
 		hold-gpios = <&gpioa 4 0>;
 	};
 };
