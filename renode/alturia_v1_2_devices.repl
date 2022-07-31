@@ -1,0 +1,24 @@
+extFlash1: SPI.Micron_MT25QL @ spi1
+    underlyingMemory: extFlash1_mem
+
+extFlash1_mem: Memory.MappedMemory
+    size: 0x4000000
+
+gpioPortC:
+    4-> extFlash1@0
+
+//
+//Sensors
+//
+
+cs_controller: SPI.SpiCsController @ spi2
+bmi088_acc: Sensors.BMI088_Accelerometer @ cs_controller 0x1
+bmi088_gyr: Sensors.BMI088_Gyroscope @ cs_controller 0x2
+ms5607: Sensors.MS5607 @ cs_controller 0x0
+
+gpioPortA:
+    8 -> cs_controller@0
+gpioPortC:
+    5 -> cs_controller@1
+gpioPortB:
+    1 -> cs_controller@2

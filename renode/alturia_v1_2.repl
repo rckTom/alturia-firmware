@@ -1,0 +1,12 @@
+i $ORIGIN/devices/Micron_MT25QL.cs
+i $ORIGIN/helper/SpiCsController.cs
+i $ORIGIN/devices/BMI088_Accelerometer.cs
+i $ORIGIN/devices/BMI088_Gyroscope.cs
+i $ORIGIN/devices/MS5607.cs
+
+mach create
+machine LoadPlatformDescription $ORIGIN/stm32f4.repl
+machine LoadPlatformDescription $ORIGIN/add_ccm.repl
+machine LoadPlatformDescription $ORIGIN/alturia_v1_2_devices.repl
+sysbus LoadELF $ORIGIN/../build/zephyr/zephyr.elf
+showAnalyzer sysbus.usart1
