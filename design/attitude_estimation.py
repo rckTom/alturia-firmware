@@ -29,8 +29,9 @@ def qnext():
     q = sp.MatrixSymbol("q", 4, 1)
     dt = sp.Symbol("dt")
     omega = sp.MatrixSymbol("omega_WM_M", 3, 1)
+    bias = sp.MatrixSymbol("gyro_bias", 3, 1)
     q_in = sp.Quaternion(a = q[0], b = q[1], c = q[2], d = q[3])
-    q_next = q_in + qdot(omega, q_in) * dt
+    q_next = q_in + qdot((omega-bias), q_in) * dt
     q_next = q_next.normalize()
     q_next = sp.Matrix([q_next.a, q_next.b, q_next.c, q_next.d])
 
