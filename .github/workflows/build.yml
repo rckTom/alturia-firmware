@@ -87,3 +87,10 @@ jobs:
           ZEPHYR_TOOLCHAIN_VARIANT: zephyr
         run: |
           west build -b ${{ matrix.board }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.board }}.elf
+          path: build/zephyr/zephyr.elf
+          if-no-files-found: error
