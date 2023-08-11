@@ -1,4 +1,5 @@
 #include "daq.h"
+#include <zephyr/kernel.h>
 #include <zephyr/zephyr.h>
 #include <zephyr/logging/log.h>
 #include "alturia.h"
@@ -137,14 +138,14 @@ static void multi_sensor_sample_thread(struct sensor_thread_data *data, int len)
         // wait for sample timer signal
         if (k_mutex_lock(&condvar_lock, K_FOREVER) != 0) {
             LOG_DBG("unable to block trigger mutex");
-            break;
+            continue;
         }
 
         k_condvar_wait(&sample_timer_sync_condvar, &condvar_lock, K_FOREVER);
 
         if (k_mutex_unlock(&condvar_lock) != 0) {
             LOG_DBG("unable to unlock trigger mutex");
-            break;
+            continue;
         }
 
         for(int i = 0; i < len; i++) {
