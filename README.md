@@ -5,7 +5,8 @@ This repository contains the firmware of the Alturia rocket flight computer.
 
 ## Requirements
 
-- Zephyr-RTOS latest master
+- Zephyr-RTOS
+	- Currently only builds with the custom fork on https://github.com/rcktom/zephyr because the imu driver is not upstreamed yet.
 - Zephyr-SDK
 - Following python packages:
 	* sympy
@@ -19,7 +20,7 @@ cd alturia-firmware
 
 git submodule init && git submodule update
 
-west build
+west build -b alturia_v1_2
 west flash
 ```
 
@@ -27,6 +28,10 @@ west flash
 
 Algorithms and filters are prototyped in python with sympy. You can use the
 cmake command `symbolic_codegen()` to generate c code from symbolic equations.
+
+## SIL Testing
+
+For the alturia_v1_2 board there is sil testing capabilites
 
 ## License
 
