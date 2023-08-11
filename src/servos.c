@@ -72,7 +72,7 @@ int servo_set_us(int servo, uint32_t us)
 
 	data->setpoint = 2/(data->max_us-data->min_us)*us-1;
 
-	return pwm_set_pulse_dt(&servo_config[servo], us);
+	return pwm_set_pulse_dt(&servo_config[servo], us*1000);
 }
 
 int servo_set_angle(int servo, uint8_t angle)
@@ -99,6 +99,8 @@ static int servo_init()
 		servo_data[i].max_us = 2000;
 		servo_data[i].min_us = 1000;
 		servo_data[i].setpoint = 0;
+
+		pwm_set_pulse_dt(&servo_config[i], 0);
 	}
 
 	return 0;
