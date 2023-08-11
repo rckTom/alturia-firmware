@@ -22,7 +22,8 @@ target_include_directories(app PRIVATE src/generated/
 				       src/
 				       src/configuration
 				       src/execution_engine/
-				       src/lua_execution_engine/)
+				       src/lua_execution_engine/
+					   lib/cJSON/)
 
 function(cached_symbolic_codegen)
 	cmake_parse_arguments(
@@ -109,7 +110,6 @@ target_sources(app PRIVATE src/util.c
 			   src/beeper.c
 			   #src/pil.c
 			   src/main.c
-			   src/config.c
 			   src/led.c
 			   src/events2.c
 			   src/datalogger.c
@@ -124,6 +124,8 @@ target_sources(app PRIVATE src/util.c
 			   src/servos.c
 			   src/eventtimer.c
 			   src/edge_detector.c
+			   src/config_yaml.c
+			   src/config_shell.c
 			   src/lua_execution_engine/lua_execution_engine.c
 			   src/lua_execution_engine/lua_ledlib.c
 			   src/lua_execution_engine/lua_timerlib.c
@@ -135,4 +137,5 @@ target_sources(app PRIVATE src/util.c
 			   src/rocket/flightstate.c
 			   src/rocket/data_logging.c
 			   src/pwm_rgb_led.c
-			   src/filter/pt1.c)
+			   src/filter/pt1.c
+			   lib/cJSON/cJSON.c)
