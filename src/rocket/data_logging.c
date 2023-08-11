@@ -50,10 +50,17 @@ static void callback_pad_idle(struct event2 *evt)
     // sensor data track
 }
 
-static void callback_touchdown(struct event2 *evt)
-{
+static void stop_log(struct k_work *w) {
     LOG_INF("close log");
     dl_close_log();
+}
+
+static void callback_touchdown(struct event2 *evt)
+{
+    static struct k_work_delayable w;
+
+    k_work_init_delayable(&w, stop_log);
+    k_work_schedule(&w, K_SECONDS(1));
 }
 
 static void callback_event_change(struct event2 *evt)

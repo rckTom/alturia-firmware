@@ -1,3 +1,6 @@
+#ifndef ALTURIA_DATA_LOGGING_H
+#define ALTURIA_DATA_LOGGING_H
+
 #include <zephyr/zephyr.h>
 #include "stdint.h"
 #include "stdlib.h"
@@ -29,3 +32,5 @@ struct log_entry_event_track {
 void rocket_data_logging();
 void rocket_data_logging_set_name(char *name);
 void rocket_data_logging_stop();
+
+#endif
