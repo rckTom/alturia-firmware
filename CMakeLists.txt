@@ -136,6 +136,7 @@ target_sources(app PRIVATE src/util.c
 			   src/rocket/signal_processing.c
 			   src/rocket/flightstate.c
 			   src/rocket/data_logging.c
+			   src/rocket/beeper_logic.c
 			   src/pwm_rgb_led.c
 			   src/filter/pt1.c
 			   lib/cJSON/cJSON.c)

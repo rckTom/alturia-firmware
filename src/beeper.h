@@ -19,6 +19,7 @@
 #ifdef ALTURIA_HAS_BEEPER
 
 #define VOLUME 100 /* 0 to 100 */
+#define BEEP_FREQUENCY_HZ(n) (1000000000/n)
 
 int beep_off();
 int beep_on(int32_t pitch);
