@@ -175,16 +175,27 @@
 	};
 	bmi088_gyr: bmi088_gyr@1 {
 		status = "okay";
-		compatible = "bosch,bmi088-gyro";
+		compatible = "bosch,bmi08x-gyro";
 		reg = <1>;
 		label = "bmi088-gyro";
+		gyro-hz = "1000_116";
+		gyro-fs = <2000>;
+		int-gpios = <&gpiob 2 (GPIO_ACTIVE_HIGH)>;
+		int3-4-map-io = <0x01>;
+		int3-4-conf-io = <0x01>;
 		spi-max-frequency = <10000000>;
 	};
 	bmi088_acc: bmi088_acc@2 {
 		status = "okay";
-		compatible = "bosch,bmi088-accel";
+		compatible = "bosch,bmi08x-accel";
 		reg = <2>;
-		label = "bmi088-accel";
+		int-gpios = <&gpiob 0 (GPIO_ACTIVE_HIGH)>;
+		int1-map-io = <0x01>;
+		int2-map-io = <0x00>;
+		int1-conf-io = <0x05>;
+		int2-conf-io = <0x00>;
+		accel-hz = "200";
+		accel-fs = <24>;
 		spi-max-frequency = <10000000>;
 	};
 	ais2120sx: ais2120sx@3 {
