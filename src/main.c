@@ -31,7 +31,9 @@
 #include "alturia.h"
 #include "util.h"
 #include "datalogger.h"
-#include "config.h"
+#include "beeper.h"
+#include "rocket/beeper_logic.h"
+#include "config_yaml.h"
 
 LOG_MODULE_DECLARE(alturia);
 
@@ -60,7 +62,7 @@ void main(void)
 
 	lua_engine_init();
 	#if CONFIG_FILE_SYSTEM
-	lua_engine_dofile("/lfs/user/test.lua");
+	lua_engine_dofile("/lfs/config/flightconfig.lua");
 	#endif
 
 	STRUCT_SECTION_FOREACH(event2, evt) {
@@ -69,6 +71,8 @@ void main(void)
 
 	signal_processing_init();
 	flightstate_init();
+	rocket_beeper_logic_start();
+
 	k_sleep(K_SECONDS(1));
 	event2_fire(&event_boot);
 
@@ -80,8 +84,6 @@ void main(void)
 	rocket_data_logging_set_name(log_file_path);
 	#endif
 
-	k_sleep(K_MSEC(1000));
-	uint32_t counter = 0;
 	mission_state_t last_state = STATE_STARTUP;
 	while(true) {
 		// main event loop. This gets syncronized to daq frequency in signal_processing()
@@ -96,13 +98,6 @@ void main(void)
 		#if CONFIG_FILE_SYSTEM
 		rocket_data_logging();
 		#endif
-
-		counter++;
-		if (counter % 100 == 0) {
-			LOG_INF("altitude: %f", *signal_h.value.value_ptr.type_float32);
-			LOG_INF("v_w %f", mat_get((*signal_v_w.value.value_ptr.type_matrix), 2, 0));
-			LOG_INF("q %f", mat_get((*signal_q.value.value_ptr.type_matrix), 0, 0));
-		}
 	}
 	
 	while(true) {
