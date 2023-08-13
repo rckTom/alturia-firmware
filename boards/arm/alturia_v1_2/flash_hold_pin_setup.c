@@ -6,7 +6,7 @@
 static int init_flash_hold_pin(const struct device *dev)
 {
 	(void)dev;
-	const struct device* gpio = device_get_binding(DT_GPIO_LABEL(DT_ALIAS(norflash), hold_gpios));
+	const struct device* gpio = DEVICE_DT_GET(DT_GPIO_CTLR(DT_ALIAS(norflash), hold_gpios));
 	const int pin = DT_GPIO_PIN(DT_ALIAS(norflash), hold_gpios);
 	int rc = 0;
 

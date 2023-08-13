@@ -51,17 +51,6 @@ int init_peripherals(const struct device *dev)
 }
 
 #if CONFIG_FILE_SYSTEM
- /*
- * Filesystem stuff
- */
-
-FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(storage);
-static struct fs_mount_t lfs_storage_mnt = {
-    .type = FS_LITTLEFS,
-    .fs_data = &storage,
-    .storage_dev = (void *)FLASH_AREA_ID(storage),
-    .mnt_point = ALTURIA_FLASH_MP,
-};
 
 /**
  * Check directory structure and create appropriate structure if it does not
@@ -101,41 +90,6 @@ static int make_dir_structure()
 			LOG_ERR("fs_stat failed");
 			break;
 		}
-	}
-
-	return rc;
-}
-
-int init_fs(void)
-{
-	struct fs_mount_t *mp = &lfs_storage_mnt;
-	unsigned int id = (uintptr_t)mp->storage_dev;
-	const struct flash_area *pfa;
-	int rc;
-
-	rc = flash_area_open(id, &pfa);
-	if (rc < 0) {
-		LOG_ERR("Unable to find flash area %u: %d", id, rc);
-		return rc;
-	}
-
-	if (IS_ENABLED(CONFIG_APP_WIPE_STORAGE)) {
-		LOG_INF("Erasing flash area ... ");
-		rc = flash_area_erase(pfa, 0, pfa->fa_size);
-		LOG_INF("Done");
-		flash_area_close(pfa);
-	}
-
-	rc = fs_mount(mp);
-	if (rc < 0) {
-		LOG_ERR("Unable to mount id %u at %s: %d", id,
-			mp->mnt_point, rc);
-		return rc;
-	}
-
-	rc = make_dir_structure();
-	if (rc < 0) {
-		LOG_ERR("Unable to create default file structure");
 	}
 
 	return rc;

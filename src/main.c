@@ -51,15 +51,8 @@ void evt_callback(struct event2 *evt) {
 
 void main(void)
 {
-	#if CONFIG_FILE_SYSTEM
-
-	int rc = init_fs();
-	if (rc != 0) {
-		LOG_ERR( "Unable to initialize file system");
-		return;
-	}
-
-	#endif
+	int rc = 0;
+	init_config(NULL);
 
 	daq_set_api_provider(sensor_daq_get_api_provider());
 	daq_set_sample_interval(K_MSEC(10));
