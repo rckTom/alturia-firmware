@@ -19,7 +19,6 @@
 
 bool file_exists(char *path);
 char* z_fgets(char* s, int n, struct fs_file_t *file);
-float sensor_value_to_float(struct sensor_value *val);
 int get_log_count(const char* dir_path, int *min_log_num,
 			 int *max_log_num, int* count);
 int get_log_path(char *path, size_t n, int num);

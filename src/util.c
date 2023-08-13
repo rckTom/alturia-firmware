@@ -45,12 +45,6 @@ char* z_fgets(char* s, int n, struct fs_file_t *file)
     return (res <= 0 && cs == s) ? NULL : s;
 }
 
-float sensor_value_to_float(struct sensor_value *sval)
-{
-	return ((float) sval->val1 +
-	       ((float) sval->val2) / 1000000.0f);
-}
-
 int get_log_count(const char* dir_path, int *min_log_num, int *max_log_num,
 		  int* count)
 {
