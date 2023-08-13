@@ -81,7 +81,7 @@ static void callback_event_change(struct event2 *evt)
     dl_add_track_data(data);
 }
 
-static int init(const struct device *device) {
+static int init() {
     (void) device;
     LOG_INF("init rocket data logging");
     event2_register_callback(&event_touchdown, callback_touchdown);
