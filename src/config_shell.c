@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <zephyr/shell/shell.h>
 #include "config_yaml.h"
 
