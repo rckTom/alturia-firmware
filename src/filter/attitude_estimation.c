@@ -1,6 +1,19 @@
 #include "attitude_estimation.h"
 #include "arm_math.h"
 #include "generated/mahohny_attitude_estimation_impl.h"
+#include "generated/attitude_estimation_impl.h"
+
+void attitude_simple_q_integration(mat *q, mat *g_m, mat *gyro_bias, float dt) {
+	mat q_next;
+	float32_t q_next_data[4] = {0.0f};
+
+	q_next.numCols = 1;
+	q_next.numRows = 4;
+	q_next.pData = q_next_data;
+
+	attitude_q_next(dt,	gyro_bias->pData, g_m->pData, q->pData, q_next.pData);
+	memcpy(q->pData, q_next.pData, (q_next.numCols * q_next.numRows) * sizeof(float32_t));
+}
 
 void mahony_ahrs(mat *a_m, mat *g_m, mat *gyro_bias, mat *q, float dt, float ki,
 		 float kp)

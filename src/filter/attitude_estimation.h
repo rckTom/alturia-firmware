@@ -5,6 +5,6 @@
 
 void mahony_ahrs(mat *a_m, mat *g_m, mat *gyro_bias, mat *q, float dt, float ki,
 		 float kp);
-void simple_q_integration();
+void attitude_simple_q_integration(mat *q, mat *g_m, mat *gyro_bias, float dt);
 
 #endif
