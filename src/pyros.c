@@ -22,15 +22,16 @@
 LOG_MODULE_REGISTER(pyros, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define PYRO_INIT_MACRO(node_id) \
-	{.dev_name = DT_GPIO_LABEL(node_id, gpios), \
+	{.dev = DEVICE_DT_GET(DT_GPIO_CTLR(node_id, gpios)), \
+	 .dev_name = DT_NODE_FULL_NAME(node_id),\
 	 .pin = DT_GPIO_PIN(node_id, gpios), \
 	 .flags = DT_GPIO_FLAGS(node_id, gpios)},
 
 static struct pyro{
-	const char *dev_name;
 	const int pin;
 	const int flags;
 	const struct device *dev;
+	const char *dev_name;
 	struct k_work_delayable work;
 } pyro_gpios[] = {DT_FOREACH_CHILD(DT_NODELABEL(pyros),PYRO_INIT_MACRO)};
 
