@@ -126,6 +126,7 @@ target_sources(app PRIVATE src/util.c
 			   src/edge_detector.c
 			   src/config_yaml.c
 			   src/config_shell.c
+			   src/servo_shell.c
 			   src/lua_execution_engine/lua_execution_engine.c
 			   src/lua_execution_engine/lua_ledlib.c
 			   src/lua_execution_engine/lua_timerlib.c
