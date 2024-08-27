@@ -1,4 +1,0 @@
-config BOARD
-	string
-	default "ALTURIA_V1_2"
-	depends on BOARD_ALTURIA_V1_2

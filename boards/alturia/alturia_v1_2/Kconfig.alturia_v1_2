@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_ALTURIA_V1_2
+	select SOC_STM32F405XX
