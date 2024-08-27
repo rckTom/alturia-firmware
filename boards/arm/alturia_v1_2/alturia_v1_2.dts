@@ -9,8 +9,8 @@
 
 	chosen {
 		zephyr,console = &usart1;
-		zephyr,shell-uart = &usart1;
-		//zephyr,shell-uart = &cdc_acm_uart0;
+		//zephyr,shell-uart = &usart1;
+		zephyr,shell-uart = &cdc_acm_uart0;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
