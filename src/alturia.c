@@ -83,5 +83,11 @@ int check_free_space(void)
 
 void fatal_error()
 {
+	while(1) {
+		beepn(200, 3, 1000000000/500);
+		k_sleep(K_MSEC(400*4));
+		beepn(200, 3, 1000000000/400);
+		k_sleep(K_MSEC(400*4));
+	}
 	k_panic();
 }
