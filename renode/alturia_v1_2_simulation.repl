@@ -11,11 +11,17 @@ machine LoadPlatformDescription $ORIGIN/stm32f4.repl
 machine LoadPlatformDescription $ORIGIN/add_ccm.repl
 machine LoadPlatformDescription $ORIGIN/alturia_v1_2_devices.repl
 
-sysbus LoadELF $ORIGIN/../build/zephyr/zephyr.elf
-sysbus.spi1.extFlash1 LoadBinary $ORIGIN/fs.img
+sysbus LoadELF @$elf_path
+sysbus.spi1.extFlash1 LoadBinary $fs_path
 
-showAnalyzer sysbus.usart1
 emulation SetAdvanceImmediately true
 
 logLevel 3 sysbus.nvic
 logLevel 3 sysbus.spi2
+
+connect sysbus.usart1
+
+i @ORIGIN/xmlrpc_sensors.py
+python "setup()"
+start
+sysbus.spi1.extFlash1 ExportBinary $fs_path

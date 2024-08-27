@@ -10,7 +10,6 @@ gpioPortC:
 //
 //Sensors
 //
-
 cs_controller: SPI.SpiCsController @ spi2
 bmi088_acc: Sensors.BMI088_Accelerometer @ cs_controller 0x1
 bmi088_gyr: Sensors.BMI088_Gyroscope @ cs_controller 0x2
@@ -22,3 +21,15 @@ gpioPortC:
     5 -> cs_controller@1
 gpioPortB:
     1 -> cs_controller@2
+//
+// Pyros
+//
+pyros: Pyros @ sysbus 0x1000000000
+
+gpioPortA:
+    2 -> pyros@0
+    1 -> pyros@1
+    3 -> pyros@3
+
+gpioPortC:
+    14 -> pyros@2
