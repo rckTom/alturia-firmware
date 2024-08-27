@@ -154,13 +154,13 @@ static void descending_run(void *ctx) {
 static void landed_run(void *ctx) {}
 
 static const struct smf_state states[] = {
-	[STATE_STARTUP] = SMF_CREATE_STATE(NULL, startup_run, NULL),
-	[STATE_PAD_IDLE] = SMF_CREATE_STATE(pad_idle_entry, pad_idle_run, pad_idle_exit),
-	[STATE_PAD_READY] = SMF_CREATE_STATE(pad_ready_entry, pad_ready_run, NULL),
-	[STATE_BOOST] = SMF_CREATE_STATE(boost_entry, boost_run, boost_exit),
-	[STATE_COAST] = SMF_CREATE_STATE(NULL, coast_run, NULL),
-	[STATE_DESCENDING] = SMF_CREATE_STATE(NULL, descending_run, NULL),
-	[STATE_LANDED] = SMF_CREATE_STATE(NULL, landed_run, NULL),
+	[STATE_STARTUP] = SMF_CREATE_STATE(NULL, startup_run, NULL, NULL, NULL),
+	[STATE_PAD_IDLE] = SMF_CREATE_STATE(pad_idle_entry, pad_idle_run, pad_idle_exit, NULL, NULL),
+	[STATE_PAD_READY] = SMF_CREATE_STATE(pad_ready_entry, pad_ready_run, NULL, NULL, NULL),
+	[STATE_BOOST] = SMF_CREATE_STATE(boost_entry, boost_run, boost_exit, NULL, NULL),
+	[STATE_COAST] = SMF_CREATE_STATE(NULL, coast_run, NULL, NULL, NULL),
+	[STATE_DESCENDING] = SMF_CREATE_STATE(NULL, descending_run, NULL, NULL, NULL),
+	[STATE_LANDED] = SMF_CREATE_STATE(NULL, landed_run, NULL, NULL, NULL),
 };
 
 mission_state_t flightstate_get_state()
@@ -173,7 +173,7 @@ bool flightstate_inflight()
 	mission_state_t state = flightstate_get_state();
 	return (state == STATE_BOOST) ||
 		   (state == STATE_COAST) ||
-		   (state == STATE_DESCENDING); 
+		   (state == STATE_DESCENDING);
 }
 
 void flightstate_set_burnout_count(int val)
