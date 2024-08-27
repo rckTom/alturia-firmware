@@ -2,7 +2,7 @@
 #define ALTURIA_SERVOS_H
 
 #if CONFIG_SERVOS
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 int servo_get_setpoint(uint8_t servo, float *setpoint);
 int servo_set_max_us(uint8_t servo, uint32_t max_us);

@@ -5,7 +5,7 @@
 #include "generic.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 LOG_MODULE_REGISTER(lua_libsignal, CONFIG_LOG_DEFAULT_LEVEL);
 

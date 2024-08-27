@@ -2,7 +2,7 @@
 
 #include "servos.h"
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <stdint.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/init.h>
@@ -96,8 +96,8 @@ static int servo_init()
 			return -ENODEV;
 		}
 
-		servo_data[i].max_us = 2000;
-		servo_data[i].min_us = 1000;
+		servo_data[i].max_us = 2200;
+		servo_data[i].min_us = 800;
 		servo_data[i].setpoint = 0;
 
 		pwm_set_pulse_dt(&servo_config[i], 0);

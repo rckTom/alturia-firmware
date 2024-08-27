@@ -1,7 +1,7 @@
 #ifndef ALTURIA_EVENTTIMER_H
 #define ALTURIA_EVENTTIMER_H
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <stdint.h>
 
 

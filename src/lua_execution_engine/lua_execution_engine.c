@@ -8,7 +8,7 @@
 #include "lua_eventlib.h"
 #include "lua_pyrolib.h"
 #include "stdio.h"
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/linker/linker-defs.h>
 #include <zephyr/fs/fs.h>
 #include <zephyr/logging/log.h>
@@ -140,10 +140,6 @@ void *lc_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
 	void *p = sys_heap_realloc(&lua_heap, ptr, nsize);
 	//sys_heap_dump(&lua_heap);
 	return p;
-}
-
-const char* lua_reader_buffer (lua_State *L, void *data, size_t *size){
-
 }
 
 const char* lua_reader (lua_State *L, void *data, size_t *size){

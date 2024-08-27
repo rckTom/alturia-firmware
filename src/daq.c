@@ -10,7 +10,7 @@
  * the COPYING file in the top-level directory.
  */
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include "daq.h"
 

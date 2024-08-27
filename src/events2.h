@@ -2,7 +2,7 @@
 #define ALTURIA__EVENTS2__H
 
 #include "stdlib.h"
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define DEFINE_EVENT(name) \
          STRUCT_SECTION_ITERABLE(event2, name) = { \

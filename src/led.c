@@ -18,7 +18,7 @@
 #include <zephyr/drivers/pwm.h>
 #include <zephyr/init.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 LOG_MODULE_REGISTER(led, CONFIG_LOG_DEFAULT_LEVEL);
 
@@ -194,7 +194,7 @@ int led_set_color_hsv(const struct color_hsv *hsv)
 	return led_set_color_rgb(hsv_to_rgb(hsv));
 }
 
-int init(const struct device *d)
+int init()
 {
 	if (!device_is_ready(dev)) {
 		goto err;

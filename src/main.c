@@ -11,7 +11,7 @@
  */
 
 #define _DEFAULT_SOURCE 1
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <string.h>
 #include <stdio.h>
@@ -51,7 +51,7 @@ void evt_callback(struct event2 *evt) {
 	LOG_INF("event %s", evt->evt_name);
 }
 
-void main(void)
+int main(void)
 {
 	int rc = 0;
 	init_config(NULL);
@@ -103,4 +103,6 @@ void main(void)
 	while(true) {
 		k_sleep(K_MSEC(1000));
 	}
+
+	return 0;
 }

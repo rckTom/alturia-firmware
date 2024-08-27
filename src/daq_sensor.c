@@ -1,6 +1,6 @@
 #include "daq.h"
 #include <zephyr/kernel.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include "alturia.h"
 #include "util.h"
@@ -47,7 +47,7 @@ static struct sensor_thread_data sensor_thread_data[] = {
     #if DT_NODE_EXISTS(DT_ALIAS(pressure_sensor))
     {
         .dev = DEVICE_DT_GET(DT_ALIAS(pressure_sensor)),
-        .dev_name = DT_LABEL(DT_ALIAS(pressure_sensor)),
+        .dev_name = DT_NODE_FULL_NAME(DT_ALIAS(pressure_sensor)),
         .channel = SENSOR_CHAN_PRESS,
         .daq_channel = DAQ_CHANNEL_PRESSURE,
         .channel_size = 1,
@@ -57,7 +57,7 @@ static struct sensor_thread_data sensor_thread_data[] = {
     #if DT_NODE_EXISTS(DT_ALIAS(acc_sensor))
     {
         .dev = DEVICE_DT_GET(DT_ALIAS(acc_sensor)),
-        .dev_name = DT_LABEL(DT_ALIAS(acc_sensor)),
+        .dev_name = DT_NODE_FULL_NAME(DT_ALIAS(acc_sensor)),
         .channel = SENSOR_CHAN_ACCEL_XYZ,
         .daq_channel = DAQ_CHANNEL_ACC,
         .channel_size = 3,
@@ -67,7 +67,7 @@ static struct sensor_thread_data sensor_thread_data[] = {
     #if DT_NODE_EXISTS(DT_ALIAS(gyro_sensor))
     {
         .dev = DEVICE_DT_GET(DT_ALIAS(gyro_sensor)),
-        .dev_name = DT_LABEL(DT_ALIAS(gyro_sensor)),
+        .dev_name = DT_NODE_FULL_NAME(DT_ALIAS(gyro_sensor)),
         .channel = SENSOR_CHAN_GYRO_XYZ,
         .daq_channel = DAQ_CHANNEL_ACC,
         .data_storage = gyro,

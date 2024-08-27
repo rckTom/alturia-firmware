@@ -21,7 +21,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/usb/usb_device.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define CONFIG_APP_WIPE_STORAGE 0
 
@@ -42,7 +42,7 @@ int init_usb(void)
 	return rc;
 }
 
-int init_peripherals(const struct device *dev)
+int init_peripherals()
 {
 	int res;
 

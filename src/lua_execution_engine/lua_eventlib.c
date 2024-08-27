@@ -7,7 +7,7 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "string.h"
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include "events2.h"
 #include <ctype.h>
 

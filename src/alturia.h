@@ -13,7 +13,7 @@
 #ifndef ALTURIA__MAIN__H
 #define ALTURIA__MAIN__H
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/device.h>
 #include "rocket/flightstate.h"

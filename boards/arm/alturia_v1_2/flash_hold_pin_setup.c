@@ -1,11 +1,10 @@
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 
-static int init_flash_hold_pin(const struct device *dev)
+static int init_flash_hold_pin()
 {
-	(void)dev;
 	const struct device* gpio = DEVICE_DT_GET(DT_GPIO_CTLR(DT_ALIAS(norflash), hold_gpios));
 	const int pin = DT_GPIO_PIN(DT_ALIAS(norflash), hold_gpios);
 	int rc = 0;

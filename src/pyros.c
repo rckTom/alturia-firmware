@@ -13,7 +13,7 @@
 #ifdef CONFIG_PYROS
 #include "pyros.h"
 #include "alturia.h"
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/devicetree.h>
