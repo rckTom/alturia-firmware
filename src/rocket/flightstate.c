@@ -20,7 +20,7 @@ DEFINE_EVENT(event_pad_ready);
 
 DECLARE_SIGNAL(signal_h);
 DECLARE_SIGNAL(signal_v_w);
-DECLARE_SIGNAL(signal_a_raw);
+DECLARE_SIGNAL(signal_a_w);
 
 struct state_machine_ctx {
 	struct smf_ctx ctx;
@@ -28,8 +28,8 @@ struct state_machine_ctx {
 } smf_context;
 
 const float32_t zero = 0.0f;
-const float32_t ignition_acceleration_threshold = 2.0f;
-const float32_t liftoff_height = 3.0f;
+const float32_t ignition_acceleration_threshold = 20.0f;
+const float32_t liftoff_height = 5.0f;
 
 unsigned int burnout_count, ignition_count;
 uint64_t mission_start_time;
@@ -48,13 +48,12 @@ struct cond_window_data landing_window_data = {
 static const struct smf_state states[];
 
 static bool acc_ignition_detector(int64_t t) {
-	if(edge_detector_update(&detector_ignition, mat_get((*(signal_a_raw.value.value_ptr.type_matrix)), 2, 0), (void *)&ignition_acceleration_threshold, t)) {
+	if(edge_detector_update(&detector_ignition, mat_get((*(signal_a_w.value.value_ptr.type_matrix)), 2, 0), (void *)&ignition_acceleration_threshold, t)) {
 		edge_detector_reset(&detector_ignition);
 		return true;
 	}
 	return false;
 }
-
 /*
  * Startup State
  */
@@ -100,7 +99,7 @@ static void pad_ready_entry(void *ctx) {
 static void boost_run(void *ctx) {
 	struct state_machine_ctx *udata = (struct state_machine_ctx *)ctx;
 
-	if(edge_detector_update(&detector_burnout, mat_get((*(signal_a_raw.value.value_ptr.type_matrix)), 2, 0), (void *)&zero, udata->t)) {
+	if(edge_detector_update(&detector_burnout, mat_get((*(signal_a_w.value.value_ptr.type_matrix)), 2, 0), (void *)&zero, udata->t)) {
 		edge_detector_reset(&detector_burnout);
 		smf_set_state(SMF_CTX(ctx), &states[STATE_COAST]);
 	}
@@ -202,7 +201,7 @@ void flightstate_init() {
 	edge_detector_init(&detector_landing, edge_detector_cond_window, 1000);
 	edge_detector_init(&detector_height_liftoff, edge_detector_cond_gt, 50);
 
-	if (signal_a_raw.value.type != type_matrix) {
+	if (signal_a_w.value.type != type_matrix) {
 		LOG_ERR("expected matrix valued type for signal a_r");
 	}
 

@@ -1,7 +1,7 @@
 #ifndef ALTURIA_DATA_LOGGING_H
 #define ALTURIA_DATA_LOGGING_H
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include "stdint.h"
 #include "stdlib.h"
 #include "arm_math.h"

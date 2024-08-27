@@ -8,9 +8,14 @@ enum signal_processing_state {
     SIGNAL_PROCESSING_IN_FLIGHT,
 };
 
-enum signal_proccesing_attitude_estimator {
+enum signal_processing_attitude_estimator {
     ATTITUDE_ESTIMATION_SIMPLE_INTEGRATION,
     ATTITUDE_ESTIMATION_MAHOHNY
+};
+
+enum signal_processing_altitude_kalman_filter {
+    KALMAN_CONST_VEL,
+    KALMAN_CONST_ACC,
 };
 
 enum signal_processing_state signal_processing_get_state();

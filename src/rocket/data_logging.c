@@ -17,8 +17,8 @@ DECLARE_SIGNAL(signal_v_w);
 DECLARE_SIGNAL(signal_pressure);
 DECLARE_SIGNAL(signal_h);
 
-DECLARE_SIGNAL(signal_a_raw);
-DECLARE_SIGNAL(signal_omega_raw);
+DECLARE_SIGNAL(signal_a_w);
+DECLARE_SIGNAL(signal_omega_w);
 DECLARE_SIGNAL(signal_q);
 
 DECLARE_EVENT(event_liftoff);
@@ -82,7 +82,6 @@ static void callback_event_change(struct event2 *evt)
 }
 
 static int init() {
-    (void) device;
     LOG_INF("init rocket data logging");
     event2_register_callback(&event_touchdown, callback_touchdown);
     event2_register_callback(&event_pad_ready, callback_pad_idle);
@@ -100,12 +99,12 @@ static void populate_log_entry(struct log_entry_sensor_track *entry) {
     entry->h_raw = *signal_h_raw.value.value_ptr.type_float32;
     entry->h_f = *signal_h.value.value_ptr.type_float32;
     entry->v_w = mat_get((*signal_v_w.value.value_ptr.type_matrix), 2, 0);
-    entry->ax = mat_get((*signal_a_raw.value.value_ptr.type_matrix), 0, 0);
-    entry->ay = mat_get((*signal_a_raw.value.value_ptr.type_matrix), 1, 0);
-    entry->az = mat_get((*signal_a_raw.value.value_ptr.type_matrix), 2, 0);
-    entry->gx = mat_get((*signal_omega_raw.value.value_ptr.type_matrix), 0, 0);
-    entry->gy = mat_get((*signal_omega_raw.value.value_ptr.type_matrix), 1, 0);
-    entry->gz = mat_get((*signal_omega_raw.value.value_ptr.type_matrix), 2, 0);
+    entry->ax = mat_get((*signal_a_w.value.value_ptr.type_matrix), 0, 0);
+    entry->ay = mat_get((*signal_a_w.value.value_ptr.type_matrix), 1, 0);
+    entry->az = mat_get((*signal_a_w.value.value_ptr.type_matrix), 2, 0);
+    entry->gx = mat_get((*signal_omega_w.value.value_ptr.type_matrix), 0, 0);
+    entry->gy = mat_get((*signal_omega_w.value.value_ptr.type_matrix), 1, 0);
+    entry->gz = mat_get((*signal_omega_w.value.value_ptr.type_matrix), 2, 0);
     entry->qw = mat_get((*signal_q.value.value_ptr.type_matrix), 0, 0);
     entry->qx = mat_get((*signal_q.value.value_ptr.type_matrix), 1, 0);
     entry->qy = mat_get((*signal_q.value.value_ptr.type_matrix), 2, 0);
