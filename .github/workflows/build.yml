@@ -9,13 +9,13 @@ jobs:
       matrix:
         board: [alturia_v1_2, rpi_pico]
     steps:
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: zepyhr_workspace_cache
         with:
           path: ~/zephyrproject/
           key: zephyr_workspace_cache_v1
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: zepyhr_sdk_cache
         with:
           path: ~/zephyr-sdk-0.16.8
