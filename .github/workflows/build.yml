@@ -84,7 +84,7 @@ jobs:
           west build -b ${{ matrix.board }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.board }}.elf
           path: build/zephyr/zephyr.elf
